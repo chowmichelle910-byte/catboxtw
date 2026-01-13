@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>訂單管理系統 一頁版</title>
+    <title>訂單管理系統 - 自動日期版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .status-待取貨 { border-left: 5px solid #F59E0B; background-color: #FFFBEB; }
@@ -14,9 +14,6 @@
         .badge-已寄出 { background: #F3F4F6; color: #374151; }
         .payment-已付 { color: #8B5CF6; font-weight: bold; }
         .payment-到付 { color: #3B82F6; font-weight: bold; }
-        
-        /* 平滑滾動 */
-        html { scroll-behavior: smooth; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen pb-20 font-sans text-gray-900">
@@ -24,216 +21,185 @@
     <div class="max-w-5xl mx-auto p-4 space-y-8">
         
         <div class="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-            <h1 class="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">ORDER MANAGER</h1>
-            <button onclick="loadOrders()" class="text-xs font-bold text-blue-600 hover:bg-blue-50 px-3 py-1 rounded-lg transition">刷新列表 ↻</button>
+            <h1 class="text-xl font-black text-blue-600">ORDER MANAGER PRO</h1>
+            <button onclick="loadOrders()" class="text-xs font-bold text-blue-600 hover:bg-blue-50 px-3 py-1 rounded-lg transition">手動刷新 ↻</button>
         </div>
 
-        <section id="add-section">
-            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
-                <div class="flex items-center space-x-2 mb-6">
-                    <span class="bg-blue-600 w-2 h-6 rounded-full"></span>
-                    <h2 class="text-lg font-bold">建立新訂單</h2>
+        <section id="add-section" class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4 text-sm">
+                    <p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">客戶及收件資料</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" id="custName" placeholder="客人名稱" class="border-b p-2 outline-none focus:border-blue-500">
+                        <select id="source" class="border-b p-2 outline-none"><option>IG</option><option>WhatsApp</option><option>Threads</option></select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" id="receiver" placeholder="收件人" class="border-b p-2 outline-none">
+                        <input type="text" id="phone" placeholder="電話" class="border-b p-2 outline-none">
+                    </div>
+                    <div class="flex space-x-2">
+                        <input type="text" id="sfCode" placeholder="順豐編號" class="flex-1 border p-2 rounded-lg text-xs outline-none">
+                        <button onclick="searchSF()" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-xs font-bold">搜尋</button>
+                    </div>
+                    <textarea id="fullAddress" placeholder="地址..." class="w-full border p-3 rounded-xl h-24 text-xs bg-gray-50 outline-none"></textarea>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div class="space-y-4 text-sm">
-                        <p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">客戶基本資料</p>
-                        <div class="grid grid-cols-2 gap-4">
-                            <input type="text" id="custName" placeholder="客人名稱 (IG/Threads)" class="border-b p-2 outline-none focus:border-blue-500 bg-transparent">
-                            <select id="source" class="border-b p-2 outline-none bg-transparent">
-                                <option>IG</option><option>WhatsApp</option><option>Threads</option>
-                            </select>
-                        </div>
-                        <p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest pt-2">收件物流資料</p>
-                        <div class="grid grid-cols-2 gap-4">
-                            <input type="text" id="receiver" placeholder="收件人姓名" class="border-b p-2 outline-none focus:border-blue-500 bg-transparent">
-                            <input type="text" id="phone" placeholder="電話號碼" class="border-b p-2 outline-none focus:border-blue-500 bg-transparent">
-                        </div>
-                        <div class="flex space-x-2">
-                            <input type="text" id="sfCode" placeholder="順豐編號" class="flex-1 border p-2 rounded-lg text-xs outline-none focus:ring-1 focus:ring-blue-400">
-                            <button id="searchBtn" onclick="searchSF()" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-black">搜尋</button>
-                        </div>
-                        <textarea id="fullAddress" placeholder="完整地址..." class="w-full border p-3 rounded-xl h-24 text-xs bg-gray-50 outline-none focus:bg-white"></textarea>
-                    </div>
-
-                    <div class="space-y-4 text-sm">
-                        <div class="flex justify-between items-center px-1">
-                            <p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">訂購貨品清單</p>
-                            <button onclick="addItemRow()" class="text-blue-600 text-[10px] font-black underline">+ 加一項</button>
-                        </div>
-                        <div id="itemsContainer" class="max-h-[350px] overflow-y-auto pr-2 space-y-3">
-                            <div class="item-row bg-gray-50 p-4 rounded-2xl border relative border-gray-100">
-                                <input type="text" placeholder="商品名稱" class="prodName w-full mb-3 p-2 rounded-lg border text-xs outline-none">
-                                <div class="grid grid-cols-3 gap-2">
-                                    <input type="text" placeholder="取貨點" class="prodLoc border p-2 rounded-lg text-[11px] outline-none">
-                                    <input type="number" placeholder="金額" class="prodAmt border p-2 rounded-lg text-[11px] outline-none">
-                                    <select class="prodPayment border p-2 rounded-lg text-[11px] bg-white outline-none">
-                                        <option value="已付">已付</option>
-                                        <option value="到付">到付</option>
-                                    </select>
-                                </div>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center"><p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">商品細節</p><button onclick="addItemRow()" class="text-blue-600 text-[10px] font-black">+ 加一項</button></div>
+                    <div id="itemsContainer" class="space-y-3 max-h-[300px] overflow-y-auto">
+                        <div class="item-row bg-gray-50 p-4 rounded-xl border border-gray-100">
+                            <input type="text" placeholder="商品名稱" class="prodName w-full mb-3 p-2 rounded-lg border text-xs">
+                            <div class="grid grid-cols-3 gap-2">
+                                <input type="text" placeholder="取貨點" class="prodLoc border p-2 rounded-lg text-[11px]">
+                                <input type="number" placeholder="金額" class="prodAmt border p-2 rounded-lg text-[11px]">
+                                <select class="prodPayment border p-2 rounded-lg text-[11px] bg-white"><option value="已付">已付</option><option value="到付">到付</option></select>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <button id="submitBtn" onclick="submitOrder()" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-blue-100 hover:shadow-2xl transition-all active:scale-[0.99]">確認提交並保存</button>
             </div>
+            <button id="submitBtn" onclick="submitOrder()" class="w-full mt-6 bg-blue-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg hover:bg-blue-700 transition">提交訂單</button>
         </section>
 
-        <div class="relative flex py-5 items-center">
-            <div class="flex-grow border-t border-gray-300"></div>
-            <span class="flex-shrink mx-4 text-gray-400 text-[10px] font-bold uppercase tracking-widest">下為訂單管理列表</span>
-            <div class="flex-grow border-t border-gray-300"></div>
-        </div>
-
-        <section id="list-section">
-            <div id="cardContainer" class="grid gap-6">
-                </div>
-        </section>
+        <div class="flex items-center py-4"><div class="flex-grow border-t border-gray-300"></div><span class="mx-4 text-gray-400 text-[10px] font-bold uppercase tracking-widest">訂單管理列表</span><div class="flex-grow border-t border-gray-300"></div></div>
+        
+        <section id="cardContainer" class="grid gap-6"></section>
     </div>
 
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycby5vPRE71thYhYY-4XDMZ2oByLBsaZmy_FQPHzjHvAthhCTFmUCC29SycppE4d7pJ4mWA/exec";
 
-        // 頁面加載時自動讀取一次列表
         window.onload = loadOrders;
 
         async function searchSF() {
             const code = document.getElementById('sfCode').value.trim();
             if(!code) return;
-            const btn = document.getElementById('searchBtn');
-            btn.innerText = "...";
-            try {
-                const res = await fetch(`${GAS_URL}?action=searchSF&code=${code}`);
-                const data = await res.json();
-                if(data.found) document.getElementById('fullAddress').value = data.address;
-                else alert("找不到此編號");
-            } finally { btn.innerText = "搜尋"; }
+            const res = await fetch(`${GAS_URL}?action=searchSF&code=${code}`);
+            const data = await res.json();
+            if(data.found) document.getElementById('fullAddress').value = data.address;
+            else alert("找不到編號");
         }
 
         function addItemRow() {
-            const container = document.getElementById('itemsContainer');
-            const row = container.querySelector('.item-row').cloneNode(true);
+            const row = document.querySelector('.item-row').cloneNode(true);
             row.querySelectorAll('input').forEach(i => i.value = '');
-            container.appendChild(row);
+            document.getElementById('itemsContainer').appendChild(row);
         }
 
         async function submitOrder() {
             const custName = document.getElementById('custName').value;
-            if(!custName) return alert("請填寫客人名稱");
-            
+            if(!custName) return alert("請輸入名稱");
             const btn = document.getElementById('submitBtn');
-            btn.disabled = true; btn.innerText = "正在同步數據...";
-
+            btn.disabled = true; btn.innerText = "正在儲存...";
             const payload = {
-                customerName: custName,
-                source: document.getElementById('source').value,
-                receiver: document.getElementById('receiver').value,
-                phone: document.getElementById('phone').value,
-                fullAddress: document.getElementById('fullAddress').value,
-                orderID: "ORD"+Date.now().toString().slice(-4),
+                customerName: custName, source: document.getElementById('source').value,
+                receiver: document.getElementById('receiver').value, phone: document.getElementById('phone').value,
+                fullAddress: document.getElementById('fullAddress').value, orderID: "ORD"+Date.now().toString().slice(-4),
                 items: Array.from(document.querySelectorAll('.item-row')).map(row => ({
-                    productName: row.querySelector('.prodName').value,
-                    pickupLocation: row.querySelector('.prodLoc').value,
-                    amount: row.querySelector('.prodAmt').value,
-                    paymentStatus: row.querySelector('.prodPayment').value
+                    productName: row.querySelector('.prodName').value, pickupLocation: row.querySelector('.prodLoc').value,
+                    amount: row.querySelector('.prodAmt').value, paymentStatus: row.querySelector('.prodPayment').value
                 }))
             };
-
             await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
             alert("提交成功！");
-            
-            // 重置表單但保留部分資料（可選）
-            document.getElementById('custName').value = "";
-            document.querySelectorAll('.item-row:not(:first-child)').forEach(r => r.remove());
-            document.querySelector('.prodName').value = "";
-            
-            btn.disabled = false; btn.innerText = "確認提交並保存";
-            loadOrders(); // 提交完自動刷列表
+            location.reload();
         }
 
         async function loadOrders() {
             const container = document.getElementById('cardContainer');
-            container.innerHTML = "<div class='text-center py-10 text-gray-400 animate-pulse'>更新列表中...</div>";
+            container.innerHTML = "<div class='text-center py-10 text-gray-400 animate-pulse'>更新數據中...</div>";
+            const res = await fetch(GAS_URL);
+            const data = await res.json();
+            const groups = data.reduce((acc, obj) => { if (!acc[obj.name]) acc[obj.name] = []; acc[obj.name].push(obj); return acc; }, {});
             
-            try {
-                const res = await fetch(GAS_URL);
-                const data = await res.json();
-                const groups = data.reduce((acc, obj) => {
-                    if (!acc[obj.name]) acc[obj.name] = [];
-                    acc[obj.name].push(obj);
-                    return acc;
-                }, {});
-
-                container.innerHTML = "";
-                const sortedNames = Object.keys(groups).reverse();
-
-                for (let name of sortedNames) {
-                    const first = groups[name][0];
-                    const pureData = `${first.receiver || ''}\n${first.phone || ''}\n${first.fullAddress || ''}`;
-                    const card = document.createElement('div');
-                    card.className = "bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden";
-                    
-                    let itemsHTML = groups[name].map(item => `
-                        <div class="status-${item.status} p-3 mb-2 rounded-r-lg border border-gray-50 text-sm">
-                            <div class="flex justify-between font-bold">
-                                <span>${item.product}</span>
-                                <span class="badge-${item.status} text-[10px] px-2 py-0.5 rounded-full font-bold">${item.status}</span>
+            container.innerHTML = "";
+            Object.keys(groups).reverse().forEach(name => {
+                const first = groups[name][0];
+                const pureData = `${first.receiver}\n${first.phone}\n${first.fullAddress}`;
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden";
+                
+                let itemsHTML = groups[name].map(item => `
+                    <div class="status-${item.status} p-3 mb-2 rounded-r-lg border border-gray-50 text-xs">
+                        <div class="flex justify-between font-bold mb-1">
+                            <span>${item.product}</span>
+                            <span class="badge-${item.status} text-[9px] px-2 py-0.5 rounded-full font-bold">${item.status}</span>
+                        </div>
+                        <div class="text-[10px] text-gray-400 mb-2">取貨點: ${item.location || '---'}</div>
+                        <div class="grid grid-cols-2 gap-2 mt-1 items-center">
+                            <div class="flex flex-col">
+                                <span class="text-[10px] text-gray-400">取貨日期</span>
+                                <input type="date" id="date-${item.rowNum}" value="${formatDateForInput(item.date)}" class="border rounded p-1 text-[10px] outline-none">
                             </div>
-                            <div class="flex justify-between text-[11px] mt-2 items-center">
-                                <span><span class="payment-${item.payment}">${item.payment}</span> · $${item.amount}</span>
-                                <select onchange="updateStatus(${item.rowNum}, this.value)" class="border rounded px-1 bg-white outline-none">
-                                    <option value="">改狀態</option>
-                                    <option value="待取貨">待取貨</option><option value="已取貨">已取貨</option><option value="已寄出">已寄出</option>
+                            <div class="flex flex-col">
+                                <span class="text-[10px] text-gray-400">狀態更改</span>
+                                <select onchange="handleStatusChange(${item.rowNum}, this.value)" class="border rounded p-1 text-[10px] bg-white outline-none">
+                                    <option value="">選擇...</option>
+                                    <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
+                                    <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
+                                    <option value="已寄出" ${item.status==='已寄出'?'selected':''}>已寄出</option>
                                 </select>
                             </div>
                         </div>
-                    `).join('');
+                        <div class="mt-2 text-[10px]"><span class="payment-${item.payment}">${item.payment}</span> · $${item.amount}</div>
+                    </div>
+                `).join('');
 
-                    card.innerHTML = `
-                        <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
-                            <div><b class="text-gray-800">${name}</b> <span class="text-[10px] text-gray-400 ml-2">${first.source}</span></div>
-                            <button onclick="copyPureData(this, \`${pureData}\`)" class="bg-blue-600 text-white text-[10px] px-3 py-1.5 rounded-lg font-bold shadow-sm">一鍵複製資料</button>
+                card.innerHTML = `
+                    <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
+                        <div><b class="text-gray-800">${name}</b> <span class="text-[10px] text-gray-400 ml-2">${first.source}</span></div>
+                        <button onclick="copyData(this, \`${pureData}\`)" class="bg-blue-600 text-white text-[10px] px-3 py-1.5 rounded-lg font-bold">一鍵複製</button>
+                    </div>
+                    <div class="p-4 grid md:grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-4 rounded-xl border border-dashed text-xs space-y-1">
+                            <p class="font-bold">${first.receiver || '---'}</p><p>${first.phone || '---'}</p><p class="text-gray-500">${first.fullAddress || '---'}</p>
                         </div>
-                        <div class="p-4 grid md:grid-cols-2 gap-4">
-                            <div class="bg-gray-50 p-4 rounded-xl border border-dashed border-gray-300 text-xs space-y-1">
-                                <p class="text-gray-400 text-[9px] uppercase font-bold mb-1">物流資訊</p>
-                                <p class="font-bold">${first.receiver || '---'}</p>
-                                <p>${first.phone || '---'}</p>
-                                <p class="text-gray-500 mt-2">${first.fullAddress || '---'}</p>
-                            </div>
-                            <div>${itemsHTML}</div>
-                        </div>
-                        <button onclick="fillForm('${name}','${first.source}','${first.receiver}','${first.phone}',\`${first.fullAddress}\`)" class="w-full py-3 bg-white text-blue-500 text-[10px] font-bold border-t hover:bg-gray-50 transition italic">＋ 幫 ${name} 快速補單 (自動滾回上方)</button>
-                    `;
-                    container.appendChild(card);
-                }
-            } catch (e) { container.innerHTML = "<p class='text-center text-red-500'>加載失敗</p>"; }
-        }
-
-        function copyPureData(btn, text) {
-            navigator.clipboard.writeText(text.trim()).then(() => {
-                const old = btn.innerText;
-                btn.innerText = "COPIED!";
-                btn.classList.replace('bg-blue-600', 'bg-green-600');
-                setTimeout(() => { btn.innerText = old; btn.classList.replace('bg-green-600', 'bg-blue-600'); }, 1200);
+                        <div>${itemsHTML}</div>
+                    </div>
+                `;
+                container.appendChild(card);
             });
         }
 
-        function fillForm(name, src, recv, ph, addr) {
-            document.getElementById('custName').value = name;
-            document.getElementById('source').value = src;
-            document.getElementById('receiver').value = recv;
-            document.getElementById('phone').value = ph;
-            document.getElementById('fullAddress').value = addr;
-            window.scrollTo({top: 0, behavior: 'smooth'});
+        function formatDateForInput(dateStr) {
+            if (!dateStr || dateStr === "---") return "";
+            try {
+                const d = new Date(dateStr);
+                return d.toISOString().split('T')[0];
+            } catch(e) { return ""; }
         }
 
-        async function updateStatus(rowNum, newStatus) {
+        async function handleStatusChange(rowNum, newStatus) {
             if(!newStatus) return;
-            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateStatus", rowNum, newStatus }), mode: 'no-cors' });
-            setTimeout(loadOrders, 400);
+            let dateInput = document.getElementById(`date-${rowNum}`);
+            let pickupDate = dateInput.value;
+
+            // 自動填寫日期邏輯：改為「已取貨」且日期為空時
+            if (newStatus === "已取貨" && !pickupDate) {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                pickupDate = `${year}/${month}/${day}`;
+                dateInput.value = `${year}-${month}-${day}`;
+            } else if (pickupDate) {
+                // 將 HTML date input (YYYY-MM-DD) 轉回 Google Sheet 格式 (YYYY/MM/DD)
+                pickupDate = pickupDate.replace(/-/g, '/');
+            }
+
+            await fetch(GAS_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: "updateStatus", rowNum, newStatus, pickupDate }), 
+                mode: 'no-cors' 
+            });
+            setTimeout(loadOrders, 500);
+        }
+
+        function copyData(btn, text) {
+            navigator.clipboard.writeText(text.trim()).then(() => {
+                const old = btn.innerText; btn.innerText = "COPIED!";
+                setTimeout(() => btn.innerText = old, 1200);
+            });
         }
     </script>
 </body>
