@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>訂單管理系統 PRO</title>
+    <title>訂單管理系統 PRO v3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .status-待取貨 { border-left: 5px solid #F59E0B; background-color: #FFFBEB; }
@@ -12,48 +12,60 @@
         .badge-待取貨 { background: #FEF3C7; color: #92400E; }
         .badge-已取貨 { background: #D1FAE5; color: #065F46; }
         .badge-已寄出 { background: #F3F4F6; color: #374151; }
+        /* 付款狀態顏色 */
+        .payment-已付 { color: #8B5CF6; font-weight: bold; } /* 紫色 */
+        .payment-到付 { color: #3B82F6; font-weight: bold; } /* 藍色 */
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen pb-10">
 
     <div class="max-w-4xl mx-auto p-4">
         <div class="flex justify-between items-center mb-6">
-            <h1 id="page-title" class="text-2xl font-bold">新增訂單</h1>
-            <button id="toggle-btn" onclick="toggleView()" class="bg-blue-600 text-white px-6 py-2 rounded-full shadow-lg">查看列表</button>
+            <h1 id="page-title" class="text-2xl font-bold text-gray-800">新增訂單</h1>
+            <button id="toggle-btn" onclick="toggleView()" class="bg-blue-600 text-white px-6 py-2 rounded-full shadow-lg hover:bg-blue-700 transition">查看列表</button>
         </div>
 
         <div id="view-add" class="space-y-4">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-                <h2 class="font-bold text-gray-500 mb-4 uppercase text-xs tracking-widest">基本資料</h2>
+                <h2 class="font-bold text-gray-500 mb-4 uppercase text-xs tracking-widest">1. 客戶/收件資料</h2>
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <input type="text" id="custName" placeholder="客人名稱 (IG/Threads名)" class="border-b p-2 outline-none focus:border-blue-500">
-                    <select id="source" class="border-b p-2 outline-none"><option>IG</option><option>WhatsApp</option><option>Threads</option></select>
+                    <select id="source" class="border-b p-2 outline-none">
+                        <option>IG</option><option>WhatsApp</option><option>Threads</option>
+                    </select>
                 </div>
 
-                <h2 class="font-bold text-gray-500 mb-4 uppercase text-xs tracking-widest">收件資料</h2>
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <input type="text" id="receiver" placeholder="收件人姓名" class="border-b p-2 outline-none">
                     <input type="text" id="phone" placeholder="電話號碼" class="border-b p-2 outline-none">
                 </div>
-                <div class="flex space-x-2 mb-4">
-                    <input type="text" id="sfCode" placeholder="順豐編號 (如: 852M)" class="flex-1 border p-2 rounded">
-                    <button onclick="searchSF()" class="bg-gray-800 text-white px-4 py-2 rounded">搜尋地址</button>
+                
+                <div class="flex space-x-2 mb-2">
+                    <input type="text" id="sfCode" placeholder="順豐編號 (如: 852M)" class="flex-1 border p-2 rounded text-sm">
+                    <button onclick="searchSF()" class="bg-gray-800 text-white px-4 py-2 rounded text-sm">搜尋地址</button>
                 </div>
-                <textarea id="fullAddress" placeholder="完整地址" class="w-full border p-2 rounded h-20 text-sm"></textarea>
+                <textarea id="fullAddress" placeholder="完整地址將在此顯示" class="w-full border p-2 rounded h-20 text-sm bg-gray-50"></textarea>
 
-                <h2 class="font-bold text-gray-500 my-4 uppercase text-xs tracking-widest">商品清單</h2>
+                <div class="flex justify-between items-center my-6">
+                    <h2 class="font-bold text-gray-500 uppercase text-xs tracking-widest">2. 商品清單</h2>
+                    <button onclick="addItemRow()" class="text-blue-500 text-xs font-bold">+ 增加一項</button>
+                </div>
+                
                 <div id="itemsContainer">
-                    <div class="item-row bg-gray-50 p-4 rounded-xl mb-3 border">
-                        <input type="text" placeholder="商品名稱" class="prodName w-full mb-2 p-2 rounded border">
+                    <div class="item-row bg-gray-50 p-4 rounded-xl mb-3 border relative">
+                        <input type="text" placeholder="商品名稱" class="prodName w-full mb-2 p-2 rounded border text-sm">
                         <div class="grid grid-cols-3 gap-2 text-sm">
                             <input type="text" placeholder="取貨點" class="prodLoc border p-2 rounded">
                             <input type="number" placeholder="金額" class="prodAmt border p-2 rounded">
-                            <select class="prodPayment border p-2 rounded bg-white"><option>未付</option><option>到付</option></select>
+                            <select class="prodPayment border p-2 rounded bg-white">
+                                <option value="已付">已付</option>
+                                <option value="到付">到付</option>
+                            </select>
                         </div>
                     </div>
                 </div>
-                <button onclick="addItemRow()" class="w-full py-2 text-blue-500 text-sm font-bold">+ 增加商品項目</button>
-                <button id="submitBtn" onclick="submitOrder()" class="w-full mt-6 bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg">確認送出</button>
+                
+                <button id="submitBtn" onclick="submitOrder()" class="w-full mt-6 bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition">確認送出訂單</button>
             </div>
         </div>
 
@@ -70,19 +82,20 @@
             isListView = !isListView;
             document.getElementById('view-add').classList.toggle('hidden', isListView);
             document.getElementById('view-list').classList.toggle('hidden', !isListView);
-            document.getElementById('page-title').innerText = isListView ? "訂單管理" : "新增訂單";
+            document.getElementById('page-title').innerText = isListView ? "訂單管理列表" : "新增訂單";
+            document.getElementById('toggle-btn').innerText = isListView ? "返去新增" : "查看列表";
             if(isListView) loadOrders();
         }
 
         async function searchSF() {
             const code = document.getElementById('sfCode').value;
-            if(!code) return alert("請輸入編號");
-            const res = await fetch(`${GAS_URL}?action=searchSF&code=${code}`);
+            if(!code) return;
+            const res = await fetch(`${GAS_URL}?action=searchSF&code=${code.trim()}`);
             const data = await res.json();
             if(data.found) {
                 document.getElementById('fullAddress').value = data.address;
             } else {
-                alert("找不到此編號，請手動輸入");
+                alert("順豐分頁中找不到此編號！");
             }
         }
 
@@ -94,11 +107,14 @@
         }
 
         async function submitOrder() {
+            const custName = document.getElementById('custName').value;
+            if(!custName) return alert("請輸入客人名稱");
+
             const btn = document.getElementById('submitBtn');
-            btn.disabled = true; btn.innerText = "傳送中...";
+            btn.disabled = true; btn.innerText = "正在傳送到 Google Sheet...";
             
             const payload = {
-                customerName: document.getElementById('custName').value,
+                customerName: custName,
                 source: document.getElementById('source').value,
                 receiver: document.getElementById('receiver').value,
                 phone: document.getElementById('phone').value,
@@ -111,17 +127,20 @@
                     paymentStatus: row.querySelector('.prodPayment').value
                 }))
             };
+
             await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
-            alert("成功！");
+            alert("成功新增！");
             location.reload();
         }
 
         async function loadOrders() {
             const container = document.getElementById('cardContainer');
-            container.innerHTML = "<p class='text-center py-10'>讀取數據中...</p>";
+            container.innerHTML = "<p class='text-center py-20 text-gray-400'>正在獲取「訂單」分頁資料...</p>";
+            
             const res = await fetch(GAS_URL);
             const data = await res.json();
 
+            // 按客人分組
             const groups = data.reduce((acc, obj) => {
                 if (!acc[obj.name]) acc[obj.name] = [];
                 acc[obj.name].push(obj);
@@ -129,23 +148,29 @@
             }, {});
 
             container.innerHTML = "";
-            for (let name in groups) {
+            // 將客人按最後更新時間排序（最新的在最前）
+            const sortedNames = Object.keys(groups).reverse();
+
+            for (let name of sortedNames) {
                 const first = groups[name][0];
                 const card = document.createElement('div');
-                card.className = "bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden";
+                card.className = "bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden";
                 
                 const copyText = `收件人: ${first.receiver}\n電話: ${first.phone}\n地址: ${first.fullAddress}`;
 
                 let itemsHTML = groups[name].map(item => `
-                    <div class="status-${item.status} p-3 mb-2 rounded-r-lg border border-gray-100">
+                    <div class="status-${item.status} p-3 mb-2 rounded-r-lg border border-gray-100 shadow-sm">
                         <div class="flex justify-between font-bold text-sm">
                             <span>${item.product}</span>
                             <span class="badge-${item.status} text-[10px] px-2 py-0.5 rounded-full">${item.status}</span>
                         </div>
-                        <div class="flex justify-between text-xs text-gray-500 mt-1">
-                            <span>$${item.amount} (${item.payment})</span>
-                            <select onchange="updateStatus(${item.rowNum}, this.value)" class="border rounded text-[10px]">
-                                <option value="">改狀態</option><option value="待取貨">待取貨</option><option value="已取貨">已取貨</option><option value="已寄出">已寄出</option>
+                        <div class="flex justify-between text-xs mt-2">
+                            <span><span class="payment-${item.payment}">${item.payment}</span> | $${item.amount}</span>
+                            <select onchange="updateStatus(${item.rowNum}, this.value)" class="border rounded text-[10px] bg-white px-1">
+                                <option value="">更改狀態</option>
+                                <option value="待取貨">待取貨</option>
+                                <option value="已取貨">已取貨</option>
+                                <option value="已寄出">已寄出</option>
                             </select>
                         </div>
                     </div>
@@ -153,43 +178,68 @@
 
                 card.innerHTML = `
                     <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
-                        <div><b class="text-lg">${name}</b> <span class="text-xs text-gray-400">(${first.source})</span></div>
-                        <button onclick="copyAddr(this, \`${copyText}\`)" class="bg-blue-100 text-blue-600 text-xs px-3 py-1 rounded-md font-bold">一鍵複製資料</button>
+                        <div>
+                            <b class="text-lg text-gray-800">${name}</b> 
+                            <span class="text-xs text-gray-400 px-2">來源: ${first.source}</span>
+                        </div>
+                        <button onclick="copyAddr(this, \`${copyText}\`)" class="bg-blue-600 text-white text-[10px] px-3 py-1.5 rounded-lg font-bold shadow-sm">一鍵複製資料</button>
                     </div>
                     <div class="p-4 grid md:grid-cols-2 gap-4">
-                        <div class="text-sm space-y-1 bg-blue-50 p-3 rounded-lg">
-                            <p><b>收件:</b> ${first.receiver || '--'}</p>
-                            <p><b>電話:</b> ${first.phone || '--'}</p>
-                            <p class="text-xs text-gray-600 leading-tight"><b>地址:</b> ${first.fullAddress || '--'}</p>
+                        <div class="text-sm space-y-1 bg-gray-50 p-4 rounded-xl border border-dashed border-gray-300">
+                            <p class="text-gray-400 text-[10px] uppercase font-bold tracking-widest">收件人資訊</p>
+                            <p class="font-bold text-gray-700">${first.receiver || '---'}</p>
+                            <p class="text-gray-700">${first.phone || '---'}</p>
+                            <p class="text-xs text-gray-500 leading-relaxed mt-2">${first.fullAddress || '---'}</p>
                         </div>
-                        <div>${itemsHTML}</div>
+                        <div class="space-y-1">
+                             <p class="text-gray-400 text-[10px] uppercase font-bold tracking-widest mb-2 px-1">訂購商品</p>
+                             ${itemsHTML}
+                        </div>
                     </div>
-                    <button onclick="addMore('${name}', '${first.source}', '${first.receiver}', '${first.phone}', \`${first.fullAddress}\`)" class="w-full py-3 bg-white text-blue-500 text-xs font-bold border-t italic">＋ 幫此客人加購新商品</button>
+                    <button onclick="addMore('${name}', '${first.source}', '${first.receiver}', '${first.phone}', \`${first.fullAddress}\`)" class="w-full py-3 bg-white text-blue-500 text-[11px] font-bold border-t hover:bg-gray-50 transition italic">
+                        ＋ 為此客人增加加購項目
+                    </button>
                 `;
                 container.appendChild(card);
             }
         }
 
         function copyAddr(btn, text) {
-            navigator.clipboard.writeText(text);
-            const old = btn.innerText;
-            btn.innerText = "已複製！";
-            setTimeout(() => btn.innerText = old, 1500);
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    const oldText = btn.innerText;
+                    btn.innerText = "已複製到剪貼簿！";
+                    btn.classList.replace('bg-blue-600', 'bg-green-500');
+                    setTimeout(() => {
+                        btn.innerText = oldText;
+                        btn.classList.replace('bg-green-500', 'bg-blue-600');
+                    }, 1500);
+                });
+            }
         }
 
         function addMore(name, src, recv, ph, addr) {
-            toggleView();
+            isListView = false;
+            document.getElementById('view-add').classList.remove('hidden');
+            document.getElementById('view-list').classList.add('hidden');
+            document.getElementById('page-title').innerText = "新增訂單";
+            
             document.getElementById('custName').value = name;
             document.getElementById('source').value = src;
             document.getElementById('receiver').value = recv;
             document.getElementById('phone').value = ph;
             document.getElementById('fullAddress').value = addr;
+            
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
         async function updateStatus(rowNum, newStatus) {
             if(!newStatus) return;
-            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateStatus", rowNum, newStatus }), mode: 'no-cors' });
+            await fetch(GAS_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: "updateStatus", rowNum, newStatus }), 
+                mode: 'no-cors' 
+            });
             setTimeout(loadOrders, 500);
         }
     </script>
