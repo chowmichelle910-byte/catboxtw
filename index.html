@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>訂單管理系統 - 自動日期版</title>
+    <title>訂單管理系統 - 進階物流版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .status-待取貨 { border-left: 5px solid #F59E0B; background-color: #FFFBEB; }
@@ -12,6 +12,13 @@
         .badge-待取貨 { background: #FEF3C7; color: #92400E; }
         .badge-已取貨 { background: #D1FAE5; color: #065F46; }
         .badge-已寄出 { background: #F3F4F6; color: #374151; }
+        /* 取貨點標籤顏色 */
+        .loc-蝦皮 { border: 1px solid #EA580C; color: #EA580C; background: #FFF7ED; }
+        .loc-7-11 { border: 1px solid #16A34A; color: #16A34A; background: #F0FDF4; }
+        .loc-全家 { border: 1px solid #2563EB; color: #2563EB; background: #EFF6FF; }
+        .loc-宅配 { border: 1px solid #7C3AED; color: #7C3AED; background: #F5F3FF; }
+        .loc-default { border: 1px solid #9CA3AF; color: #4B5563; background: #F9FAFB; }
+        
         .payment-已付 { color: #8B5CF6; font-weight: bold; }
         .payment-到付 { color: #3B82F6; font-weight: bold; }
     </style>
@@ -19,46 +26,51 @@
 <body class="bg-gray-100 min-h-screen pb-20 font-sans text-gray-900">
 
     <div class="max-w-5xl mx-auto p-4 space-y-8">
-        
         <div class="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-            <h1 class="text-xl font-black text-blue-600">ORDER MANAGER PRO</h1>
-            <button onclick="loadOrders()" class="text-xs font-bold text-blue-600 hover:bg-blue-50 px-3 py-1 rounded-lg transition">手動刷新 ↻</button>
+            <h1 class="text-xl font-black text-blue-600 tracking-tighter">ORDER MANAGER v4</h1>
+            <button onclick="loadOrders()" class="text-xs font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-xl">刷新數據 ↻</button>
         </div>
 
         <section id="add-section" class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="space-y-4 text-sm">
                     <p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">客戶及收件資料</p>
                     <div class="grid grid-cols-2 gap-4">
-                        <input type="text" id="custName" placeholder="客人名稱" class="border-b p-2 outline-none focus:border-blue-500">
-                        <select id="source" class="border-b p-2 outline-none"><option>IG</option><option>WhatsApp</option><option>Threads</option></select>
+                        <input type="text" id="custName" placeholder="客人名稱" class="border-b p-2 outline-none focus:border-blue-500 bg-transparent">
+                        <select id="source" class="border-b p-2 outline-none bg-transparent">
+                            <option>IG</option><option>WhatsApp</option><option>Threads</option>
+                        </select>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
-                        <input type="text" id="receiver" placeholder="收件人" class="border-b p-2 outline-none">
-                        <input type="text" id="phone" placeholder="電話" class="border-b p-2 outline-none">
+                        <input type="text" id="receiver" placeholder="收件人" class="border-b p-2 outline-none focus:border-blue-500 bg-transparent">
+                        <input type="text" id="phone" placeholder="電話" class="border-b p-2 outline-none focus:border-blue-500 bg-transparent">
                     </div>
                     <div class="flex space-x-2">
-                        <input type="text" id="sfCode" placeholder="順豐編號" class="flex-1 border p-2 rounded-lg text-xs outline-none">
-                        <button onclick="searchSF()" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-xs font-bold">搜尋</button>
+                        <input type="text" id="sfCode" placeholder="順豐編號" class="flex-1 border p-2 rounded-lg text-xs outline-none focus:ring-1 focus:ring-blue-400">
+                        <button onclick="searchSF()" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-black">搜尋地址</button>
                     </div>
-                    <textarea id="fullAddress" placeholder="地址..." class="w-full border p-3 rounded-xl h-24 text-xs bg-gray-50 outline-none"></textarea>
+                    <textarea id="fullAddress" placeholder="自動填寫地址..." class="w-full border p-3 rounded-xl h-24 text-xs bg-gray-50 outline-none focus:bg-white transition-all"></textarea>
                 </div>
 
                 <div class="space-y-4">
-                    <div class="flex justify-between items-center"><p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">商品細節</p><button onclick="addItemRow()" class="text-blue-600 text-[10px] font-black">+ 加一項</button></div>
-                    <div id="itemsContainer" class="space-y-3 max-h-[300px] overflow-y-auto">
-                        <div class="item-row bg-gray-50 p-4 rounded-xl border border-gray-100">
-                            <input type="text" placeholder="商品名稱" class="prodName w-full mb-3 p-2 rounded-lg border text-xs">
+                    <div class="flex justify-between items-center"><p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">商品細節</p><button onclick="addItemRow()" class="text-blue-600 text-[10px] font-black underline">+ 增加一項</button></div>
+                    <div id="itemsContainer" class="space-y-3 max-h-[350px] overflow-y-auto pr-2">
+                        <div class="item-row bg-gray-50 p-4 rounded-2xl border border-gray-100 shadow-sm">
+                            <input type="text" placeholder="商品名稱" class="prodName w-full mb-3 p-2 rounded-lg border text-sm outline-none focus:border-blue-400">
                             <div class="grid grid-cols-3 gap-2">
-                                <input type="text" placeholder="取貨點" class="prodLoc border p-2 rounded-lg text-[11px]">
-                                <input type="number" placeholder="金額" class="prodAmt border p-2 rounded-lg text-[11px]">
-                                <select class="prodPayment border p-2 rounded-lg text-[11px] bg-white"><option value="已付">已付</option><option value="到付">到付</option></select>
+                                <select class="prodLoc border p-2 rounded-lg text-[11px] bg-white outline-none">
+                                    <option value="蝦皮">蝦皮</option><option value="7-11">7-11</option><option value="全家">全家</option><option value="宅配">宅配</option>
+                                </select>
+                                <input type="number" placeholder="金額" class="prodAmt border p-2 rounded-lg text-[11px] outline-none">
+                                <select class="prodPayment border p-2 rounded-lg text-[11px] bg-white outline-none">
+                                    <option value="已付">已付</option><option value="到付">到付</option>
+                                </select>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <button id="submitBtn" onclick="submitOrder()" class="w-full mt-6 bg-blue-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg hover:bg-blue-700 transition">提交訂單</button>
+            <button id="submitBtn" onclick="submitOrder()" class="w-full mt-8 bg-blue-600 text-white py-4 rounded-2xl font-black text-lg shadow-xl hover:bg-blue-700 transition active:scale-[0.99]">確認提交並保存</button>
         </section>
 
         <div class="flex items-center py-4"><div class="flex-grow border-t border-gray-300"></div><span class="mx-4 text-gray-400 text-[10px] font-bold uppercase tracking-widest">訂單管理列表</span><div class="flex-grow border-t border-gray-300"></div></div>
@@ -77,18 +89,19 @@
             const res = await fetch(`${GAS_URL}?action=searchSF&code=${code}`);
             const data = await res.json();
             if(data.found) document.getElementById('fullAddress').value = data.address;
-            else alert("找不到編號");
+            else alert("找不到此順豐編號");
         }
 
         function addItemRow() {
-            const row = document.querySelector('.item-row').cloneNode(true);
+            const container = document.getElementById('itemsContainer');
+            const row = container.querySelector('.item-row').cloneNode(true);
             row.querySelectorAll('input').forEach(i => i.value = '');
-            document.getElementById('itemsContainer').appendChild(row);
+            container.appendChild(row);
         }
 
         async function submitOrder() {
             const custName = document.getElementById('custName').value;
-            if(!custName) return alert("請輸入名稱");
+            if(!custName) return alert("請填寫客人名稱");
             const btn = document.getElementById('submitBtn');
             btn.disabled = true; btn.innerText = "正在儲存...";
             const payload = {
@@ -119,21 +132,27 @@
                 const card = document.createElement('div');
                 card.className = "bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden";
                 
-                let itemsHTML = groups[name].map(item => `
-                    <div class="status-${item.status} p-3 mb-2 rounded-r-lg border border-gray-50 text-xs">
-                        <div class="flex justify-between font-bold mb-1">
-                            <span>${item.product}</span>
-                            <span class="badge-${item.status} text-[9px] px-2 py-0.5 rounded-full font-bold">${item.status}</span>
+                let itemsHTML = groups[name].map(item => {
+                    const locClass = `loc-${item.location}` || 'loc-default';
+                    return `
+                    <div class="status-${item.status} p-3 mb-2 rounded-r-lg border border-gray-50 text-xs shadow-sm">
+                        <div class="flex items-center mb-2">
+                            <span class="${locClass} text-[9px] px-1.5 py-0.5 rounded mr-2 font-bold whitespace-nowrap">${item.location || '其他'}</span>
+                            <span class="font-bold text-gray-800 flex-1 truncate">${item.product}</span>
+                            <span class="badge-${item.status} text-[9px] px-2 py-0.5 rounded-full font-bold ml-2">${item.status}</span>
                         </div>
-                        <div class="text-[10px] text-gray-400 mb-2">取貨點: ${item.location || '---'}</div>
-                        <div class="grid grid-cols-2 gap-2 mt-1 items-center">
+                        
+                        <div class="grid grid-cols-2 gap-2 mt-3 items-end">
                             <div class="flex flex-col">
-                                <span class="text-[10px] text-gray-400">取貨日期</span>
-                                <input type="date" id="date-${item.rowNum}" value="${formatDateForInput(item.date)}" class="border rounded p-1 text-[10px] outline-none">
+                                <span class="text-[9px] text-gray-400 mb-1 uppercase font-bold tracking-tighter">取貨日期</span>
+                                <div class="flex space-x-1">
+                                    <input type="date" id="date-${item.rowNum}" value="${formatDateForInput(item.date)}" class="flex-1 border rounded p-1 text-[10px] outline-none focus:border-blue-400 bg-white">
+                                    <button onclick="saveOnlyDate(${item.rowNum}, '${item.status}')" class="bg-gray-100 hover:bg-gray-200 p-1 rounded text-xs shadow-sm" title="只儲存日期">💾</button>
+                                </div>
                             </div>
                             <div class="flex flex-col">
-                                <span class="text-[10px] text-gray-400">狀態更改</span>
-                                <select onchange="handleStatusChange(${item.rowNum}, this.value)" class="border rounded p-1 text-[10px] bg-white outline-none">
+                                <span class="text-[9px] text-gray-400 mb-1 uppercase font-bold tracking-tighter">狀態更改</span>
+                                <select onchange="handleStatusChange(${item.rowNum}, this.value)" class="border rounded p-1 text-[10px] bg-white outline-none focus:border-blue-400">
                                     <option value="">選擇...</option>
                                     <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
                                     <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
@@ -141,18 +160,23 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="mt-2 text-[10px]"><span class="payment-${item.payment}">${item.payment}</span> · $${item.amount}</div>
+                        <div class="mt-3 text-[10px] pt-2 border-t border-gray-100 flex justify-between">
+                            <span><span class="payment-${item.payment}">${item.payment}</span> · $${item.amount}</span>
+                            <span class="text-gray-300 font-mono">#${item.orderID}</span>
+                        </div>
                     </div>
-                `).join('');
+                `}).join('');
 
                 card.innerHTML = `
                     <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
-                        <div><b class="text-gray-800">${name}</b> <span class="text-[10px] text-gray-400 ml-2">${first.source}</span></div>
-                        <button onclick="copyData(this, \`${pureData}\`)" class="bg-blue-600 text-white text-[10px] px-3 py-1.5 rounded-lg font-bold">一鍵複製</button>
+                        <div><b class="text-gray-800">${name}</b> <span class="text-[10px] text-gray-400 ml-2 italic">來自 ${first.source}</span></div>
+                        <button onclick="copyData(this, \`${pureData}\`)" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-4 py-1.5 rounded-xl font-bold transition">一鍵複製資料</button>
                     </div>
-                    <div class="p-4 grid md:grid-cols-2 gap-4">
-                        <div class="bg-gray-50 p-4 rounded-xl border border-dashed text-xs space-y-1">
-                            <p class="font-bold">${first.receiver || '---'}</p><p>${first.phone || '---'}</p><p class="text-gray-500">${first.fullAddress || '---'}</p>
+                    <div class="p-4 grid md:grid-cols-2 gap-6">
+                        <div class="bg-gray-50 p-4 rounded-2xl border border-dashed border-gray-300 text-xs space-y-2">
+                            <div class="flex flex-col"><span class="text-[9px] text-gray-400 font-bold uppercase mb-1">收件資訊</span><p class="font-bold text-gray-700">${first.receiver || '---'}</p></div>
+                            <div class="flex flex-col"><span class="text-[9px] text-gray-400 font-bold uppercase mb-1">電話</span><p>${first.phone || '---'}</p></div>
+                            <div class="flex flex-col"><span class="text-[9px] text-gray-400 font-bold uppercase mb-1">地址</span><p class="text-gray-500 leading-relaxed">${first.fullAddress || '---'}</p></div>
                         </div>
                         <div>${itemsHTML}</div>
                     </div>
@@ -164,17 +188,40 @@
         function formatDateForInput(dateStr) {
             if (!dateStr || dateStr === "---") return "";
             try {
-                const d = new Date(dateStr);
-                return d.toISOString().split('T')[0];
+                // 將 YYYY/MM/DD 轉為 YYYY-MM-DD 以便 <input type="date"> 顯示
+                return dateStr.replace(/\//g, '-');
             } catch(e) { return ""; }
         }
 
+        // 修改 1: 獨立儲存日期的函數
+        async function saveOnlyDate(rowNum, currentStatus) {
+            const dateInput = document.getElementById(`date-${rowNum}`);
+            let pickupDate = dateInput.value;
+            if(!pickupDate) return alert("請先選擇日期");
+            
+            pickupDate = pickupDate.replace(/-/g, '/'); // 轉回 Excel 格式
+            
+            const btn = event.currentTarget;
+            btn.innerText = "⏳";
+            
+            await fetch(GAS_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: "updateStatus", rowNum, newStatus: currentStatus, pickupDate }), 
+                mode: 'no-cors' 
+            });
+            
+            setTimeout(() => { 
+                btn.innerText = "✅";
+                setTimeout(() => btn.innerText = "💾", 1000);
+            }, 500);
+        }
+
+        // 修改 2: 狀態變更時的邏輯 (包含自動填日期)
         async function handleStatusChange(rowNum, newStatus) {
             if(!newStatus) return;
             let dateInput = document.getElementById(`date-${rowNum}`);
             let pickupDate = dateInput.value;
 
-            // 自動填寫日期邏輯：改為「已取貨」且日期為空時
             if (newStatus === "已取貨" && !pickupDate) {
                 const today = new Date();
                 const year = today.getFullYear();
@@ -183,7 +230,6 @@
                 pickupDate = `${year}/${month}/${day}`;
                 dateInput.value = `${year}-${month}-${day}`;
             } else if (pickupDate) {
-                // 將 HTML date input (YYYY-MM-DD) 轉回 Google Sheet 格式 (YYYY/MM/DD)
                 pickupDate = pickupDate.replace(/-/g, '/');
             }
 
@@ -197,8 +243,12 @@
 
         function copyData(btn, text) {
             navigator.clipboard.writeText(text.trim()).then(() => {
-                const old = btn.innerText; btn.innerText = "COPIED!";
-                setTimeout(() => btn.innerText = old, 1200);
+                const old = btn.innerText; btn.innerText = "已複製！";
+                btn.classList.add('bg-green-600');
+                setTimeout(() => {
+                    btn.innerText = old;
+                    btn.classList.remove('bg-green-600');
+                }, 1200);
             });
         }
     </script>
