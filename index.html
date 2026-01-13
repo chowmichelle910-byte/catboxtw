@@ -3,59 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>訂單管理系統 - 齊貨提醒版</title>
+    <title>訂單管理系統 - 終極美化版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* 狀態邊框樣式 */
         .status-待取貨 { border-left: 5px solid #F59E0B; background-color: #FFFBEB; }
         .status-已取貨 { border-left: 5px solid #10B981; background-color: #F0FDF4; }
         .status-已寄出 { border-left: 5px solid #9CA3AF; background-color: #F9FAFB; }
         .badge-待取貨 { background: #FEF3C7; color: #92400E; }
         .badge-已取貨 { background: #D1FAE5; color: #065F46; }
         .badge-已寄出 { background: #F3F4F6; color: #374151; }
+        
+        /* 取貨點彩色框 */
         .loc-蝦皮 { border: 1px solid #EA580C; color: #EA580C; background: #FFF7ED; }
         .loc-7-11 { border: 1px solid #16A34A; color: #16A34A; background: #F0FDF4; }
         .loc-全家 { border: 1px solid #2563EB; color: #2563EB; background: #EFF6FF; }
         .loc-宅配 { border: 1px solid #7C3AED; color: #7C3AED; background: #F5F3FF; }
-        /* 齊貨變色效果 */
-        .all-ready { background-color: #FEF2F2 !important; border: 2px solid #FCA5A5 !important; }
+        
+        /* 齊貨變色樣式 (淺紅) */
+        .all-ready-card { background-color: #FEF2F2 !important; border: 2px solid #FCA5A5 !important; }
+        
+        .payment-已付 { color: #8B5CF6; font-weight: bold; }
+        .payment-到付 { color: #3B82F6; font-weight: bold; }
         html { scroll-behavior: smooth; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen pb-20 font-sans text-gray-900">
 
     <div class="max-w-6xl mx-auto p-4 space-y-6">
-        <div class="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-            <h1 class="text-xl font-black text-blue-600 tracking-tighter">ORDER MANAGER PRO</h1>
-            <div class="flex space-x-2">
-                <button onclick="switchView('active')" id="btn-active" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold">進行中</button>
-                <button onclick="switchView('history')" id="btn-history" class="bg-gray-200 text-gray-600 px-4 py-2 rounded-xl text-xs font-bold">歷史訂單</button>
-                <button onclick="loadOrders()" class="text-blue-600 p-2">↻</button>
+        
+        <div class="flex items-center justify-between bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+            <h1 class="text-xl font-black text-blue-600 tracking-tighter italic">ORDER MANAGER PRO</h1>
+            <div class="flex items-center space-x-3">
+                <nav class="flex bg-gray-100 p-1 rounded-xl">
+                    <button onclick="switchView('active')" id="nav-active" class="px-5 py-2 rounded-lg text-xs font-bold transition-all bg-white shadow-sm text-blue-600">進行中</button>
+                    <button onclick="switchView('history')" id="nav-history" class="px-5 py-2 rounded-lg text-xs font-bold transition-all text-gray-500">歷史訂單</button>
+                </nav>
+                <button onclick="loadOrders()" class="bg-gray-50 p-2 rounded-full hover:bg-gray-200 transition">↻</button>
             </div>
         </div>
 
-        <section class="bg-indigo-900 text-white p-6 rounded-2xl shadow-lg">
-            <h2 class="text-xs font-bold uppercase tracking-widest mb-4 opacity-70">未取貨清單統計 (按物流點)</h2>
+        <section class="bg-indigo-900 p-6 rounded-3xl shadow-xl text-white">
+            <h2 class="text-[10px] font-bold uppercase tracking-[0.2em] mb-4 opacity-60">未取貨清單統計</h2>
             <div id="summary-container" class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 </div>
         </section>
 
-        <section id="add-section" class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 active-only">
+        <section id="add-section" class="bg-white p-6 rounded-3xl shadow-md border border-gray-100 transition-all">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="space-y-4 text-sm">
                     <p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">客戶及收件資料</p>
                     <div class="grid grid-cols-2 gap-4">
-                        <input type="text" id="custName" placeholder="客人名稱" class="border-b p-2 outline-none focus:border-blue-500">
-                        <select id="source" class="border-b p-2 outline-none"><option>IG</option><option>WhatsApp</option><option>Threads</option></select>
+                        <input type="text" id="custName" placeholder="客人名稱" class="border-b p-2 outline-none focus:border-blue-500 bg-transparent">
+                        <select id="source" class="border-b p-2 outline-none bg-transparent">
+                            <option>IG</option><option>WhatsApp</option><option>Threads</option>
+                        </select>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
-                        <input type="text" id="receiver" placeholder="收件人" class="border-b p-2 outline-none">
-                        <input type="text" id="phone" placeholder="電話" class="border-b p-2 outline-none">
+                        <input type="text" id="receiver" placeholder="收件人" class="border-b p-2 outline-none focus:border-blue-500 bg-transparent">
+                        <input type="text" id="phone" placeholder="電話" class="border-b p-2 outline-none focus:border-blue-500 bg-transparent">
                     </div>
-                    <textarea id="fullAddress" placeholder="地址..." class="w-full border p-3 rounded-xl h-20 text-xs bg-gray-50 outline-none"></textarea>
+                    <textarea id="fullAddress" placeholder="自動填寫地址..." class="w-full border p-3 rounded-2xl h-24 text-xs bg-gray-50 outline-none focus:bg-white"></textarea>
                 </div>
+
                 <div class="space-y-4">
-                    <p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">商品明細</p>
-                    <div id="itemsContainer" class="space-y-3">
+                    <div class="flex justify-between items-center"><p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">商品明細</p><button onclick="addItemRow()" class="text-blue-600 text-[10px] font-black underline">+ 增加商品</button></div>
+                    <div id="itemsContainer" class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
                         <div class="item-row bg-gray-50 p-4 rounded-2xl border border-gray-100">
                             <input type="text" placeholder="商品名稱" class="prodName w-full mb-3 p-2 rounded-lg border text-sm outline-none">
                             <div class="grid grid-cols-3 gap-2">
@@ -67,12 +80,12 @@
                             </div>
                         </div>
                     </div>
-                    <button id="submitBtn" onclick="submitOrder()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold shadow-lg">提交訂單</button>
                 </div>
             </div>
+            <button id="submitBtn" onclick="submitOrder()" class="w-full mt-8 bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg hover:bg-blue-700 transition">確認提交並保存</button>
         </section>
 
-        <section id="cardContainer" class="grid gap-6"></section>
+        <div id="cardContainer" class="grid gap-6"></div>
     </div>
 
     <script>
@@ -84,15 +97,25 @@
 
         function switchView(mode) {
             currentMode = mode;
-            document.getElementById('btn-active').className = mode === 'active' ? "bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold" : "bg-gray-200 text-gray-600 px-4 py-2 rounded-xl text-xs font-bold";
-            document.getElementById('btn-history').className = mode === 'history' ? "bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold" : "bg-gray-200 text-gray-600 px-4 py-2 rounded-xl text-xs font-bold";
-            document.querySelectorAll('.active-only').forEach(el => el.style.display = mode === 'active' ? 'block' : 'none');
+            const activeBtn = document.getElementById('nav-active');
+            const historyBtn = document.getElementById('nav-history');
+            const addSection = document.getElementById('add-section');
+
+            if(mode === 'active') {
+                activeBtn.className = "px-5 py-2 rounded-lg text-xs font-bold bg-white shadow-sm text-blue-600";
+                historyBtn.className = "px-5 py-2 rounded-lg text-xs font-bold text-gray-500";
+                addSection.style.display = "block";
+            } else {
+                historyBtn.className = "px-5 py-2 rounded-lg text-xs font-bold bg-white shadow-sm text-blue-600";
+                activeBtn.className = "px-5 py-2 rounded-lg text-xs font-bold text-gray-500";
+                addSection.style.display = "none";
+            }
             renderOrders();
         }
 
         async function loadOrders() {
             const container = document.getElementById('cardContainer');
-            container.innerHTML = "<div class='text-center py-10 text-gray-400 animate-pulse'>更新數據中...</div>";
+            container.innerHTML = "<div class='text-center py-20 text-gray-400 animate-pulse'>更新數據中...</div>";
             const res = await fetch(GAS_URL);
             allData = await res.json();
             renderOrders();
@@ -102,18 +125,13 @@
             const container = document.getElementById('cardContainer');
             const summaryBox = document.getElementById('summary-container');
             
-            // 處理統計 (只計未完成且有取貨點的貨)
-            const summary = { "蝦皮": [], "7-11": [], "全家": [], "宅配": [] };
-            allData.forEach(item => {
-                if (item.status !== '已取貨' && item.status !== '已寄出' && summary[item.location]) {
-                    summary[item.location].push(item.product);
-                }
-            });
+            // 統計邏輯
+            const summary = { "蝦皮": 0, "7-11": 0, "全家": 0, "宅配": 0 };
+            allData.forEach(i => { if(i.status === '待取貨' && summary[i.location] !== undefined) summary[i.location]++; });
             summaryBox.innerHTML = Object.keys(summary).map(loc => `
-                <div class="bg-white/10 p-3 rounded-xl border border-white/20">
-                    <p class="text-[10px] font-bold opacity-60">${loc}</p>
-                    <p class="text-xl font-black">${summary[loc].length}</p>
-                    <p class="text-[9px] mt-1 opacity-50 truncate">${summary[loc].slice(0,2).join(', ')}...</p>
+                <div class="bg-white/10 p-4 rounded-2xl border border-white/10">
+                    <p class="text-[9px] font-bold opacity-60 uppercase tracking-widest">${loc}</p>
+                    <p class="text-2xl font-black">${summary[loc]}</p>
                 </div>
             `).join('');
 
@@ -128,94 +146,141 @@
             Object.keys(groups).reverse().forEach(name => {
                 const items = groups[name];
                 const first = items[0];
-                
-                // 判斷是否為歷史訂單 (假設運單編號在 M 欄，這裡對應 trackingNum)
-                // 註：你需要在 GAS 讀取時加入 trackingNum: r[12]
                 const hasTracking = items.some(i => i.trackingNum && i.trackingNum !== "");
 
                 if (currentMode === 'active' && hasTracking) return;
                 if (currentMode === 'history' && !hasTracking) return;
 
-                // 判斷是否全部齊貨 (全部都是 已取貨 或 已寄出)
                 const isAllReady = items.every(i => i.status === '已取貨' || i.status === '已寄出');
 
                 const card = document.createElement('div');
-                card.className = `bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden ${isAllReady && currentMode === 'active' ? 'all-ready' : ''}`;
+                card.className = `bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden transition-all ${isAllReady && currentMode === 'active' ? 'all-ready-card' : ''}`;
                 
                 let itemsHTML = items.map(item => `
-                    <div class="status-${item.status} p-3 mb-2 rounded-r-lg border border-gray-50 text-xs shadow-sm bg-white">
+                    <div class="status-${item.status} p-4 mb-3 rounded-r-2xl border border-gray-50 shadow-sm bg-white">
                         <div class="flex items-center mb-2">
-                            <span class="loc-${item.location || 'default'} text-[9px] px-1.5 py-0.5 rounded mr-2 font-bold">${item.location}</span>
-                            <span class="font-bold flex-1">${item.product}</span>
-                            <span class="badge-${item.status} text-[9px] px-2 py-0.5 rounded-full font-bold">${item.status}</span>
+                            <span class="loc-${item.location || 'default'} text-[9px] px-2 py-0.5 rounded font-black mr-2">${item.location || '其他'}</span>
+                            <span class="font-bold text-gray-800 flex-1">${item.product}</span>
+                            <span class="badge-${item.status} text-[9px] px-2 py-0.5 rounded-full font-bold ml-2">${item.status}</span>
                         </div>
-                        <div class="flex justify-between items-end mt-2">
-                            <input type="date" value="${item.date ? item.date.replace(/\//g, '-') : ''}" onchange="updateRow(${item.rowNum}, {date: this.value})" class="border rounded p-1 text-[10px] outline-none">
-                            <select onchange="updateRow(${item.rowNum}, {status: this.value})" class="border rounded p-1 text-[10px] bg-white outline-none">
-                                <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
-                                <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
-                                <option value="已寄出" ${item.status==='已寄出'?'selected':''}>已寄出</option>
-                            </select>
+                        <div class="grid grid-cols-2 gap-3 mt-4 items-end">
+                            <div class="flex flex-col">
+                                <span class="text-[9px] text-gray-400 font-bold uppercase mb-1">取貨日期</span>
+                                <div class="flex space-x-1">
+                                    <input type="date" id="date-${item.rowNum}" value="${item.date ? item.date.replace(/\//g, '-') : ''}" class="flex-1 border rounded-lg p-1.5 text-[10px] outline-none">
+                                    <button onclick="saveRow(${item.rowNum}, '${item.status}')" class="bg-gray-100 p-1.5 rounded-lg text-xs">💾</button>
+                                </div>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-[9px] text-gray-400 font-bold uppercase mb-1">更改狀態</span>
+                                <select onchange="saveRow(${item.rowNum}, this.value)" class="border rounded-lg p-1.5 text-[10px] bg-white outline-none">
+                                    <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
+                                    <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
+                                    <option value="已寄出" ${item.status==='已寄出'?'selected':''}>已寄出</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-[10px] text-gray-400 flex justify-between pt-2 border-t border-gray-50">
+                            <span><span class="payment-${item.payment}">${item.payment}</span> · $${item.amount}</span>
+                            <span class="font-mono">#${item.orderID}</span>
                         </div>
                     </div>
                 `).join('');
 
                 card.innerHTML = `
-                    <div class="p-4 bg-gray-50/50 border-b flex justify-between items-center">
-                        <div><b class="text-gray-800">${name}</b> ${isAllReady && currentMode === 'active' ? '<span class="ml-2 text-[10px] bg-red-500 text-white px-2 py-0.5 rounded-full animate-pulse">齊貨</span>' : ''}</div>
-                        <button onclick="copyData('${first.receiver}\\n${first.phone}\\n${first.fullAddress}')" class="text-[10px] bg-blue-600 text-white px-3 py-1.5 rounded-lg font-bold">複製資料</button>
+                    <div class="p-5 bg-gray-50/50 border-b flex justify-between items-center">
+                        <div class="flex items-center">
+                            <b class="text-gray-800 text-lg">${name}</b>
+                            ${isAllReady && currentMode === 'active' ? '<span class="ml-3 bg-red-500 text-white text-[9px] px-2 py-1 rounded-full font-black animate-pulse">齊貨可以寄出</span>' : ''}
+                        </div>
+                        <button onclick="copyData('${first.receiver}\\n${first.phone}\\n${first.fullAddress}')" class="bg-blue-600 text-white text-[10px] px-4 py-2 rounded-xl font-bold">複製收件資料</button>
                     </div>
-                    <div class="p-4 grid md:grid-cols-2 gap-4">
-                        <div class="text-xs space-y-2">
-                            <div class="bg-gray-100 p-3 rounded-xl border border-dashed border-gray-300">
-                                <p class="font-bold">${first.receiver}</p><p>${first.phone}</p><p class="text-gray-500 mt-1">${first.fullAddress}</p>
+                    <div class="p-5 grid md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div class="bg-gray-50 p-5 rounded-2xl border border-dashed border-gray-300 text-xs space-y-2">
+                                <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">收件資訊</p>
+                                <p class="font-bold text-gray-700 text-sm">${first.receiver || '---'}</p>
+                                <p class="text-gray-600">${first.phone || '---'}</p>
+                                <p class="text-gray-500 leading-relaxed">${first.fullAddress || '---'}</p>
                             </div>
-                            <div class="mt-4">
-                                <p class="text-[9px] font-bold text-gray-400 uppercase mb-1">運單編號 (填入後移至歷史)</p>
-                                <div class="flex space-x-1">
-                                    <input type="text" id="track-${first.rowNum}" placeholder="輸入SF編號" value="${first.trackingNum || ''}" class="flex-1 border p-2 rounded-lg text-xs outline-none focus:border-blue-500">
-                                    <button onclick="saveTracking(${first.rowNum}, '${name}')" class="bg-gray-800 text-white px-3 rounded-lg text-xs">儲存</button>
+                            <div class="pt-2">
+                                <p class="text-[9px] text-gray-400 font-bold uppercase mb-2">寄出運單編號</p>
+                                <div class="flex space-x-2">
+                                    <input type="text" id="track-${first.rowNum}" placeholder="輸入SF編號" value="${first.trackingNum || ''}" class="flex-1 border p-2.5 rounded-xl text-xs outline-none focus:border-blue-500">
+                                    <button onclick="saveTracking('${name}', ${first.rowNum})" class="bg-gray-900 text-white px-4 rounded-xl text-xs font-bold">儲存</button>
                                 </div>
                             </div>
                         </div>
-                        <div>${itemsHTML}</div>
+                        <div>
+                            <p class="text-[9px] text-gray-400 font-bold uppercase mb-3">商品清單</p>
+                            ${itemsHTML}
+                        </div>
                     </div>
+                    ${currentMode === 'active' ? `
+                    <button onclick="fillForm('${name}','${first.source}','${first.receiver}','${first.phone}',\`${first.fullAddress}\`)" class="w-full py-4 bg-white text-blue-500 text-[10px] font-bold border-t hover:bg-gray-50 transition italic">
+                        ＋ 為 ${name} 快速增加加購項目
+                    </button>` : ''}
                 `;
                 container.appendChild(card);
             });
         }
 
-        async function updateRow(rowNum, data) {
-            // 這個函數處理日期或狀態更新
-            const payload = { 
-                action: "updateStatus", 
-                rowNum, 
-                newStatus: data.status || allData.find(i => i.rowNum === rowNum).status,
-                pickupDate: data.date ? data.date.replace(/-/g, '/') : allData.find(i => i.rowNum === rowNum).date
-            };
-            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
-            setTimeout(loadOrders, 500);
+        async function saveRow(rowNum, newStatus) {
+            let dateInput = document.getElementById(`date-${rowNum}`);
+            let pickupDate = dateInput.value;
+            
+            if (newStatus === "已取貨" && !pickupDate) {
+                const d = new Date();
+                pickupDate = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+                dateInput.value = pickupDate.replace(/\//g, '-');
+            } else {
+                pickupDate = pickupDate.replace(/-/g, '/');
+            }
+
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateStatus", rowNum, newStatus, pickupDate }), mode: 'no-cors' });
+            setTimeout(loadOrders, 400);
         }
 
-        async function saveTracking(rowNum, name) {
+        async function saveTracking(name, rowNum) {
             const trackVal = document.getElementById(`track-${rowNum}`).value;
-            if(!trackVal) return alert("請輸入編號");
-            
-            // 這裡需要 GAS 同時支持更新第 13 欄 (運單編號)
-            const payload = { action: "saveTracking", customerName: name, trackingNum: trackVal };
-            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
-            alert("已儲存並移至歷史訂單");
+            if(!trackVal) return alert("請輸入運單編號");
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "saveTracking", customerName: name, trackingNum: trackVal }), mode: 'no-cors' });
+            alert("已成功移至歷史訂單");
             loadOrders();
         }
 
+        function fillForm(name, src, recv, ph, addr) {
+            document.getElementById('custName').value = name;
+            document.getElementById('source').value = src;
+            document.getElementById('receiver').value = recv;
+            document.getElementById('phone').value = ph;
+            document.getElementById('fullAddress').value = addr;
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
         function copyData(text) {
-            navigator.clipboard.writeText(text).then(() => alert("已複製"));
+            navigator.clipboard.writeText(text).then(() => alert("已複製！"));
         }
 
         async function submitOrder() {
-            // (保持原有 submitOrder 邏輯，但在結束時呼叫 loadOrders)
+            const custName = document.getElementById('custName').value;
+            if(!custName) return alert("請輸入客人名稱");
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true; btn.innerText = "正在儲存...";
+            const payload = {
+                customerName: custName, source: document.getElementById('source').value,
+                receiver: document.getElementById('receiver').value, phone: document.getElementById('phone').value,
+                fullAddress: document.getElementById('fullAddress').value, orderID: "ORD"+Date.now().toString().slice(-4),
+                items: Array.from(document.querySelectorAll('.item-row')).map(row => ({
+                    productName: row.querySelector('.prodName').value, pickupLocation: row.querySelector('.prodLoc').value,
+                    amount: row.querySelector('.prodAmt').value, paymentStatus: row.querySelector('.prodPayment').value
+                }))
+            };
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
+            alert("提交成功！");
+            location.reload();
         }
-        
+
         function addItemRow() {
             const container = document.getElementById('itemsContainer');
             const row = container.querySelector('.item-row').cloneNode(true);
