@@ -1,56 +1,143 @@
-<div id="app">
-  <h2>新增訂單</h2>
-  <input type="text" id="custName" placeholder="客人名稱">
-  <select id="source">
-    <option>IG</option><option>WhatsApp</option><option>Threads</option>
-  </select>
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>訂單管理系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .status-待取貨 { background-color: #FEF3C7; color: #92400E; } /* 黃色 */
+        .status-已取貨 { background-color: #D1FAE5; color: #065F46; } /* 綠色 */
+        .status-已寄出 { background-color: #F3F4F6; color: #374151; } /* 灰色 */
+    </style>
+</head>
+<body class="bg-gray-50 p-4 md:p-8">
 
-  <div id="itemsContainer">
-    <div class="item-row">
-      <input type="text" class="prodName" placeholder="商品名稱">
-      <input type="number" class="amount" placeholder="金額">
+    <div class="max-w-5xl mx-auto">
+        <div class="flex space-x-4 mb-6">
+            <button onclick="showTab('add')" class="px-4 py-2 bg-blue-600 text-white rounded shadow">新增訂單</button>
+            <button onclick="showTab('list'); loadOrders();" class="px-4 py-2 bg-white border border-blue-600 text-blue-600 rounded shadow">訂單列表</button>
+        </div>
+
+        <div id="tab-add" class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold mb-4 border-b pb-2">客戶資料</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <input type="text" id="custName" placeholder="客人名稱" class="border p-2 rounded">
+                <select id="source" class="border p-2 rounded">
+                    <option value="IG">IG</option>
+                    <option value="WhatsApp">WhatsApp</option>
+                    <option value="Threads">Threads</option>
+                </select>
+                <select id="payment" class="border p-2 rounded">
+                    <option value="未付">未付</option>
+                    <option value="到付">到付</option>
+                </select>
+            </div>
+
+            <h2 class="text-xl font-bold mb-4 border-b pb-2">商品明細</h2>
+            <div id="itemsContainer">
+                <div class="item-row grid grid-cols-1 md:grid-cols-3 gap-4 mb-2 bg-gray-50 p-3 rounded">
+                    <input type="text" placeholder="商品名稱" class="prodName border p-2 rounded">
+                    <input type="text" placeholder="取貨地點" class="prodLoc border p-2 rounded">
+                    <input type="number" placeholder="金額" class="prodAmt border p-2 rounded">
+                </div>
+            </div>
+            <button onclick="addItemRow()" class="mt-2 text-blue-500 font-bold">+ 加多樣貨品</button>
+            <button onclick="submitOrder()" class="w-full mt-6 bg-blue-600 text-white py-3 rounded font-bold hover:bg-blue-700">確認送出</button>
+        </div>
+
+        <div id="tab-list" class="hidden bg-white p-6 rounded-lg shadow-md overflow-x-auto">
+            <h2 class="text-xl font-bold mb-4">現有訂單列表</h2>
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="p-3 border">客人</th>
+                        <th class="p-3 border">商品</th>
+                        <th class="p-3 border">取貨日期</th>
+                        <th class="p-3 border">狀態</th>
+                        <th class="p-3 border">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="orderListBody">
+                    </tbody>
+            </table>
+        </div>
     </div>
-  </div>
-  
-  <button onclick="addItem()">+ 加一件商品</button>
-  <button onclick="submitOrder()">送出訂單</button>
-</div>
 
-<script>
-  // 1. 動態加一行
-  function addItem() {
-    const container = document.getElementById('itemsContainer');
-    const newRow = document.createElement('div');
-    newRow.className = 'item-row';
-    newRow.innerHTML = `
-      <input type="text" class="prodName" placeholder="商品名稱">
-      <input type="number" class="amount" placeholder="金額">
-    `;
-    container.appendChild(newRow);
-  }
+    <script>
+        const GAS_URL = "AKfycby5vPRE71thYhYY-4XDMZ2oByLBsaZmy_FQPHzjHvAthhCTFmUCC29SycppE4d7pJ4mWA"; // <--- 記住換呢度！
 
-  // 2. 送出資料去 Google Apps Script
-  async function submitOrder() {
-    const rows = document.querySelectorAll('.item-row');
-    const items = Array.from(rows).map(row => ({
-      productName: row.querySelector('.prodName').value,
-      amount: row.querySelector('.amount').value
-    }));
+        function showTab(tab) {
+            document.getElementById('tab-add').classList.toggle('hidden', tab !== 'add');
+            document.getElementById('tab-list').classList.toggle('hidden', tab !== 'list');
+        }
 
-    const payload = {
-      customerName: document.getElementById('custName').value,
-      source: document.getElementById('source').value,
-      items: items,
-      orderID: "ORD" + Date.now()
-    };
+        function addItemRow() {
+            const row = document.querySelector('.item-row').cloneNode(true);
+            row.querySelectorAll('input').forEach(input => input.value = '');
+            document.getElementById('itemsContainer').appendChild(row);
+        }
 
-    // 換成你 GAS 部署後嘅 Web App URL
-    const GAS_URL = "AKfycby5vPRE71thYhYY-4XDMZ2oByLBsaZmy_FQPHzjHvAthhCTFmUCC29SycppE4d7pJ4mWA";
-    
-    await fetch(GAS_URL, {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-    alert("成功！");
-  }
-</script>
+        async function submitOrder() {
+            const items = Array.from(document.querySelectorAll('.item-row')).map(row => ({
+                productName: row.querySelector('.prodName').value,
+                pickupLocation: row.querySelector('.prodLoc').value,
+                amount: row.querySelector('.prodAmt').value
+            }));
+
+            const payload = {
+                action: "add",
+                customerName: document.getElementById('custName').value,
+                source: document.getElementById('source').value,
+                paymentStatus: document.getElementById('payment').value,
+                orderID: "ORD" + Date.now().toString().slice(-6),
+                items: items
+            };
+
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+            alert("訂單已入數！");
+            location.reload();
+        }
+
+        async function loadOrders() {
+            const tbody = document.getElementById('orderListBody');
+            tbody.innerHTML = "<tr><td colspan='5' class='p-4 text-center'>讀取中...</td></tr>";
+            
+            const res = await fetch(GAS_URL);
+            const data = await res.json();
+            
+            tbody.innerHTML = "";
+            data.forEach(order => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 border text-sm font-bold">${order.name} <br><span class="text-xs text-gray-400">(${order.source})</span></td>
+                    <td class="p-3 border text-sm">${order.product} <br><span class="text-blue-500">$${order.amount}</span></td>
+                    <td class="p-3 border text-sm">${order.date || '未定'}</td>
+                    <td class="p-3 border">
+                        <span class="status-${order.status} px-2 py-1 rounded-full text-xs font-bold">${order.status}</span>
+                    </td>
+                    <td class="p-3 border">
+                        <select onchange="updateStatus(${order.rowNum}, this.value)" class="text-xs border p-1 rounded">
+                            <option value="">更改狀態</option>
+                            <option value="待取貨">待取貨</option>
+                            <option value="已取貨">已取貨</option>
+                            <option value="已寄出">已寄出</option>
+                        </select>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function updateStatus(rowNum, newStatus) {
+            if(!newStatus) return;
+            await fetch(GAS_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "updateStatus", rowNum: rowNum, newStatus: newStatus })
+            });
+            alert("狀態已更新！");
+            loadOrders();
+        }
+    </script>
+</body>
+</html>
