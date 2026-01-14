@@ -50,7 +50,6 @@
                 <button id="clearFilter" onclick="filterByLocation(null)" class="hidden bg-white/20 px-2 py-1 rounded">顯示全部</button>
             </div>
             <div id="summary-container" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
-            
             <div id="filter-details" class="hidden mt-6 pt-6 border-t border-white/10">
                 <h3 id="filter-title" class="text-sm font-bold mb-4 text-orange-400 italic"></h3>
                 <div id="filter-items-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-gray-800"></div>
@@ -72,7 +71,7 @@
                         <input type="text" id="phone" placeholder="電話號碼" class="border-b p-2 outline-none bg-transparent text-sm">
                     </div>
                     <div class="space-y-2">
-                        <textarea id="fullAddress" placeholder="在此貼上順豐點碼等資料..." class="w-full border p-3 rounded-2xl h-24 text-xs bg-gray-50 outline-none"></textarea>
+                        <textarea id="fullAddress" placeholder="在此貼上順豐點碼等資料..." class="w-full border p-3 rounded-2xl h-24 text-xs bg-gray-50 outline-none focus:bg-white"></textarea>
                         <button onclick="parseSFAddress()" class="w-full py-2 bg-indigo-50 text-indigo-600 text-[10px] font-black rounded-xl border border-indigo-100">🔍 智能解析順豐格式</button>
                     </div>
                 </div>
@@ -151,12 +150,7 @@
         function renderOrders() {
             const container = document.getElementById('cardContainer');
             const summaryBox = document.getElementById('summary-container');
-            const summary = { 
-                "蝦皮": { count: 0, cod: 0 }, 
-                "7-11": { count: 0, cod: 0 }, 
-                "全家": { count: 0, cod: 0 }, 
-                "宅配": { count: 0, cod: 0 } 
-            };
+            const summary = { "蝦皮": { count: 0, cod: 0 }, "7-11": { count: 0, cod: 0 }, "全家": { count: 0, cod: 0 }, "宅配": { count: 0, cod: 0 } };
             
             allData.forEach(i => { 
                 if(i.status === '待取貨' && !i.fullAddress.includes("運單:")) {
@@ -204,8 +198,8 @@
                     </div>
                     <div class="p-4 grid md:grid-cols-2 gap-6">
                         <div class="space-y-4">
-                            <div class="bg-white p-4 rounded-xl border border-gray-200 text-[11px] shadow-inner font-bold text-gray-400">
-                                <p class="text-gray-800">${first.receiver}</p><p class="text-gray-600">${first.phone}</p><p class="leading-relaxed">${first.fullAddress}</p>
+                            <div class="bg-white p-4 rounded-xl border border-gray-200 text-[11px] shadow-inner font-bold">
+                                <p class="text-gray-800">${first.receiver}</p><p class="text-gray-600">${first.phone}</p><p class="text-gray-400 leading-relaxed">${first.fullAddress}</p>
                             </div>
                             <div class="flex space-x-2 pt-2 border-t">
                                 <input type="text" id="track-${first.rowNum}" placeholder="運單編號" class="flex-1 border p-2 rounded-xl text-xs outline-none">
@@ -215,7 +209,7 @@
                         <div class="space-y-3">
                              ${items.map(item => `
                                 <div class="box-${item.status} p-3 rounded-xl border shadow-sm">
-                                    <div class="flex items-center mb-2">
+                                    <div class="flex items-center mb-1">
                                         <span class="loc-${item.location} text-[8px] px-1.5 py-0.5 rounded font-black mr-2">${item.location}</span>
                                         <span class="font-black text-gray-800 flex-1 truncate text-xs">${item.product}</span>
                                         <span class="badge-${item.status} text-[8px] px-1.5 py-0.5 rounded font-black ml-2">${item.status}</span>
@@ -235,9 +229,19 @@
                                 </div>
                              `).join('')}
                         </div>
-                    </div>`;
+                    </div>
+                    ${currentMode === 'active' ? `<button onclick="fillForm('${name}','${first.source}','${first.receiver}','${first.phone}',\`${first.fullAddress}\`)" class="w-full py-3 bg-white text-blue-500 text-[10px] font-bold border-t hover:bg-gray-50 italic">＋ 為此客戶追加商品</button>` : ''}`;
                 container.appendChild(card);
             });
+        }
+
+        function fillForm(name, src, recv, ph, addr) {
+            document.getElementById('custName').value = name;
+            document.getElementById('source').value = src;
+            document.getElementById('receiver').value = recv;
+            document.getElementById('phone').value = ph;
+            document.getElementById('fullAddress').value = addr;
+            window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
         function filterByLocation(loc) {
@@ -262,9 +266,7 @@
                     <div class="grid grid-cols-2 gap-2 mt-2">
                         <input type="date" value="${item.date ? item.date.replace(/\//g, '-') : ''}" onchange="saveRow(${item.rowNum}, '${item.status}')" class="border rounded p-1 text-[9px]">
                         <select onchange="saveRow(${item.rowNum}, this.value)" class="border rounded p-1 text-[9px] font-bold">
-                            <option value="待取貨" selected>待取貨</option>
-                            <option value="已取貨">已取貨</option>
-                            <option value="已寄出">已寄出</option>
+                            <option value="待取貨" selected>待取貨</option><option value="已取貨">已取貨</option><option value="已寄出">已寄出</option>
                         </select>
                     </div>
                     <p class="text-[9px] text-blue-600 font-bold mt-2 italic">${item.name}</p>
@@ -283,7 +285,6 @@
                 acc[monthKey].count += 1;
                 return acc;
             }, {});
-
             Object.keys(monthlyData).sort().reverse().forEach(month => {
                 const data = monthlyData[month];
                 const hk_income = data.twd / 3.6;
@@ -291,21 +292,10 @@
                 const profit = hk_income - hk_cost;
                 const card = document.createElement('div');
                 card.className = "bg-white p-6 rounded-3xl shadow-sm border border-gray-100";
-                card.innerHTML = `
-                    <h3 class="text-lg font-black mb-4">${month}</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-gray-50 p-4 rounded-2xl">
-                            <p class="text-[9px] font-bold text-gray-400">總收費 (HKD)</p>
-                            <p class="text-xl font-black">$${hk_income.toFixed(2)}</p>
-                        </div>
-                        <div class="bg-gray-50 p-4 rounded-2xl">
-                            <p class="text-[9px] font-bold text-gray-400">成本 (HKD)</p>
-                            <p class="text-xl font-black">$${hk_cost.toFixed(2)}</p>
-                        </div>
-                        <div class="bg-green-50 p-4 rounded-2xl border border-green-100">
-                            <p class="text-[9px] font-bold text-green-600">純利 (HKD)</p>
-                            <p class="text-2xl font-black text-green-700">$${profit.toFixed(2)}</p>
-                        </div>
+                card.innerHTML = `<h3 class="text-lg font-black mb-4">${month}</h3><div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-gray-50 p-4 rounded-2xl"><p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">總收費 (HKD)</p><p class="text-xl font-black text-gray-700">$${hk_income.toFixed(2)}</p></div>
+                        <div class="bg-gray-50 p-4 rounded-2xl"><p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">估計成本 (HKD)</p><p class="text-xl font-black text-gray-700">$${hk_cost.toFixed(2)}</p></div>
+                        <div class="bg-green-50 p-4 rounded-2xl border border-green-100"><p class="text-[9px] font-bold text-green-600 uppercase tracking-widest mb-1">預計純利 (HKD)</p><p class="text-2xl font-black text-green-700">$${profit.toFixed(2)}</p></div>
                     </div>`;
                 container.appendChild(card);
             });
@@ -363,7 +353,7 @@
             container.appendChild(row);
         }
         async function submitOrder() {
-            const btn = document.getElementById('submitBtn'); btn.disabled = true;
+            const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "儲存中...";
             const payload = {
                 orderID: "TW"+Date.now().toString().slice(-4), customerName: document.getElementById('custName').value,
                 source: document.getElementById('source').value, receiver: document.getElementById('receiver').value,
