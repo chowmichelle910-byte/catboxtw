@@ -24,6 +24,8 @@
         .stat-card { cursor: pointer; transition: all 0.2s; }
         .stat-card:hover { transform: translateY(-2px); background-color: rgba(255,255,255,0.15); }
         .stat-card.active { border: 2px solid white; background-color: rgba(255,255,255,0.2); }
+        .payment-已付 { color: #8B5CF6; font-weight: bold; }
+        .payment-到付 { color: #EF4444; font-weight: bold; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen pb-20 font-sans text-gray-900">
@@ -44,10 +46,11 @@
 
         <section id="stat-section" class="bg-slate-900 p-6 rounded-3xl shadow-xl text-white">
             <div class="flex justify-between items-center mb-4 text-[10px] font-bold uppercase opacity-50 tracking-widest">
-                <span>未到貨統計</span>
+                <span>未到貨統計 (點擊篩選)</span>
                 <button id="clearFilter" onclick="filterByLocation(null)" class="hidden bg-white/20 px-2 py-1 rounded">顯示全部</button>
             </div>
             <div id="summary-container" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+            
             <div id="filter-details" class="hidden mt-6 pt-6 border-t border-white/10">
                 <h3 id="filter-title" class="text-sm font-bold mb-4 text-orange-400 italic"></h3>
                 <div id="filter-items-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-gray-800"></div>
@@ -148,12 +151,25 @@
         function renderOrders() {
             const container = document.getElementById('cardContainer');
             const summaryBox = document.getElementById('summary-container');
-            const summary = { "蝦皮": 0, "7-11": 0, "全家": 0, "宅配": 0 };
+            const summary = { 
+                "蝦皮": { count: 0, cod: 0 }, 
+                "7-11": { count: 0, cod: 0 }, 
+                "全家": { count: 0, cod: 0 }, 
+                "宅配": { count: 0, cod: 0 } 
+            };
             
-            allData.forEach(i => { if(i.status === '待取貨' && !i.fullAddress.includes("運單:")) summary[i.location]++; });
+            allData.forEach(i => { 
+                if(i.status === '待取貨' && !i.fullAddress.includes("運單:")) {
+                    summary[i.location].count++;
+                    if(i.payment === '到付') summary[i.location].cod += parseFloat(i.amount || 0);
+                } 
+            });
+
             summaryBox.innerHTML = Object.keys(summary).map(loc => `
                 <div onclick="filterByLocation('${loc}')" class="stat-card bg-white/10 p-4 rounded-2xl border border-white/5">
-                    <p class="text-[9px] font-bold opacity-40 uppercase">${loc}</p><p class="text-2xl font-black">${summary[loc]}</p>
+                    <p class="text-[9px] font-bold opacity-40 uppercase">${loc}</p>
+                    <p class="text-2xl font-black">${summary[loc].count}</p>
+                    <p class="text-[9px] text-orange-400 font-bold mt-1">到付: $${summary[loc].cod}</p>
                 </div>`).join('');
 
             const groups = allData.reduce((acc, obj) => { if (!acc[obj.name]) acc[obj.name] = []; acc[obj.name].push(obj); return acc; }, {});
@@ -204,6 +220,10 @@
                                         <span class="font-black text-gray-800 flex-1 truncate text-xs">${item.product}</span>
                                         <span class="badge-${item.status} text-[8px] px-1.5 py-0.5 rounded font-black ml-2">${item.status}</span>
                                     </div>
+                                    <div class="flex justify-between items-center text-[10px] mb-2 px-1">
+                                        <span class="payment-${item.payment}">${item.payment}</span>
+                                        <span class="font-bold text-gray-600">NT$ ${item.amount}</span>
+                                    </div>
                                     <div class="grid grid-cols-2 gap-2">
                                         <input type="date" id="date-${item.rowNum}" value="${item.date ? item.date.replace(/\//g, '-') : ''}" onchange="saveRow(${item.rowNum}, '${item.status}')" class="border rounded p-1 text-[9px]">
                                         <select onchange="saveRow(${item.rowNum}, this.value)" class="border rounded p-1 text-[9px] font-bold">
@@ -220,17 +240,43 @@
             });
         }
 
-        // --- 利潤統計邏輯 ---
+        function filterByLocation(loc) {
+            if(!loc) {
+                document.getElementById('filter-details').classList.add('hidden');
+                document.getElementById('clearFilter').classList.add('hidden');
+                return;
+            }
+            const detailSection = document.getElementById('filter-details');
+            const itemsList = document.getElementById('filter-items-list');
+            detailSection.classList.remove('hidden');
+            document.getElementById('clearFilter').classList.remove('hidden');
+            document.getElementById('filter-title').innerText = `📍 篩選：${loc}`;
+            
+            const filtered = allData.filter(i => i.location === loc && i.status === '待取貨' && !i.fullAddress.includes("運單:"));
+            itemsList.innerHTML = filtered.map(item => `
+                <div class="box-${item.status} p-3 rounded-xl border bg-white shadow-sm">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-black text-[11px] truncate flex-1">${item.product}</span>
+                        <span class="payment-${item.payment} text-[9px] ml-2">${item.payment} $${item.amount}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                        <input type="date" value="${item.date ? item.date.replace(/\//g, '-') : ''}" onchange="saveRow(${item.rowNum}, '${item.status}')" class="border rounded p-1 text-[9px]">
+                        <select onchange="saveRow(${item.rowNum}, this.value)" class="border rounded p-1 text-[9px] font-bold">
+                            <option value="待取貨" selected>待取貨</option>
+                            <option value="已取貨">已取貨</option>
+                            <option value="已寄出">已寄出</option>
+                        </select>
+                    </div>
+                    <p class="text-[9px] text-blue-600 font-bold mt-2 italic">${item.name}</p>
+                </div>`).join('');
+        }
+
         function renderProfit() {
             const container = document.getElementById('profitContainer');
             container.innerHTML = "";
-            
-            // 1. 過濾出「已寄出」且有「寄出日期」的商品
             const profitItems = allData.filter(i => i.status === '已寄出' && i.date);
-            
-            // 2. 按月份分組
             const monthlyData = profitItems.reduce((acc, item) => {
-                const dateParts = item.date.split('/'); // 假設格式是 YYYY/MM/DD
+                const dateParts = item.date.split('/');
                 const monthKey = `${dateParts[0]}年 ${dateParts[1]}月`;
                 if (!acc[monthKey]) acc[monthKey] = { twd: 0, count: 0 };
                 acc[monthKey].twd += parseFloat(item.amount || 0);
@@ -238,43 +284,29 @@
                 return acc;
             }, {});
 
-            if (Object.keys(monthlyData).length === 0) {
-                container.innerHTML = "<div class='text-center py-20 text-gray-400'>目前尚無已寄出的利潤數據</div>";
-                return;
-            }
-
-            // 3. 渲染月份卡片
             Object.keys(monthlyData).sort().reverse().forEach(month => {
                 const data = monthlyData[month];
                 const hk_income = data.twd / 3.6;
                 const hk_cost = data.twd / 4.0;
                 const profit = hk_income - hk_cost;
-
                 const card = document.createElement('div');
                 card.className = "bg-white p-6 rounded-3xl shadow-sm border border-gray-100";
                 card.innerHTML = `
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-lg font-black text-gray-800">${month}</h3>
-                        <span class="bg-blue-50 text-blue-600 text-[10px] px-3 py-1 rounded-full font-bold">共寄出 ${data.count} 件商品</span>
-                    </div>
+                    <h3 class="text-lg font-black mb-4">${month}</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">總收費 (HKD)</p>
-                            <p class="text-xl font-black text-gray-700">$${hk_income.toFixed(2)}</p>
-                            <p class="text-[8px] text-gray-400 mt-1">台幣總額 / 3.6</p>
+                        <div class="bg-gray-50 p-4 rounded-2xl">
+                            <p class="text-[9px] font-bold text-gray-400">總收費 (HKD)</p>
+                            <p class="text-xl font-black">$${hk_income.toFixed(2)}</p>
                         </div>
-                        <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">估計成本 (HKD)</p>
-                            <p class="text-xl font-black text-gray-700">$${hk_cost.toFixed(2)}</p>
-                            <p class="text-[8px] text-gray-400 mt-1">台幣總額 / 4.0</p>
+                        <div class="bg-gray-50 p-4 rounded-2xl">
+                            <p class="text-[9px] font-bold text-gray-400">成本 (HKD)</p>
+                            <p class="text-xl font-black">$${hk_cost.toFixed(2)}</p>
                         </div>
                         <div class="bg-green-50 p-4 rounded-2xl border border-green-100">
-                            <p class="text-[9px] font-bold text-green-600 uppercase tracking-widest mb-1">預計純利 (HKD)</p>
+                            <p class="text-[9px] font-bold text-green-600">純利 (HKD)</p>
                             <p class="text-2xl font-black text-green-700">$${profit.toFixed(2)}</p>
-                            <p class="text-[8px] text-green-400 mt-1">每件利潤之總和</p>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 container.appendChild(card);
             });
         }
@@ -307,19 +339,11 @@
 
         function switchView(mode) {
             currentMode = mode;
-            const navs = ['active', 'history', 'profit'];
-            navs.forEach(n => {
-                const btn = document.getElementById(`nav-${n}`);
-                if (n === mode) {
-                    btn.className = "px-4 py-2 rounded-lg text-xs font-bold transition-all bg-white shadow-sm text-blue-600 whitespace-nowrap";
-                } else {
-                    btn.className = "px-4 py-2 rounded-lg text-xs font-bold transition-all text-gray-500 whitespace-nowrap";
-                }
+            ['active', 'history', 'profit'].forEach(n => {
+                document.getElementById(`nav-${n}`).className = (n === mode) ? "px-4 py-2 rounded-lg text-xs font-bold transition-all bg-white shadow-sm text-blue-600 whitespace-nowrap" : "px-4 py-2 rounded-lg text-xs font-bold transition-all text-gray-500 whitespace-nowrap";
             });
-
             document.getElementById('add-section').style.display = mode === 'active' ? "block" : "none";
             document.getElementById('stat-section').style.display = mode === 'active' ? "block" : "none";
-            
             if (mode === 'profit') {
                 document.getElementById('cardContainer').classList.add('hidden');
                 document.getElementById('profitContainer').classList.remove('hidden');
