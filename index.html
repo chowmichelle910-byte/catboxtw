@@ -3,255 +3,283 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🇹🇼 台灣訂單管理系統</title>
+    <title>🇹🇼 台灣-完整管理系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .box-待預購 { border-left: 5px solid #EC4899; background: #FFF1F2; }
+        .box-待預購 { border-left: 5px solid #EC4899; background: #FDF2F8; }
         .box-待取貨 { border-left: 5px solid #F59E0B; background: #FFFBEB; }
         .box-已取貨 { border-left: 5px solid #10B981; background: #F0FDF4; }
-        .box-已寄出 { border-left: 5px solid #6B7280; background: #F9FAFB; }
-        .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; color: white; font-weight: bold; }
-        .bg-待預購 { background: #EC4899; } .bg-待取貨 { background: #F59E0B; } .bg-已取貨 { background: #10B981; } .bg-已寄出 { background: #6B7280; }
+        .box-已寄出 { border-left: 5px solid #9CA3AF; background: #F9FAFB; }
+        .loc-7仔預購 { border: 1px solid #E11D48; color: #E11D48; }
+        .loc-蝦皮 { border: 1px solid #EA580C; color: #EA580C; }
+        .loc-7-11 { border: 1px solid #16A34A; color: #16A34A; }
+        .loc-全家 { border: 1px solid #2563EB; color: #2563EB; }
+        .all-ready { background-color: #FFF1F1 !important; border: 2px solid #FECACA !important; }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen pb-10">
+<body class="bg-gray-100 min-h-screen pb-20 font-sans">
 
-<div class="max-w-4xl mx-auto p-4 space-y-4">
-    <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm">
-        <h1 class="font-black text-xl text-gray-800">🇹🇼 台灣訂單</h1>
-        <div class="flex space-x-2 bg-gray-100 p-1 rounded-xl">
-            <button onclick="switchView('active')" id="btn-active" class="px-4 py-2 rounded-lg text-xs font-bold bg-white shadow text-blue-600">進行中</button>
-            <button onclick="switchView('profit')" id="btn-profit" class="px-4 py-2 rounded-lg text-xs font-bold text-gray-500">💰 利潤</button>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div id="stat-box" class="bg-slate-800 p-4 rounded-2xl text-white grid grid-cols-2 gap-2 text-center">
+    <div class="max-w-6xl mx-auto p-4 space-y-6">
+        <div class="flex flex-col md:flex-row items-center justify-between bg-white p-5 rounded-2xl shadow-sm gap-4">
+            <div class="flex items-center space-x-2">
+                <span class="text-2xl">🇹🇼</span>
+                <h1 class="text-xl font-black">台灣-訂單管理</h1>
             </div>
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-blue-100">
-            <p class="text-[10px] font-bold text-blue-500 mb-2 uppercase">順豐地址快速查詢</p>
-            <div class="flex space-x-2">
-                <input type="text" id="sfCode" placeholder="輸入點碼 (如: 852T)" class="flex-1 border rounded-lg p-2 text-sm outline-none">
-                <button onclick="searchSF()" class="bg-blue-600 text-white px-4 rounded-lg text-xs font-bold">搜尋</button>
-            </div>
-            <p id="sfResult" class="text-[10px] mt-2 text-gray-500 italic"></p>
+            <nav class="flex bg-gray-100 p-1 rounded-xl">
+                <button onclick="switchView('active')" id="nav-active" class="px-4 py-2 rounded-lg text-xs font-bold bg-white shadow-sm text-blue-600">進行中</button>
+                <button onclick="switchView('history')" id="nav-history" class="px-4 py-2 rounded-lg text-xs font-bold text-gray-500">歷史訂單</button>
+                <button onclick="switchView('profit')" id="nav-profit" class="px-4 py-2 rounded-lg text-xs font-bold text-gray-500">💰 利潤統計</button>
+            </nav>
         </div>
-    </div>
 
-    <section id="add-view" class="bg-white p-5 rounded-2xl shadow-sm space-y-4">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <input type="text" id="custName" placeholder="客戶名稱" class="border-b p-2 text-sm outline-none">
-            <select id="source" class="border-b p-2 text-sm font-bold">
-                <option value="IG">IG</option><option value="WhatsApp">WhatsApp</option><option value="Threads">Threads</option>
-            </select>
-            <input type="text" id="receiver" placeholder="收件人" class="border-b p-2 text-sm outline-none">
-            <input type="text" id="phone" placeholder="電話" class="border-b p-2 text-sm outline-none">
-        </div>
-        <textarea id="fullAddress" placeholder="收件地址/點碼" class="w-full border rounded-xl p-3 text-sm bg-gray-50 h-20 outline-none"></textarea>
-        
-        <div id="itemsList" class="space-y-3">
-            <div class="item-row bg-gray-50 p-4 rounded-xl border border-dashed relative">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-2">
-                    <input type="text" placeholder="商品名稱" class="pName col-span-1 md:col-span-2 border rounded p-2 text-sm">
-                    <input type="number" placeholder="台幣金額" class="pAmt border rounded p-2 text-sm">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div id="summary-container" class="md:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-2 bg-slate-900 p-4 rounded-3xl text-white">
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    <select onchange="handle711(this)" class="pLoc border rounded p-2 text-sm">
-                        <option value="蝦皮">蝦皮</option><option value="7-11">7-11</option><option value="全家">全家</option><option value="宅配">宅配</option><option value="7仔預購">7仔預購</option>
-                    </select>
-                    <select class="pPay border rounded p-2 text-sm">
-                        <option value="已付">已付</option><option value="到付">到付</option><option value="待付" class="opt-waitpay hidden">待付</option>
-                    </select>
-                    <div class="preorder-fields hidden col-span-2 md:col-span-1 flex space-x-1">
-                        <input type="date" class="pStart border rounded p-1 text-[10px] w-1/2">
-                        <input type="date" class="pEnd border rounded p-1 text-[10px] w-1/2">
+            <div class="bg-white p-4 rounded-3xl shadow-sm border border-blue-100 flex flex-col justify-center">
+                <p class="text-[10px] font-bold text-blue-500 mb-2 uppercase">順豐代碼查詢</p>
+                <div class="flex space-x-2">
+                    <input type="text" id="sfCode" placeholder="如: 852L" class="flex-1 border rounded-xl p-2 text-sm outline-none">
+                    <button onclick="searchSF()" class="bg-blue-600 text-white px-4 rounded-xl text-xs font-bold">搜尋</button>
+                </div>
+                <p id="sfResult" class="text-[9px] mt-1 text-gray-400 italic"></p>
+            </div>
+        </div>
+
+        <section id="add-section" class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-4">
+                    <p class="font-bold text-gray-400 text-[10px] uppercase">客戶資料</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" id="custName" placeholder="客戶名稱" class="border-b p-2 outline-none text-sm">
+                        <select id="source" class="border-b p-2 outline-none text-sm font-bold">
+                            <option value="IG">IG</option><option value="WhatsApp">WhatsApp</option><option value="Threads">Threads</option>
+                        </select>
                     </div>
-                </div>
-            </div>
-        </div>
-        <div class="flex justify-between">
-            <button onclick="addItem()" class="text-blue-600 text-xs font-bold">+ 增加商品</button>
-            <button id="saveBtn" onclick="submitOrder()" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-black shadow-lg">確認儲存</button>
-        </div>
-    </section>
-
-    <div id="mainContainer" class="space-y-4"></div>
-</div>
-
-<script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycby5vPRE71thYhYY-4XDMZ2oByLBsaZmy_FQPHzjHvAthhCTFmUCC29SycppE4d7pJ4mWA/exec";
-    let allData = [];
-
-    window.onload = loadData;
-
-    async function loadData() {
-        document.getElementById('mainContainer').innerHTML = "<p class='text-center py-10 text-gray-400 animate-pulse'>🔄 同步數據中...</p>";
-        const res = await fetch(GAS_URL);
-        allData = await res.json();
-        renderOrders();
-    }
-
-    async function searchSF() {
-        const code = document.getElementById('sfCode').value;
-        if(!code) return;
-        const res = await fetch(`${GAS_URL}?action=searchSF&code=${code}`);
-        const data = await res.json();
-        if(data.found) {
-            document.getElementById('sfResult').innerText = "✅ " + data.address;
-            document.getElementById('fullAddress').value = data.address;
-        } else {
-            document.getElementById('sfResult').innerText = "❌ 找不到該點碼";
-        }
-    }
-
-    function handle711(el) {
-        const row = el.closest('.item-row');
-        const preFields = row.querySelector('.preorder-fields');
-        const waitPay = row.querySelector('.opt-waitpay');
-        if(el.value === '7仔預購') {
-            preFields.classList.remove('hidden'); waitPay.classList.remove('hidden');
-        } else {
-            preFields.classList.add('hidden'); waitPay.classList.add('hidden');
-        }
-    }
-
-    function renderOrders() {
-        const container = document.getElementById('mainContainer');
-        const statBox = document.getElementById('stat-box');
-        
-        // 統計邏輯
-        let summary = { count: 0, unpaid: 0 };
-        allData.forEach(i => {
-            if(i.status === '待取貨' || i.status === '待預購') {
-                summary.count++;
-                if(i.payment === '到付' || i.payment === '待付') summary.unpaid += parseFloat(i.amount || 0);
-            }
-        });
-        statBox.innerHTML = `<div><p class='text-[10px] opacity-50'>待處理單量</p><p class='text-xl font-bold'>${summary.count}</p></div>
-                             <div><p class='text-[10px] opacity-50'>未收總額</p><p class='text-xl font-bold text-orange-400'>$${summary.unpaid}</p></div>`;
-
-        // 分組渲染
-        const groups = allData.reduce((acc, obj) => { if(!acc[obj.name]) acc[obj.name]=[]; acc[obj.name].push(obj); return acc; }, {});
-        container.innerHTML = "";
-        
-        Object.keys(groups).reverse().forEach(name => {
-            const items = groups[name].filter(i => !i.fullAddress.includes("運單:"));
-            if(items.length === 0) return;
-            const first = items[0];
-            const card = document.createElement('div');
-            card.className = "bg-white rounded-2xl shadow-sm border p-4";
-            card.innerHTML = `
-                <div class="flex justify-between items-start border-b pb-2 mb-3">
-                    <div>
-                        <span class="font-black text-lg">${name}</span>
-                        <span class="text-[10px] bg-gray-200 px-2 py-1 rounded ml-2 font-bold">${first.source}</span>
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" id="receiver" placeholder="收件人" class="border-b p-2 outline-none text-sm">
+                        <input type="text" id="phone" placeholder="電話" class="border-b p-2 outline-none text-sm">
                     </div>
-                    <button onclick="toggleEdit('${name}')" class="text-blue-600 text-[10px] font-bold">編輯資料</button>
+                    <textarea id="fullAddress" placeholder="地址" class="w-full border p-3 rounded-2xl h-24 text-xs bg-gray-50 outline-none"></textarea>
                 </div>
-                <div id="info-${name}" class="text-xs text-gray-500 mb-3 space-y-1 font-bold">
-                    <p>👤 ${first.receiver || '未填'} | 📞 ${first.phone || '未填'}</p>
-                    <p>📍 ${first.fullAddress || '未填'}</p>
-                </div>
-                <div id="edit-${name}" class="hidden space-y-2 mb-3 bg-gray-50 p-3 rounded-xl">
-                    <input type="text" id="e-recv-${name}" value="${first.receiver}" class="w-full border p-2 rounded text-xs" placeholder="收件人">
-                    <input type="text" id="e-phone-${name}" value="${first.phone}" class="w-full border p-2 rounded text-xs" placeholder="電話">
-                    <textarea id="e-addr-${name}" class="w-full border p-2 rounded text-xs h-16">${first.fullAddress}</textarea>
-                    <button onclick="saveEdit('${name}', ${first.rowNum})" class="w-full bg-green-600 text-white py-2 rounded-lg text-xs font-bold">更新並儲存</button>
-                </div>
-                <div class="space-y-2">
-                    ${items.map(item => `
-                        <div class="box-${item.status} p-3 rounded-xl border flex justify-between items-center">
-                            <div class="flex-1">
-                                <div class="flex items-center space-x-2 mb-1">
-                                    <span class="badge bg-${item.status}">${item.status}</span>
-                                    <span class="text-xs font-black text-gray-800">${item.product}</span>
-                                </div>
-                                <div class="text-[10px] text-gray-500">
-                                    ${item.location} | NT$ ${item.amount} | <span class="text-red-500">${item.payment}</span>
-                                </div>
-                            </div>
-                            <div class="flex flex-col space-y-1">
-                                <select onchange="updateRow(${item.rowNum}, this.value)" class="text-[10px] border rounded p-1 bg-white font-bold">
-                                    <option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option>
-                                    <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
-                                    <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
-                                    <option value="已寄出" ${item.status==='已寄出'?'selected':''}>已寄出</option>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center"><p class="font-bold text-gray-400 text-[10px] uppercase">品項</p><button onclick="addItemRow()" class="text-blue-600 text-[10px] font-black underline">+ 增加</button></div>
+                    <div id="itemsContainer" class="space-y-3 max-h-[300px] overflow-y-auto">
+                        <div class="item-row bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                            <input type="text" placeholder="商品名稱" class="prodName w-full mb-3 p-2 rounded-lg border text-sm">
+                            <div class="grid grid-cols-3 gap-2">
+                                <select onchange="toggle711Fields(this)" class="prodLoc border p-2 rounded-lg text-[10px] bg-white">
+                                    <option value="蝦皮">蝦皮</option><option value="7-11">7-11</option><option value="全家">全家</option><option value="宅配">宅配</option><option value="7仔預購">7仔預購</option>
                                 </select>
-                                ${item.status==='待預購'?`<button onclick="updateRow(${item.rowNum}, '待取貨')" class="bg-green-500 text-white text-[9px] py-1 rounded font-bold">✅ 完成預購</button>`:''}
+                                <input type="number" placeholder="金額" class="prodAmt border p-2 rounded-lg text-[10px]">
+                                <select class="prodPayment border p-2 rounded-lg text-[10px] bg-white">
+                                    <option value="已付">已付</option><option value="到付">到付</option><option value="待付" class="hidden-pay hidden">待付</option>
+                                </select>
+                            </div>
+                            <div class="fields-711 hidden grid grid-cols-2 gap-2 mt-2">
+                                <input type="date" class="prodDateStart border rounded p-1 text-[9px]">
+                                <input type="date" class="prodDateEnd border rounded p-1 text-[9px]">
                             </div>
                         </div>
-                    `).join('')}
-                </div>`;
-            container.appendChild(card);
-        });
-    }
-
-    async function submitOrder() {
-        const btn = document.getElementById('saveBtn'); btn.disabled = true;
-        const d = new Date();
-        const payload = {
-            orderID: "TW" + d.getTime().toString().slice(-5),
-            customerName: document.getElementById('custName').value,
-            source: document.getElementById('source').value,
-            receiver: document.getElementById('receiver').value,
-            phone: document.getElementById('phone').value,
-            fullAddress: document.getElementById('fullAddress').value,
-            orderDate: `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`,
-            items: Array.from(document.querySelectorAll('.item-row')).map(row => {
-                const loc = row.querySelector('.pLoc').value;
-                let name = row.querySelector('.pName').value;
-                if(loc === '7仔預購') name += ` (預:${row.querySelector('.pStart').value} 攞:${row.querySelector('.pEnd').value})`;
-                return { productName: name, pickupLocation: loc, amount: row.querySelector('.pAmt').value, paymentStatus: row.querySelector('.pPay').value, status: loc==='7仔預購'?'待預購':'待取貨' };
-            })
-        };
-        await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
-        location.reload();
-    }
-
-    async function updateRow(row, status) {
-        await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateStatus", rowNum: row, newStatus: status }), mode: 'no-cors' });
-        loadData();
-    }
-
-    async function saveEdit(name, row) {
-        const payload = {
-            action: "updateStatus",
-            rowNum: row,
-            receiver: document.getElementById(`e-recv-${name}`).value,
-            phone: document.getElementById(`e-phone-${name}`).value,
-            fullAddress: document.getElementById(`e-addr-${name}`).value
-        };
-        await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
-        loadData();
-    }
-
-    function toggleEdit(n) { document.getElementById(`info-${n}`).classList.toggle('hidden'); document.getElementById(`edit-${n}`).classList.toggle('hidden'); }
-    function addItem() { const clone = document.querySelector('.item-row').cloneNode(true); clone.querySelectorAll('input').forEach(i=>i.value=''); document.getElementById('itemsList').appendChild(clone); }
-    function switchView(m) {
-        document.getElementById('add-view').classList.toggle('hidden', m==='profit');
-        if(m==='profit') renderProfit(); else loadData();
-    }
-
-    function renderProfit() {
-        const container = document.getElementById('mainContainer');
-        const months = allData.reduce((acc, i) => {
-            if(!i.orderDate) return acc;
-            const m = i.orderDate.split('/')[0] + "年" + i.orderDate.split('/')[1] + "月";
-            if(!acc[m]) acc[m] = 0; acc[m] += parseFloat(i.amount || 0);
-            return acc;
-        }, {});
-        container.innerHTML = Object.keys(months).map(m => `
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-green-100">
-                <p class="font-black text-gray-800">${m} 利潤統計</p>
-                <div class="grid grid-cols-3 gap-4 mt-4">
-                    <div class="bg-gray-50 p-3 rounded-xl"><p class="text-[10px] text-gray-400">總營業額</p><p class="font-bold">$${(months[m]/3.6).toFixed(0)}</p></div>
-                    <div class="bg-gray-50 p-3 rounded-xl"><p class="text-[10px] text-gray-400">總成本</p><p class="font-bold">$${(months[m]/4.0).toFixed(0)}</p></div>
-                    <div class="bg-green-50 p-3 rounded-xl"><p class="text-[10px] text-green-600">預計利潤</p><p class="font-bold text-green-700">$${(months[m]/3.6 - months[m]/4.0).toFixed(0)}</p></div>
+                    </div>
+                    <button id="submitBtn" onclick="submitOrder()" class="w-full mt-4 bg-blue-600 text-white py-4 rounded-2xl font-black">儲存訂單</button>
                 </div>
             </div>
-        `).join('');
-    }
-</script>
+        </section>
 
+        <div id="cardContainer" class="grid gap-6"></div>
+        <div id="profitContainer" class="hidden space-y-6"></div>
+    </div>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycby5vPRE71thYhYY-4XDMZ2oByLBsaZmy_FQPHzjHvAthhCTFmUCC29SycppE4d7pJ4mWA/exec";
+        let allData = [];
+        let currentMode = 'active';
+        let filterLoc = null;
+
+        window.onload = loadOrders;
+
+        async function loadOrders() {
+            const container = document.getElementById('cardContainer');
+            container.innerHTML = "<div class='text-center py-20 text-gray-400 animate-pulse'>🔄 同步數據庫中...</div>";
+            const res = await fetch(GAS_URL);
+            allData = await res.json();
+            renderOrders();
+        }
+
+        async function searchSF() {
+            const code = document.getElementById('sfCode').value;
+            if(!code) return;
+            const res = await fetch(`${GAS_URL}?action=searchSF&code=${code}`);
+            const data = await res.json();
+            if(data.found) {
+                document.getElementById('sfResult').innerText = "✅ " + data.address;
+                document.getElementById('fullAddress').value = data.address;
+            } else {
+                document.getElementById('sfResult').innerText = "❌ 找不到點碼";
+            }
+        }
+
+        function toggle711Fields(select) {
+            const row = select.closest('.item-row');
+            const fields = row.querySelector('.fields-711');
+            const payOpt = row.querySelector('.hidden-pay');
+            if(select.value === '7仔預購') { fields.classList.remove('hidden'); payOpt.classList.remove('hidden'); }
+            else { fields.classList.add('hidden'); payOpt.classList.add('hidden'); }
+        }
+
+        function renderOrders() {
+            const container = document.getElementById('cardContainer');
+            const summaryBox = document.getElementById('summary-container');
+            
+            // 統計數據
+            const summary = { "蝦皮": 0, "7-11": 0, "全家": 0, "宅配": 0, "7仔預購": 0 };
+            allData.forEach(i => {
+                if((i.status==='待取貨' || i.status==='待預購') && !i.fullAddress.includes("運單:")) {
+                    summary[i.location] = (summary[i.location] || 0) + 1;
+                }
+            });
+            summaryBox.innerHTML = Object.keys(summary).map(loc => `
+                <div onclick="filterByLocation('${loc}')" class="p-3 rounded-2xl border ${filterLoc===loc?'bg-white/30':'bg-white/10'} cursor-pointer">
+                    <p class="text-[9px] opacity-50 font-bold uppercase">${loc}</p>
+                    <p class="text-xl font-black">${summary[loc]}</p>
+                </div>
+            `).join('') + `<div onclick="filterByLocation(null)" class="p-3 rounded-2xl bg-white/5 cursor-pointer text-[9px] flex items-center justify-center font-bold">顯示全部</div>`;
+
+            // 分組顯示
+            const groups = allData.reduce((acc, obj) => { if (!acc[obj.name]) acc[obj.name] = []; acc[obj.name].push(obj); return acc; }, {});
+            container.innerHTML = "";
+
+            Object.keys(groups).sort().reverse().forEach(name => {
+                const items = groups[name].filter(item => {
+                    const isHistory = item.fullAddress.includes("運單:");
+                    const matchMode = currentMode === 'active' ? !isHistory : isHistory;
+                    const matchLoc = filterLoc ? item.location === filterLoc : true;
+                    return matchMode && matchLoc;
+                });
+                if (items.length === 0) return;
+
+                const first = items[0];
+                const isAllReady = items.every(i => i.status === '已取貨' || i.status === '已寄出');
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-3xl shadow-sm border p-4 ${isAllReady && currentMode === 'active' ? 'all-ready' : ''}`;
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-center border-b pb-3 mb-3">
+                        <div class="flex items-center space-x-2">
+                            <b class="text-lg">${name}</b>
+                            <span class="bg-gray-800 text-white text-[8px] px-2 py-0.5 rounded-full font-bold">${first.source}</span>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="toggleEdit('${name}')" class="text-blue-600 text-[10px] font-bold">編輯資料</button>
+                            <button onclick="copyData('${first.receiver}\\n${first.phone}\\n${first.fullAddress}')" class="text-gray-400 text-[10px] font-bold">複製</button>
+                        </div>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div id="info-${name}" class="text-[11px] font-bold space-y-1">
+                            <p>👤 ${first.receiver}</p><p>📞 ${first.phone}</p><p class="text-gray-400 italic">📍 ${first.fullAddress}</p>
+                            <div class="flex space-x-1 mt-4">
+                                <input type="text" id="track-${first.rowNum}" placeholder="運單編號" class="flex-1 border rounded-lg p-2 text-[10px] outline-none">
+                                <button onclick="saveTracking(${first.rowNum})" class="bg-slate-800 text-white px-3 rounded-lg text-[10px] font-bold">寄出</button>
+                            </div>
+                        </div>
+                        <div id="edit-${name}" class="hidden space-y-2">
+                            <input type="text" id="e-recv-${name}" value="${first.receiver}" class="w-full border rounded p-2 text-xs">
+                            <input type="text" id="e-ph-${name}" value="${first.phone}" class="w-full border rounded p-2 text-xs">
+                            <textarea id="e-addr-${name}" class="w-full border rounded p-2 text-xs h-16">${first.fullAddress}</textarea>
+                            <button onclick="saveEdit('${name}', ${first.rowNum})" class="w-full bg-green-600 text-white py-2 rounded-xl text-xs font-bold">保存</button>
+                        </div>
+                        <div class="space-y-2">
+                            ${items.map(item => `
+                                <div class="box-${item.status} p-3 rounded-xl border">
+                                    <div class="flex justify-between items-start text-[10px] mb-1">
+                                        <span class="font-black">${item.product}</span>
+                                        <span class="px-1.5 py-0.5 rounded font-bold bg-white border text-[8px]">${item.status}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center text-[10px] mb-2">
+                                        <span class="text-red-500 font-bold">${item.location} | ${item.payment}</span>
+                                        <span class="font-black">NT$ ${item.amount}</span>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-1">
+                                        <input type="date" id="date-${item.rowNum}" value="${item.date.replace(/\//g,'-')}" onchange="updateRow(${item.rowNum}, '${item.status}')" class="border rounded p-1 text-[9px] bg-white">
+                                        <select onchange="updateRow(${item.rowNum}, this.value)" class="border rounded p-1 text-[9px] font-bold">
+                                            <option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option>
+                                            <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
+                                            <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
+                                            <option value="已寄出" ${item.status==='已寄出'?'selected':''}>已寄出</option>
+                                        </select>
+                                    </div>
+                                </div>`).join('')}
+                        </div>
+                    </div>
+                    <button onclick="fillForm('${name}','${first.source}','${first.receiver}','${first.phone}',\`${first.fullAddress}\`)" class="w-full py-2 mt-2 bg-white text-blue-500 text-[10px] font-bold border-t border-dashed">＋ 追加商品</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function submitOrder() {
+            const btn = document.getElementById('submitBtn'); btn.disabled = true;
+            const d = new Date();
+            const payload = {
+                orderID: "TW"+d.getTime().toString().slice(-4), customerName: document.getElementById('custName').value,
+                source: document.getElementById('source').value, receiver: document.getElementById('receiver').value,
+                phone: document.getElementById('phone').value, fullAddress: document.getElementById('fullAddress').value,
+                orderDate: `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`,
+                items: Array.from(document.querySelectorAll('.item-row')).map(row => {
+                    const loc = row.querySelector('.prodLoc').value;
+                    let pName = row.querySelector('.prodName').value;
+                    if(loc === '7仔預購') pName += ` (預:${row.querySelector('.prodDateStart').value} 攞:${row.querySelector('.prodDateEnd').value})`;
+                    return { productName: pName, pickupLocation: loc, amount: row.querySelector('.prodAmt').value, paymentStatus: row.querySelector('.prodPayment').value, status: loc==='7仔預購'?'待預購':'待取貨' };
+                })
+            };
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
+            location.reload();
+        }
+
+        function renderProfit() {
+            const container = document.getElementById('profitContainer'); container.innerHTML = "";
+            const months = allData.reduce((acc, i) => {
+                if(!i.orderDate) return acc;
+                const m = i.orderDate.split('/')[0] + "年" + i.orderDate.split('/')[1] + "月";
+                if(!acc[m]) acc[m] = { twd: 0, count: 0 };
+                acc[m].twd += parseFloat(i.amount || 0); acc[m].count++;
+                return acc;
+            }, {});
+            Object.keys(months).reverse().forEach(m => {
+                const data = months[m];
+                const card = document.createElement('div');
+                card.className = "bg-white p-6 rounded-3xl border";
+                card.innerHTML = `<h3 class="font-black mb-4">${m} (落單統計)</h3><div class="grid grid-cols-3 gap-4 text-center">
+                    <div><p class="text-[9px] text-gray-400">營業額</p><p class="font-black">$${(data.twd/3.6).toFixed(0)}</p></div>
+                    <div><p class="text-[9px] text-gray-400">成本</p><p class="font-black">$${(data.twd/4.0).toFixed(0)}</p></div>
+                    <div class="text-green-600"><p class="text-[9px]">利潤</p><p class="font-black">$${(data.twd/3.6-data.twd/4.0).toFixed(0)}</p></div>
+                </div>`;
+                container.appendChild(card);
+            });
+        }
+
+        async function updateRow(r, s) {
+            const date = document.getElementById(`date-${r}`) ? document.getElementById(`date-${r}`).value : "";
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateStatus", rowNum: r, newStatus: s, pickupDate: date }), mode: 'no-cors' });
+            loadOrders();
+        }
+        async function saveTracking(r) {
+            const t = document.getElementById(`track-${r}`).value;
+            if(!t) return alert("請填入運單號");
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateStatus", rowNum: r, tracking: t }), mode: 'no-cors' });
+            loadOrders();
+        }
+        async function saveEdit(n, r) {
+            const payload = { action: "updateStatus", rowNum: r, receiver: document.getElementById(`e-recv-${n}`).value, phone: document.getElementById(`e-ph-${n}`).value, fullAddress: document.getElementById(`e-addr-${n}`).value };
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
+            loadOrders();
+        }
+        function toggleEdit(n) { document.getElementById(`info-${n}`).classList.toggle('hidden'); document.getElementById(`edit-${n}`).classList.toggle('hidden'); }
+        function filterByLocation(loc) { filterLoc = loc; renderOrders(); }
+        function switchView(m) { currentMode = m; document.getElementById('add-section').style.display = m==='active'?'block':'none'; document.getElementById('cardContainer').style.display = m==='profit'?'none':'grid'; document.getElementById('profitContainer').style.display = m==='profit'?'block':'none'; if(m==='profit') renderProfit(); else renderOrders(); }
+        function addItemRow() { const clone = document.querySelector('.item-row').cloneNode(true); clone.querySelectorAll('input').forEach(i=>i.value=''); document.getElementById('itemsContainer').appendChild(clone); }
+        function fillForm(n,s,r,p,a) { document.getElementById('custName').value=n; document.getElementById('source').value=s; document.getElementById('receiver').value=r; document.getElementById('phone').value=p; document.getElementById('fullAddress').value=a; window.scrollTo(0,0); }
+        function copyData(t) { navigator.clipboard.writeText(t).then(()=>alert("已複製")); }
+    </script>
 </body>
 </html>
