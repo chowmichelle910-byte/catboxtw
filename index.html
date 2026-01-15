@@ -15,17 +15,13 @@
         .badge-待取貨 { background: #F59E0B; }
         .badge-已取貨 { background: #10B981; }
         .badge-已寄出 { background: #6B7280; }
-        
         .source-IG { background-color: #E1306C; color: white; }
         .source-WhatsApp { background-color: #22C55E; color: white; }
         .source-Threads { background-color: #000000; color: white; }
-        
         .stat-card { cursor: pointer; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1); }
         .stat-card:hover { background: rgba(255,255,255,0.2); }
         .stat-card.active { border: 2px solid #60A5FA; background: rgba(255,255,255,0.2); }
-        
         #copyModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
-        .editable-input { border-bottom: 1px dashed #ccc; background: transparent; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen pb-20 font-sans text-gray-900">
@@ -33,9 +29,8 @@
     <div id="copyModal">
         <div class="bg-white p-6 rounded-3xl max-w-sm w-full mx-4 shadow-2xl">
             <h3 class="text-lg font-black mb-4 flex items-center">📦 寄出成功！</h3>
-            <p class="text-[10px] text-gray-400 mb-2 font-bold uppercase tracking-widest">複製寄出訊息：</p>
             <textarea id="modalCopyText" class="w-full h-40 p-4 border rounded-2xl text-[12px] bg-gray-50 mb-4 outline-none leading-relaxed" readonly></textarea>
-            <button onclick="copyAndClose()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm shadow-lg active:scale-95 transition-transform">一鍵複製並關閉</button>
+            <button onclick="copyAndClose()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm shadow-lg">一鍵複製並關閉</button>
         </div>
     </div>
 
@@ -43,18 +38,18 @@
         <div class="flex flex-col md:flex-row items-center justify-between bg-white p-5 rounded-2xl shadow-sm border border-gray-200 gap-4">
             <div class="flex items-center space-x-2">
                 <span class="text-2xl">🇹🇼</span>
-                <h1 class="text-xl font-black text-gray-800 tracking-tight">台灣-訂單系統</h1>
+                <h1 class="text-xl font-black text-gray-800 tracking-tight">台灣-訂單管理</h1>
             </div>
             <nav class="flex bg-gray-100 p-1 rounded-xl">
                 <button onclick="switchView('active')" id="nav-active" class="px-4 py-2 rounded-lg text-xs font-bold transition-all bg-white shadow-sm text-blue-600">進行中</button>
                 <button onclick="switchView('history')" id="nav-history" class="px-4 py-2 rounded-lg text-xs font-bold transition-all text-gray-500">歷史訂單</button>
-                <button onclick="switchView('profit')" id="nav-profit" class="px-4 py-2 rounded-lg text-xs font-bold transition-all text-gray-500">💰 利潤</button>
+                <button onclick="switchView('profit')" id="nav-profit" class="px-4 py-2 rounded-lg text-xs font-bold transition-all text-gray-500">💰 利潤統計</button>
             </nav>
         </div>
 
         <section id="stat-section" class="bg-slate-900 p-6 rounded-3xl shadow-xl text-white">
             <div class="flex justify-between items-center mb-4 text-[10px] font-bold uppercase opacity-50 tracking-widest">
-                <span>未完成統計 (點擊分類查看明細)</span>
+                <span>未完成統計</span>
                 <button onclick="filterStatDetail(null)" class="bg-white/20 px-2 py-1 rounded hover:bg-white/30 transition text-[9px]">收起明細</button>
             </div>
             <div id="summary-container" class="grid grid-cols-2 md:grid-cols-5 gap-3"></div>
@@ -67,7 +62,7 @@
         <section id="add-section" class="bg-white p-6 rounded-3xl shadow-md border border-gray-100">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="space-y-4">
-                    <p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">客戶資訊 (可從歷史訂單帶入)</p>
+                    <p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">客戶資訊</p>
                     <div class="grid grid-cols-2 gap-4">
                         <input type="text" id="custName" placeholder="客戶名稱" class="border-b p-2 outline-none text-sm font-bold">
                         <select id="source" class="border-b p-2 outline-none text-sm">
@@ -106,7 +101,7 @@
     </div>
 
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycby5vPRE71thYhYY-4XDMZ2oByLBsaZmy_FQPHzjHvAthhCTFmUCC29SycppE4d7pJ4mWA/exec"; // 請替換回你的網址
+        const GAS_URL = "https://script.google.com/macros/s/AKfycby5vPRE71thYhYY-4XDMZ2oByLBsaZmy_FQPHzjHvAthhCTFmUCC29SycppE4d7pJ4mWA/exec";
         let allData = [];
         let currentMode = 'active';
 
@@ -114,11 +109,11 @@
 
         async function loadOrders() {
             const container = document.getElementById('cardContainer');
-            container.innerHTML = "<div class='text-center py-20 text-gray-400 animate-pulse font-bold text-xs uppercase'>🔄 同步數據中...</div>";
+            if (container) container.innerHTML = "<div class='text-center py-20 text-gray-400 animate-pulse font-bold text-xs uppercase'>🔄 同步數據中...</div>";
             const res = await fetch(GAS_URL);
             allData = await res.json();
             updateSummaryUI();
-            renderOrders();
+            if(currentMode === 'profit') renderProfit(); else renderOrders();
         }
 
         function updateSummaryUI() {
@@ -136,35 +131,37 @@
                 </div>`).join('');
         }
 
-        // 第2點：僅過濾黑色區域的明細，不影響下方訂單卡片
         function filterStatDetail(loc) {
             const detailSection = document.getElementById('filter-details');
             const itemsList = document.getElementById('filter-items-list');
             if(!loc) return detailSection.classList.add('hidden');
-
             detailSection.classList.remove('hidden');
             document.getElementById('filter-title').innerText = `📍 ${loc} 明細：`;
             const filteredItems = allData.filter(i => i.location === loc && (i.status === '待取貨' || i.status === '待預購') && !i.fullAddress.includes("運單:"));
             itemsList.innerHTML = filteredItems.map(item => `
-                <div class="bg-white/10 p-3 rounded-xl border border-white/10">
-                    <p class="text-white font-bold text-[11px]">${item.product}</p>
-                    <p class="text-blue-300 text-[9px] font-bold">${item.name} | $${item.amount}</p>
+                <div class="bg-white/10 p-3 rounded-xl border border-white/10 flex justify-between items-center">
+                    <div>
+                        <p class="text-white font-bold text-[11px]">${item.product}</p>
+                        <p class="text-blue-300 text-[9px]">${item.name} | $${item.amount}</p>
+                    </div>
+                    <select onchange="statusCheck(${item.rowNum}, this.value, '${item.location}')" class="bg-slate-800 text-white text-[9px] border border-white/20 rounded p-1 outline-none">
+                        <option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option>
+                        <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
+                        <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
+                    </select>
                 </div>`).join('');
         }
 
-        // 第4點：日期顯示在名目前面
         function renderOrders() {
             const container = document.getElementById('cardContainer');
             container.innerHTML = "";
             const groups = allData.reduce((acc, obj) => { if (!acc[obj.name]) acc[obj.name] = []; acc[obj.name].push(obj); return acc; }, {});
-            
             Object.keys(groups).forEach(name => {
                 const items = groups[name].filter(item => {
                     const hasTrack = item.fullAddress.includes("運單:");
                     return currentMode === 'active' ? !hasTrack : hasTrack;
                 });
                 if (items.length === 0) return;
-
                 const first = items[0];
                 const card = document.createElement('div');
                 card.className = "bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-6";
@@ -186,16 +183,16 @@
                             ${currentMode === 'active' ? `
                             <div class="flex gap-2 pt-4 border-t mt-2">
                                 <input type="text" id="track-${first.rowNum}" placeholder="輸入運單" class="flex-1 border p-2 rounded-xl text-xs">
-                                <button onclick="shipAndWriteNewRow(${first.rowNum}, '${name}')" class="bg-slate-800 text-white px-3 rounded-xl text-[10px]">寄出並記錄</button>
+                                <button onclick="shipOrder(${first.rowNum}, '${name}')" class="bg-slate-800 text-white px-3 rounded-xl text-[10px]">寄出並記錄</button>
                             </div>` : ''}
                         </div>
                         <div class="space-y-3">
                             ${items.map(item => `
                                 <div class="box-${item.status} p-3 rounded-xl border relative group">
                                     <div class="flex flex-col gap-1">
-                                        <input type="text" value="${item.product}" class="edit-prod font-black text-gray-800 text-xs w-full bg-transparent border-b border-transparent focus:border-gray-300 outline-none">
+                                        <input type="text" value="${item.product}" onchange="updateRowField(${item.rowNum}, 'product', this.value)" class="font-black text-gray-800 text-xs w-full bg-transparent border-none outline-none">
                                         <div class="flex justify-between items-center">
-                                            <select class="edit-loc text-[10px] bg-transparent border-none outline-none font-bold text-blue-600">
+                                            <select onchange="updateRowField(${item.rowNum}, 'location', this.value)" class="text-[10px] bg-transparent border-none outline-none font-bold text-blue-600">
                                                 <option ${item.location==='蝦皮'?'selected':''}>蝦皮</option>
                                                 <option ${item.location==='7-11'?'selected':''}>7-11</option>
                                                 <option ${item.location==='全家'?'selected':''}>全家</option>
@@ -204,7 +201,7 @@
                                             </select>
                                             <div class="flex items-center gap-1">
                                                 <span class="text-[9px]">NT$</span>
-                                                <input type="number" value="${item.amount}" class="edit-amt w-16 text-[10px] font-black bg-transparent border-none outline-none">
+                                                <input type="number" value="${item.amount}" onchange="updateRowField(${item.rowNum}, 'amount', this.value)" class="w-16 text-[10px] font-black bg-transparent border-none outline-none">
                                             </div>
                                             <select onchange="statusCheck(${item.rowNum}, this.value, '${item.location}')" class="text-[9px] border rounded px-1">
                                                 <option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option>
@@ -213,7 +210,6 @@
                                                 <option value="已寄出" ${item.status==='已寄出'?'selected':''}>已寄出</option>
                                             </select>
                                         </div>
-                                        <button onclick="updateSingleItem(${item.rowNum}, this)" class="hidden group-hover:block absolute -right-2 -top-2 bg-blue-500 text-white rounded-full p-1 text-[8px]">更新</button>
                                     </div>
                                 </div>`).join('')}
                         </div>
@@ -222,62 +218,33 @@
             });
         }
 
-        // 第1點：7仔預購自動轉換邏輯
         async function statusCheck(rowNum, newStatus, currentLoc) {
-            let finalLoc = currentLoc;
-            let finalPay = null;
-
+            let params = { action: "updateStatus", rowNum: rowNum, newStatus: newStatus };
             if (currentLoc === '7仔預購' && newStatus === '待取貨') {
-                finalLoc = '7-11';
-                finalPay = '已付';
-                if(!confirm("檢測到 7仔預購 轉 待取貨，將自動更改為 7-11 及 已付，是否繼續？")) return;
+                params.newLoc = '7-11';
+                params.newPay = '已付';
             }
-
-            await fetch(GAS_URL, { 
-                method: 'POST', 
-                body: JSON.stringify({ action: "updateStatus", rowNum, newStatus, newLoc: finalLoc, newPay: finalPay }), 
-                mode: 'no-cors' 
-            });
-            loadOrders();
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(params), mode: 'no-cors' });
+            setTimeout(loadOrders, 500);
         }
 
-        // 第5點：修改商品資料功能
-        async function updateSingleItem(rowNum, btn) {
-            const box = btn.closest('.group');
-            const payload = {
-                action: "updateProduct",
-                rowNum: rowNum,
-                product: box.querySelector('.edit-prod').value,
-                location: box.querySelector('.edit-loc').value,
-                amount: box.querySelector('.edit-amt').value
-            };
-            btn.innerText = "...";
-            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
-            loadOrders();
+        async function updateRowField(rowNum, field, value) {
+            let params = { action: "updateField", rowNum: rowNum, field: field, value: value };
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(params), mode: 'no-cors' });
         }
 
-        // 第3點：運單寫入新一行 & 歷史資料復用
-        async function shipAndWriteNewRow(rowNum, customerName) {
+        async function shipOrder(rowNum, customerName) {
             const track = document.getElementById(`track-${rowNum}`).value;
             if(!track) return alert("請輸入運單");
-
             const groupItems = allData.filter(i => i.name === customerName);
             const msg = `你好～貨件已準備好寄出，‍客人可以於聽日嘅下午時間利用順豐官網或app中查閱🙇🏻‍♀️\n\n運單編號：${track}\n\n謝謝🙏🏻🙏🏻`;
-
-            // 這裡發送請求給 GAS，GAS 端需要配合：action 為 "shipOrder" 時，將地址欄加上運單號
             for (let item of groupItems) {
-                await fetch(GAS_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ action: "updateStatus", rowNum: item.rowNum, newStatus: '已寄出', tracking: track }), 
-                    mode: 'no-cors' 
-                });
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateStatus", rowNum: item.rowNum, newStatus: '已寄出', tracking: track }), mode: 'no-cors' });
             }
-
             document.getElementById('modalCopyText').value = msg;
             document.getElementById('copyModal').style.display = 'flex';
         }
 
-        // 第3點：從歷史訂單帶入資料
         function reuseCustomer(name) {
             const data = allData.find(i => i.name === name);
             if(data) {
@@ -285,10 +252,8 @@
                 document.getElementById('source').value = data.source;
                 document.getElementById('receiver').value = data.receiver;
                 document.getElementById('phone').value = data.phone;
-                // 過濾掉地址中可能存在的舊運單字眼
-                document.getElementById('fullAddress').value = data.fullAddress.split('\n運單:')[0];
+                document.getElementById('fullAddress').value = data.fullAddress.split(' (運單:')[0];
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                alert("✅ 客戶資料已帶入下單表單");
             }
         }
 
@@ -312,7 +277,7 @@
                 }))
             };
             await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
-            location.reload();
+            setTimeout(() => location.reload(), 1000);
         }
 
         function switchView(mode) {
@@ -336,7 +301,6 @@
         function copyAndClose() {
             const text = document.getElementById('modalCopyText');
             navigator.clipboard.writeText(text.value).then(() => {
-                alert("✅ 訊息已複製");
                 document.getElementById('copyModal').style.display = 'none';
                 loadOrders();
             });
