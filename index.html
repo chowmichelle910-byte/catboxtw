@@ -235,18 +235,31 @@
             });
         }
 
-        async function updateRowField(rowNum, field, value, currentLoc = '') {
-            let params = { action: "updateField", rowNum: rowNum, field: field, value: value };
-            
-            // 7仔預購轉待取貨連動
-            if (field === 'status' && currentLoc === '7仔預購' && value === '待取貨') {
-                params.newLoc = '7-11';
-                params.newPay = '已付';
-            }
-            
-            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(params), mode: 'no-cors' });
-            setTimeout(loadOrders, 500);
-        }
+        // 修改後的 JS 函數，確保 field 能正確對應 GAS
+async function updateRowField(rowNum, field, value, currentLoc = '') {
+    let params = { 
+        action: "updateField", 
+        rowNum: rowNum, 
+        field: field, 
+        value: value 
+    };
+    
+    // 7仔預購轉待取貨的自動連動邏輯
+    if (field === 'status' && currentLoc === '7仔預購' && value === '待取貨') {
+        params.newLoc = '7-11';
+        params.newPay = '已付';
+        alert("已檢測到7仔預購轉待取貨，系統將自動更改地點為 7-11 及狀態為已付。");
+    }
+    
+    await fetch(GAS_URL, { 
+        method: 'POST', 
+        body: JSON.stringify(params), 
+        mode: 'no-cors' 
+    });
+    
+    // 延遲刷新數據，確保後端已寫入
+    setTimeout(loadOrders, 500);
+}
 
         async function submitOrder() {
             const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "儲存中...";
