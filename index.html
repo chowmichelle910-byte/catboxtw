@@ -35,7 +35,7 @@
     </div>
 
     <div class="max-w-6xl mx-auto p-4 space-y-6">
-        <div class="flex flex-col md:flex-row items-center justify-between bg-white p-5 rounded-2xl shadow-sm border border-gray-200 gap-4">
+        <div class="flex flex-col md:flex-row items-center justify-between bg-white p-5 rounded-2xl shadow-sm border border-gray-100 gap-4">
             <div class="flex items-center space-x-2">
                 <span class="text-2xl">🇹🇼</span>
                 <h1 class="text-xl font-black text-gray-800 tracking-tight">台灣-訂單管理</h1>
@@ -73,7 +73,10 @@
                         <input type="text" id="receiver" placeholder="收件人姓名" class="border-b p-2 outline-none text-sm font-bold">
                         <input type="text" id="phone" placeholder="電話號碼" class="border-b p-2 outline-none text-sm">
                     </div>
-                    <textarea id="fullAddress" placeholder="地址/點碼..." class="w-full border p-3 rounded-2xl h-24 text-xs bg-gray-50 outline-none"></textarea>
+                    <div class="relative">
+                        <textarea id="fullAddress" placeholder="輸入順豐點碼或地址..." class="w-full border p-3 rounded-2xl h-24 text-xs bg-gray-50 outline-none pr-16"></textarea>
+                        <button onclick="searchSFAddress()" class="absolute right-2 top-2 bg-blue-100 text-blue-600 px-2 py-1 rounded-lg text-[10px] font-bold hover:bg-blue-200 transition">搜尋點碼</button>
+                    </div>
                 </div>
                 <div class="space-y-4">
                     <div class="flex justify-between items-center"><p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">商品明細</p><button onclick="addItemRow()" class="text-blue-600 text-[10px] font-black underline">+ 增加品項</button></div>
@@ -120,6 +123,25 @@
             if(currentMode === 'profit') renderProfit(); else renderOrders();
         }
 
+        // 順豐搜尋功能整合
+        async function searchSFAddress() {
+            const addrInput = document.getElementById('fullAddress');
+            const code = addrInput.value.trim();
+            if (!code) return alert("請輸入點碼再搜尋");
+            
+            try {
+                const res = await fetch(`${GAS_URL}?action=searchSF&code=${code}`);
+                const data = await res.json();
+                if (data.found) {
+                    addrInput.value = data.address;
+                } else {
+                    alert("找不到該點碼，請檢查輸入是否正確。");
+                }
+            } catch (e) {
+                alert("搜尋失敗，請確認 GAS 佈署正常。");
+            }
+        }
+
         function togglePreorderDates(el) {
             const row = el.closest('.item-row');
             const fields = row.querySelector('.preorder-fields');
@@ -161,7 +183,7 @@
                             <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
                         </select>
                     </div>
-                    <input type="text" value="${item.date || ''}" placeholder="日期 (YYYY-MM-DD)" onchange="updateRowField(${item.rowNum}, 'date', this.value)" class="w-full bg-transparent border-b border-white/20 text-[9px] text-gray-400 outline-none">
+                    <input type="text" value="${item.date || ''}" placeholder="日期" onchange="updateRowField(${item.rowNum}, 'date', this.value)" class="w-full bg-transparent border-b border-white/20 text-[9px] text-gray-400 outline-none">
                 </div>`).join('');
         }
 
@@ -225,7 +247,7 @@
                                         </div>
                                         <div class="flex items-center gap-2 mt-1">
                                             <span class="text-[9px] text-gray-400">📅</span>
-                                            <input type="text" value="${item.date || ''}" placeholder="日期或格式: (預:YYYY-MM-DD 攞:)" onchange="updateRowField(${item.rowNum}, 'date', this.value)" class="flex-1 bg-transparent border-none outline-none text-[9px] text-gray-500">
+                                            <input type="text" value="${item.date || ''}" onchange="updateRowField(${item.rowNum}, 'date', this.value)" class="flex-1 bg-transparent border-none outline-none text-[9px] text-gray-500">
                                         </div>
                                     </div>
                                 </div>`).join('')}
@@ -235,31 +257,15 @@
             });
         }
 
-        // 修改後的 JS 函數，確保 field 能正確對應 GAS
-async function updateRowField(rowNum, field, value, currentLoc = '') {
-    let params = { 
-        action: "updateField", 
-        rowNum: rowNum, 
-        field: field, 
-        value: value 
-    };
-    
-    // 7仔預購轉待取貨的自動連動邏輯
-    if (field === 'status' && currentLoc === '7仔預購' && value === '待取貨') {
-        params.newLoc = '7-11';
-        params.newPay = '已付';
-        alert("已檢測到7仔預購轉待取貨，系統將自動更改地點為 7-11 及狀態為已付。");
-    }
-    
-    await fetch(GAS_URL, { 
-        method: 'POST', 
-        body: JSON.stringify(params), 
-        mode: 'no-cors' 
-    });
-    
-    // 延遲刷新數據，確保後端已寫入
-    setTimeout(loadOrders, 500);
-}
+        async function updateRowField(rowNum, field, value, currentLoc = '') {
+            let params = { action: "updateField", rowNum: rowNum, field: field, value: value };
+            if (field === 'status' && currentLoc === '7仔預購' && value === '待取貨') {
+                params.newLoc = '7-11';
+                params.newPay = '已付';
+            }
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(params), mode: 'no-cors' });
+            setTimeout(loadOrders, 500);
+        }
 
         async function submitOrder() {
             const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "儲存中...";
@@ -276,9 +282,7 @@ async function updateRowField(rowNum, field, value, currentLoc = '') {
                     const loc = row.querySelector('.prodLoc').value;
                     let dateStr = "";
                     if(loc === '7仔預購') {
-                        const start = row.querySelector('.pStart').value;
-                        const end = row.querySelector('.pEnd').value;
-                        dateStr = `(預:${start} 攞:${end})`;
+                        dateStr = `(預:${row.querySelector('.pStart').value} 攞:${row.querySelector('.pEnd').value})`;
                     }
                     return {
                         productName: row.querySelector('.prodName').value,
