@@ -65,7 +65,7 @@
                     <p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">客戶資訊</p>
                     <div class="grid grid-cols-2 gap-4">
                         <input type="text" id="custName" placeholder="客戶名稱" class="border-b p-2 outline-none text-sm font-bold">
-                        <select id="source" class="border-b p-2 outline-none text-sm">
+                        <select id="source" class="border-b p-2 outline-none text-sm font-bold">
                             <option value="IG">IG</option><option value="WhatsApp">WhatsApp</option><option value="Threads">Threads</option>
                         </select>
                     </div>
@@ -80,8 +80,8 @@
                     <div id="itemsContainer" class="space-y-3 max-h-[350px] overflow-y-auto pr-2">
                         <div class="item-row bg-gray-50 p-4 rounded-2xl border border-gray-100">
                             <input type="text" placeholder="商品名稱" class="prodName w-full mb-3 p-2 rounded-lg border text-sm">
-                            <div class="grid grid-cols-3 gap-2">
-                                <select class="prodLoc border p-2 rounded-lg text-[10px] bg-white">
+                            <div class="grid grid-cols-3 gap-2 mb-2">
+                                <select onchange="togglePreorderDates(this)" class="prodLoc border p-2 rounded-lg text-[10px] bg-white">
                                     <option value="蝦皮">蝦皮</option><option value="7-11">7-11</option><option value="全家">全家</option><option value="宅配">宅配</option><option value="7仔預購">7仔預購</option>
                                 </select>
                                 <input type="number" placeholder="金額" class="prodAmt border p-2 rounded-lg text-[10px]">
@@ -89,9 +89,13 @@
                                     <option value="已付">已付</option><option value="到付">到付</option><option value="待付">待付</option>
                                 </select>
                             </div>
+                            <div class="preorder-fields hidden grid grid-cols-2 gap-2 mt-2">
+                                <input type="date" class="pStart border p-1 rounded text-[9px]" title="預購日期">
+                                <input type="date" class="pEnd border p-1 rounded text-[9px]" title="取貨日期">
+                            </div>
                         </div>
                     </div>
-                    <button id="submitBtn" onclick="submitOrder()" class="w-full mt-4 bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg active:scale-95 transition-all">確認儲存並提交</button>
+                    <button id="submitBtn" onclick="submitOrder()" class="w-full mt-4 bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg">確認儲存並提交</button>
                 </div>
             </div>
         </section>
@@ -114,6 +118,12 @@
             allData = await res.json();
             updateSummaryUI();
             if(currentMode === 'profit') renderProfit(); else renderOrders();
+        }
+
+        function togglePreorderDates(el) {
+            const row = el.closest('.item-row');
+            const fields = row.querySelector('.preorder-fields');
+            fields.classList.toggle('hidden', el.value !== '7仔預購');
         }
 
         function updateSummaryUI() {
@@ -139,16 +149,19 @@
             document.getElementById('filter-title').innerText = `📍 ${loc} 明細：`;
             const filteredItems = allData.filter(i => i.location === loc && (i.status === '待取貨' || i.status === '待預購') && !i.fullAddress.includes("運單:"));
             itemsList.innerHTML = filteredItems.map(item => `
-                <div class="bg-white/10 p-3 rounded-xl border border-white/10 flex justify-between items-center">
-                    <div>
-                        <p class="text-white font-bold text-[11px]">${item.product}</p>
-                        <p class="text-blue-300 text-[9px]">${item.name} | $${item.amount}</p>
+                <div class="bg-white/10 p-3 rounded-xl border border-white/10 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-white font-bold text-[11px]">${item.product}</p>
+                            <p class="text-blue-300 text-[9px]">${item.name} | $${item.amount}</p>
+                        </div>
+                        <select onchange="updateRowField(${item.rowNum}, 'status', this.value, '${item.location}')" class="bg-slate-800 text-white text-[9px] border border-white/20 rounded p-1">
+                            <option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option>
+                            <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
+                            <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
+                        </select>
                     </div>
-                    <select onchange="statusCheck(${item.rowNum}, this.value, '${item.location}')" class="bg-slate-800 text-white text-[9px] border border-white/20 rounded p-1 outline-none">
-                        <option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option>
-                        <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
-                        <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
-                    </select>
+                    <input type="text" value="${item.date || ''}" placeholder="日期 (YYYY-MM-DD)" onchange="updateRowField(${item.rowNum}, 'date', this.value)" class="w-full bg-transparent border-b border-white/20 text-[9px] text-gray-400 outline-none">
                 </div>`).join('');
         }
 
@@ -170,7 +183,7 @@
                         <div class="flex items-center space-x-2">
                             <span class="text-gray-400 text-[10px] font-mono">[${first.orderDate}]</span>
                             <b class="text-gray-800 text-lg">${name}</b>
-                            <span class="source-${first.source} badge font-black uppercase shadow-sm">${first.source}</span>
+                            <span class="source-${first.source} badge uppercase">${first.source}</span>
                         </div>
                         <div class="flex gap-2">
                             ${currentMode === 'history' ? `<button onclick="reuseCustomer('${name}')" class="bg-orange-500 text-white text-[10px] px-3 py-1 rounded-xl font-bold">帶入資料</button>` : ''}
@@ -191,24 +204,28 @@
                                 <div class="box-${item.status} p-3 rounded-xl border relative group">
                                     <div class="flex flex-col gap-1">
                                         <input type="text" value="${item.product}" onchange="updateRowField(${item.rowNum}, 'product', this.value)" class="font-black text-gray-800 text-xs w-full bg-transparent border-none outline-none">
-                                        <div class="flex justify-between items-center">
-                                            <select onchange="updateRowField(${item.rowNum}, 'location', this.value)" class="text-[10px] bg-transparent border-none outline-none font-bold text-blue-600">
-                                                <option ${item.location==='蝦皮'?'selected':''}>蝦皮</option>
-                                                <option ${item.location==='7-11'?'selected':''}>7-11</option>
-                                                <option ${item.location==='全家'?'selected':''}>全家</option>
-                                                <option ${item.location==='宅配'?'selected':''}>宅配</option>
-                                                <option ${item.location==='7仔預購'?'selected':''}>7仔預購</option>
-                                            </select>
-                                            <div class="flex items-center gap-1">
-                                                <span class="text-[9px]">NT$</span>
-                                                <input type="number" value="${item.amount}" onchange="updateRowField(${item.rowNum}, 'amount', this.value)" class="w-16 text-[10px] font-black bg-transparent border-none outline-none">
+                                        <div class="flex justify-between items-center text-[10px]">
+                                            <div class="flex items-center gap-2">
+                                                <select onchange="updateRowField(${item.rowNum}, 'location', this.value)" class="bg-transparent border-none outline-none font-bold text-blue-600">
+                                                    <option ${item.location==='蝦皮'?'selected':''}>蝦皮</option>
+                                                    <option ${item.location==='7-11'?'selected':''}>7-11</option>
+                                                    <option ${item.location==='全家'?'selected':''}>全家</option>
+                                                    <option ${item.location==='宅配'?'selected':''}>宅配</option>
+                                                    <option ${item.location==='7仔預購'?'selected':''}>7仔預購</option>
+                                                </select>
+                                                <span class="text-gray-400">NT$</span>
+                                                <input type="number" value="${item.amount}" onchange="updateRowField(${item.rowNum}, 'amount', this.value)" class="w-16 font-black bg-transparent border-none outline-none">
                                             </div>
-                                            <select onchange="statusCheck(${item.rowNum}, this.value, '${item.location}')" class="text-[9px] border rounded px-1">
+                                            <select onchange="updateRowField(${item.rowNum}, 'status', this.value, '${item.location}')" class="border rounded px-1">
                                                 <option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option>
                                                 <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
                                                 <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
                                                 <option value="已寄出" ${item.status==='已寄出'?'selected':''}>已寄出</option>
                                             </select>
+                                        </div>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <span class="text-[9px] text-gray-400">📅</span>
+                                            <input type="text" value="${item.date || ''}" placeholder="日期或格式: (預:YYYY-MM-DD 攞:)" onchange="updateRowField(${item.rowNum}, 'date', this.value)" class="flex-1 bg-transparent border-none outline-none text-[9px] text-gray-500">
                                         </div>
                                     </div>
                                 </div>`).join('')}
@@ -218,43 +235,17 @@
             });
         }
 
-        async function statusCheck(rowNum, newStatus, currentLoc) {
-            let params = { action: "updateStatus", rowNum: rowNum, newStatus: newStatus };
-            if (currentLoc === '7仔預購' && newStatus === '待取貨') {
+        async function updateRowField(rowNum, field, value, currentLoc = '') {
+            let params = { action: "updateField", rowNum: rowNum, field: field, value: value };
+            
+            // 7仔預購轉待取貨連動
+            if (field === 'status' && currentLoc === '7仔預購' && value === '待取貨') {
                 params.newLoc = '7-11';
                 params.newPay = '已付';
             }
+            
             await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(params), mode: 'no-cors' });
             setTimeout(loadOrders, 500);
-        }
-
-        async function updateRowField(rowNum, field, value) {
-            let params = { action: "updateField", rowNum: rowNum, field: field, value: value };
-            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(params), mode: 'no-cors' });
-        }
-
-        async function shipOrder(rowNum, customerName) {
-            const track = document.getElementById(`track-${rowNum}`).value;
-            if(!track) return alert("請輸入運單");
-            const groupItems = allData.filter(i => i.name === customerName);
-            const msg = `你好～貨件已準備好寄出，‍客人可以於聽日嘅下午時間利用順豐官網或app中查閱🙇🏻‍♀️\n\n運單編號：${track}\n\n謝謝🙏🏻🙏🏻`;
-            for (let item of groupItems) {
-                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateStatus", rowNum: item.rowNum, newStatus: '已寄出', tracking: track }), mode: 'no-cors' });
-            }
-            document.getElementById('modalCopyText').value = msg;
-            document.getElementById('copyModal').style.display = 'flex';
-        }
-
-        function reuseCustomer(name) {
-            const data = allData.find(i => i.name === name);
-            if(data) {
-                document.getElementById('custName').value = data.name;
-                document.getElementById('source').value = data.source;
-                document.getElementById('receiver').value = data.receiver;
-                document.getElementById('phone').value = data.phone;
-                document.getElementById('fullAddress').value = data.fullAddress.split(' (運單:')[0];
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
         }
 
         async function submitOrder() {
@@ -268,16 +259,38 @@
                 phone: document.getElementById('phone').value,
                 fullAddress: document.getElementById('fullAddress').value,
                 orderDate: `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`,
-                items: Array.from(document.querySelectorAll('.item-row')).map(row => ({
-                    productName: row.querySelector('.prodName').value,
-                    pickupLocation: row.querySelector('.prodLoc').value,
-                    amount: row.querySelector('.prodAmt').value,
-                    paymentStatus: row.querySelector('.prodPayment').value,
-                    status: row.querySelector('.prodLoc').value ==='7仔預購'?'待預購':'待取貨'
-                }))
+                items: Array.from(document.querySelectorAll('.item-row')).map(row => {
+                    const loc = row.querySelector('.prodLoc').value;
+                    let dateStr = "";
+                    if(loc === '7仔預購') {
+                        const start = row.querySelector('.pStart').value;
+                        const end = row.querySelector('.pEnd').value;
+                        dateStr = `(預:${start} 攞:${end})`;
+                    }
+                    return {
+                        productName: row.querySelector('.prodName').value,
+                        pickupLocation: loc,
+                        amount: row.querySelector('.prodAmt').value,
+                        paymentStatus: row.querySelector('.prodPayment').value,
+                        status: loc === '7仔預購' ? '待預購' : '待取貨',
+                        date: dateStr
+                    };
+                })
             };
             await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
             setTimeout(() => location.reload(), 1000);
+        }
+
+        async function shipOrder(rowNum, customerName) {
+            const track = document.getElementById(`track-${rowNum}`).value;
+            if(!track) return alert("請輸入運單");
+            const groupItems = allData.filter(i => i.name === customerName);
+            const msg = `你好～貨件已準備好寄出，‍客人可以於聽日嘅下午時間利用順豐官網或app中查閱🙇🏻‍♀️\n\n運單編號：${track}\n\n謝謝🙏🏻🙏🏻`;
+            for (let item of groupItems) {
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateField", rowNum: item.rowNum, field: 'status', value: '已寄出', tracking: track }), mode: 'no-cors' });
+            }
+            document.getElementById('modalCopyText').value = msg;
+            document.getElementById('copyModal').style.display = 'flex';
         }
 
         function switchView(mode) {
@@ -309,10 +322,21 @@
             const container = document.getElementById('itemsContainer');
             const row = document.querySelector('.item-row').cloneNode(true); 
             row.querySelectorAll('input').forEach(i => i.value = ''); 
+            row.querySelector('.preorder-fields').classList.add('hidden');
             container.appendChild(row); 
         }
         function copyData(t) { navigator.clipboard.writeText(t).then(() => alert("✅ 已複製")); }
-        
+        function reuseCustomer(name) {
+            const data = allData.find(i => i.name === name);
+            if(data) {
+                document.getElementById('custName').value = data.name;
+                document.getElementById('source').value = data.source;
+                document.getElementById('receiver').value = data.receiver;
+                document.getElementById('phone').value = data.phone;
+                document.getElementById('fullAddress').value = data.fullAddress.split(' (運單:')[0];
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
         function renderProfit() {
             const container = document.getElementById('profitContainer');
             container.innerHTML = "";
