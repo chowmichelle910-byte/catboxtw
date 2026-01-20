@@ -6,10 +6,19 @@
     <title>🇹🇼 台灣-訂單管理</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* 基礎狀態顏色 */
         .box-待預購 { border-left: 5px solid #EC4899; background-color: #FDF2F8; }
         .box-待取貨 { border-left: 5px solid #F59E0B; background-color: #FFFBEB; }
         .box-已取貨 { border-left: 5px solid #10B981; background-color: #F0FDF4; }
         .box-已寄出 { border-left: 5px solid #9CA3AF; background-color: #F9FAFB; opacity: 0.8; }
+        
+        /* 到齊紅色高亮樣式 */
+        .card-ready-to-ship { 
+            border: 3px solid #EF4444 !important; 
+            background-color: #FEF2F2 !important; 
+            box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.2);
+        }
+
         .badge { font-size: 8px; padding: 2px 4px; border-radius: 4px; color: white; font-weight: 900; }
         .badge-待預購 { background: #EC4899; }
         .badge-待取貨 { background: #F59E0B; }
@@ -123,23 +132,13 @@
             if(currentMode === 'profit') renderProfit(); else renderOrders();
         }
 
-        // 順豐搜尋功能整合
         async function searchSFAddress() {
             const addrInput = document.getElementById('fullAddress');
             const code = addrInput.value.trim();
             if (!code) return alert("請輸入點碼再搜尋");
-            
-            try {
-                const res = await fetch(`${GAS_URL}?action=searchSF&code=${code}`);
-                const data = await res.json();
-                if (data.found) {
-                    addrInput.value = data.address;
-                } else {
-                    alert("找不到該點碼，請檢查輸入是否正確。");
-                }
-            } catch (e) {
-                alert("搜尋失敗，請確認 GAS 佈署正常。");
-            }
+            const res = await fetch(`${GAS_URL}?action=searchSF&code=${code}`);
+            const data = await res.json();
+            if (data.found) addrInput.value = data.address; else alert("找不到該點碼");
         }
 
         function togglePreorderDates(el) {
@@ -183,29 +182,53 @@
                             <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
                         </select>
                     </div>
-                    <input type="text" value="${item.date || ''}" placeholder="日期" onchange="updateRowField(${item.rowNum}, 'date', this.value)" class="w-full bg-transparent border-b border-white/20 text-[9px] text-gray-400 outline-none">
+                    <input type="text" value="${item.date || ''}" onchange="updateRowField(${item.rowNum}, 'date', this.value)" class="w-full bg-transparent border-b border-white/20 text-[9px] text-gray-400 outline-none">
                 </div>`).join('');
         }
 
         function renderOrders() {
             const container = document.getElementById('cardContainer');
             container.innerHTML = "";
+            
+            // 數據分組
             const groups = allData.reduce((acc, obj) => { if (!acc[obj.name]) acc[obj.name] = []; acc[obj.name].push(obj); return acc; }, {});
-            Object.keys(groups).forEach(name => {
+            
+            // 轉換為陣列以便排序
+            const sortedGroupKeys = Object.keys(groups).sort((a, b) => {
+                const itemsA = groups[a].filter(i => !i.fullAddress.includes("運單:"));
+                const itemsB = groups[b].filter(i => !i.fullAddress.includes("運單:"));
+                
+                // 判定是否到齊 (進行中的訂單全部都是 "已取貨")
+                const isReadyA = itemsA.length > 0 && itemsA.every(i => i.status === '已取貨');
+                const isReadyB = itemsB.length > 0 && itemsB.every(i => i.status === '已取貨');
+                
+                if (isReadyA && !isReadyB) return -1; // A 到齊，A 往上排
+                if (!isReadyA && isReadyB) return 1;  // B 到齊，B 往上排
+                return 0;
+            });
+
+            sortedGroupKeys.forEach(name => {
                 const items = groups[name].filter(item => {
                     const hasTrack = item.fullAddress.includes("運單:");
                     return currentMode === 'active' ? !hasTrack : hasTrack;
                 });
                 if (items.length === 0) return;
+
+                const isAllReady = items.every(i => i.status === '已取貨');
                 const first = items[0];
                 const card = document.createElement('div');
-                card.className = "bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-6";
+                
+                // 動態設定 Class：到齊則加紅色粗框
+                card.className = `bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-6 ${isAllReady && currentMode === 'active' ? 'card-ready-to-ship' : ''}`;
+                
                 card.innerHTML = `
-                    <div class="p-4 bg-gray-50/50 border-b flex justify-between items-center">
+                    <div class="p-4 ${isAllReady && currentMode === 'active' ? 'bg-red-50' : 'bg-gray-50/50'} border-b flex justify-between items-center">
                         <div class="flex items-center space-x-2">
+                            ${isAllReady && currentMode === 'active' ? '<span class="animate-bounce">🚀</span>' : ''}
                             <span class="text-gray-400 text-[10px] font-mono">[${first.orderDate}]</span>
                             <b class="text-gray-800 text-lg">${name}</b>
                             <span class="source-${first.source} badge uppercase">${first.source}</span>
+                            ${isAllReady && currentMode === 'active' ? '<span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-black ml-2">貨品到齊</span>' : ''}
                         </div>
                         <div class="flex gap-2">
                             ${currentMode === 'history' ? `<button onclick="reuseCustomer('${name}')" class="bg-orange-500 text-white text-[10px] px-3 py-1 rounded-xl font-bold">帶入資料</button>` : ''}
