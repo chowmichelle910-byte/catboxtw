@@ -6,30 +6,18 @@
     <title>🇹🇼 台灣-訂單管理</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 基礎狀態顏色 */
         .box-待預購 { border-left: 5px solid #EC4899; background-color: #FDF2F8; }
         .box-待取貨 { border-left: 5px solid #F59E0B; background-color: #FFFBEB; }
         .box-已取貨 { border-left: 5px solid #10B981; background-color: #F0FDF4; }
         .box-已寄出 { border-left: 5px solid #9CA3AF; background-color: #F9FAFB; opacity: 0.8; }
-        
-        /* 到齊紅色高亮樣式 */
-        .card-ready-to-ship { 
-            border: 3px solid #EF4444 !important; 
-            background-color: #FEF2F2 !important; 
-            box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.2);
-        }
-
+        .card-ready-to-ship { border: 3px solid #EF4444 !important; background-color: #FEF2F2 !important; box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.2); }
         .badge { font-size: 8px; padding: 2px 4px; border-radius: 4px; color: white; font-weight: 900; }
         .badge-待預購 { background: #EC4899; }
         .badge-待取貨 { background: #F59E0B; }
         .badge-已取貨 { background: #10B981; }
-        .badge-已寄出 { background: #6B7280; }
         .source-IG { background-color: #E1306C; color: white; }
         .source-WhatsApp { background-color: #22C55E; color: white; }
         .source-Threads { background-color: #000000; color: white; }
-        .stat-card { cursor: pointer; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1); }
-        .stat-card:hover { background: rgba(255,255,255,0.2); }
-        .stat-card.active { border: 2px solid #60A5FA; background: rgba(255,255,255,0.2); }
         #copyModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
     </style>
 </head>
@@ -57,10 +45,6 @@
         </div>
 
         <section id="stat-section" class="bg-slate-900 p-6 rounded-3xl shadow-xl text-white">
-            <div class="flex justify-between items-center mb-4 text-[10px] font-bold uppercase opacity-50 tracking-widest">
-                <span>未完成統計</span>
-                <button onclick="filterStatDetail(null)" class="bg-white/20 px-2 py-1 rounded hover:bg-white/30 transition text-[9px]">收起明細</button>
-            </div>
             <div id="summary-container" class="grid grid-cols-2 md:grid-cols-5 gap-3"></div>
             <div id="filter-details" class="hidden mt-6 pt-6 border-t border-white/10">
                 <h3 id="filter-title" class="text-sm font-bold mb-4 text-blue-400 italic"></h3>
@@ -84,7 +68,7 @@
                     </div>
                     <div class="relative">
                         <textarea id="fullAddress" placeholder="輸入順豐點碼或地址..." class="w-full border p-3 rounded-2xl h-24 text-xs bg-gray-50 outline-none pr-16"></textarea>
-                        <button onclick="searchSFAddress()" class="absolute right-2 top-2 bg-blue-100 text-blue-600 px-2 py-1 rounded-lg text-[10px] font-bold hover:bg-blue-200 transition">搜尋點碼</button>
+                        <button onclick="searchSFAddress()" class="absolute right-2 top-2 bg-blue-100 text-blue-600 px-2 py-1 rounded-lg text-[10px] font-bold">搜尋點碼</button>
                     </div>
                 </div>
                 <div class="space-y-4">
@@ -92,12 +76,12 @@
                     <div id="itemsContainer" class="space-y-3 max-h-[350px] overflow-y-auto pr-2">
                         <div class="item-row bg-gray-50 p-4 rounded-2xl border border-gray-100">
                             <input type="text" placeholder="商品名稱" class="prodName w-full mb-3 p-2 rounded-lg border text-sm">
-                            <div class="grid grid-cols-3 gap-2 mb-2">
-                                <select onchange="togglePreorderDates(this)" class="prodLoc border p-2 rounded-lg text-[10px] bg-white">
+                            <div class="grid grid-cols-3 gap-2">
+                                <select onchange="togglePreorderDates(this)" class="prodLoc border p-2 rounded-lg text-[10px]">
                                     <option value="蝦皮">蝦皮</option><option value="7-11">7-11</option><option value="全家">全家</option><option value="宅配">宅配</option><option value="7仔預購">7仔預購</option>
                                 </select>
                                 <input type="number" placeholder="金額" class="prodAmt border p-2 rounded-lg text-[10px]">
-                                <select class="prodPayment border p-2 rounded-lg text-[10px] bg-white">
+                                <select class="prodPayment border p-2 rounded-lg text-[10px]">
                                     <option value="已付">已付</option><option value="到付">到付</option><option value="待付">待付</option>
                                 </select>
                             </div>
@@ -107,7 +91,7 @@
                             </div>
                         </div>
                     </div>
-                    <button id="submitBtn" onclick="submitOrder()" class="w-full mt-4 bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg">確認儲存並提交</button>
+                    <button id="submitBtn" onclick="submitOrder()" class="w-full mt-4 bg-blue-600 text-white py-4 rounded-2xl font-black">確認儲存並提交</button>
                 </div>
             </div>
         </section>
@@ -125,7 +109,7 @@
 
         async function loadOrders() {
             const container = document.getElementById('cardContainer');
-            if (container) container.innerHTML = "<div class='text-center py-20 text-gray-400 animate-pulse font-bold text-xs uppercase'>🔄 同步數據中...</div>";
+            container.innerHTML = "<div class='text-center py-20 text-gray-400'>🔄 同步數據中...</div>";
             const res = await fetch(GAS_URL);
             allData = await res.json();
             updateSummaryUI();
@@ -135,16 +119,33 @@
         async function searchSFAddress() {
             const addrInput = document.getElementById('fullAddress');
             const code = addrInput.value.trim();
-            if (!code) return alert("請輸入點碼再搜尋");
+            if (!code) return alert("請輸入點碼");
             const res = await fetch(`${GAS_URL}?action=searchSF&code=${code}`);
             const data = await res.json();
-            if (data.found) addrInput.value = data.address; else alert("找不到該點碼");
+            if (data.found) addrInput.value = data.address; else alert("找不到點碼");
         }
 
         function togglePreorderDates(el) {
             const row = el.closest('.item-row');
             const fields = row.querySelector('.preorder-fields');
             fields.classList.toggle('hidden', el.value !== '7仔預購');
+        }
+
+        // 重要：加單/帶入資料功能
+        function reuseCustomer(name) {
+            const data = allData.find(i => i.name === name);
+            if(data) {
+                document.getElementById('custName').value = data.name;
+                document.getElementById('source').value = data.source;
+                document.getElementById('receiver').value = data.receiver;
+                document.getElementById('phone').value = data.phone;
+                // 去除可能存在的運單標記
+                document.getElementById('fullAddress').value = data.fullAddress.split(' (運單:')[0];
+                // 捲動到頂部並高亮
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                document.getElementById('add-section').classList.add('ring-4', 'ring-blue-400');
+                setTimeout(() => document.getElementById('add-section').classList.remove('ring-4', 'ring-blue-400'), 2000);
+            }
         }
 
         function updateSummaryUI() {
@@ -162,52 +163,18 @@
                 </div>`).join('');
         }
 
-        function filterStatDetail(loc) {
-            const detailSection = document.getElementById('filter-details');
-            const itemsList = document.getElementById('filter-items-list');
-            if(!loc) return detailSection.classList.add('hidden');
-            detailSection.classList.remove('hidden');
-            document.getElementById('filter-title').innerText = `📍 ${loc} 明細：`;
-            const filteredItems = allData.filter(i => i.location === loc && (i.status === '待取貨' || i.status === '待預購') && !i.fullAddress.includes("運單:"));
-            itemsList.innerHTML = filteredItems.map(item => `
-                <div class="bg-white/10 p-3 rounded-xl border border-white/10 space-y-2">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p class="text-white font-bold text-[11px]">${item.product}</p>
-                            <p class="text-blue-300 text-[9px]">${item.name} | $${item.amount}</p>
-                        </div>
-                        <select onchange="updateRowField(${item.rowNum}, 'status', this.value, '${item.location}')" class="bg-slate-800 text-white text-[9px] border border-white/20 rounded p-1">
-                            <option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option>
-                            <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
-                            <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
-                        </select>
-                    </div>
-                    <input type="text" value="${item.date || ''}" onchange="updateRowField(${item.rowNum}, 'date', this.value)" class="w-full bg-transparent border-b border-white/20 text-[9px] text-gray-400 outline-none">
-                </div>`).join('');
-        }
-
         function renderOrders() {
             const container = document.getElementById('cardContainer');
             container.innerHTML = "";
-            
-            // 數據分組
             const groups = allData.reduce((acc, obj) => { if (!acc[obj.name]) acc[obj.name] = []; acc[obj.name].push(obj); return acc; }, {});
             
-            // 轉換為陣列以便排序
-            const sortedGroupKeys = Object.keys(groups).sort((a, b) => {
-                const itemsA = groups[a].filter(i => !i.fullAddress.includes("運單:"));
-                const itemsB = groups[b].filter(i => !i.fullAddress.includes("運單:"));
-                
-                // 判定是否到齊 (進行中的訂單全部都是 "已取貨")
-                const isReadyA = itemsA.length > 0 && itemsA.every(i => i.status === '已取貨');
-                const isReadyB = itemsB.length > 0 && itemsB.every(i => i.status === '已取貨');
-                
-                if (isReadyA && !isReadyB) return -1; // A 到齊，A 往上排
-                if (!isReadyA && isReadyB) return 1;  // B 到齊，B 往上排
-                return 0;
+            const sortedKeys = Object.keys(groups).sort((a, b) => {
+                const isReadyA = groups[a].filter(i => !i.fullAddress.includes("運單:")).every(i => i.status === '已取貨');
+                const isReadyB = groups[b].filter(i => !i.fullAddress.includes("運單:")).every(i => i.status === '已取貨');
+                return (isReadyA === isReadyB) ? 0 : isReadyA ? -1 : 1;
             });
 
-            sortedGroupKeys.forEach(name => {
+            sortedKeys.forEach(name => {
                 const items = groups[name].filter(item => {
                     const hasTrack = item.fullAddress.includes("運單:");
                     return currentMode === 'active' ? !hasTrack : hasTrack;
@@ -217,21 +184,17 @@
                 const isAllReady = items.every(i => i.status === '已取貨');
                 const first = items[0];
                 const card = document.createElement('div');
-                
-                // 動態設定 Class：到齊則加紅色粗框
-                card.className = `bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-6 ${isAllReady && currentMode === 'active' ? 'card-ready-to-ship' : ''}`;
+                card.className = `bg-white rounded-3xl shadow-sm border overflow-hidden mb-6 ${isAllReady && currentMode === 'active' ? 'card-ready-to-ship' : 'border-gray-100'}`;
                 
                 card.innerHTML = `
                     <div class="p-4 ${isAllReady && currentMode === 'active' ? 'bg-red-50' : 'bg-gray-50/50'} border-b flex justify-between items-center">
                         <div class="flex items-center space-x-2">
-                            ${isAllReady && currentMode === 'active' ? '<span class="animate-bounce">🚀</span>' : ''}
-                            <span class="text-gray-400 text-[10px] font-mono">[${first.orderDate}]</span>
                             <b class="text-gray-800 text-lg">${name}</b>
                             <span class="source-${first.source} badge uppercase">${first.source}</span>
                             ${isAllReady && currentMode === 'active' ? '<span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-black ml-2">貨品到齊</span>' : ''}
                         </div>
                         <div class="flex gap-2">
-                            ${currentMode === 'history' ? `<button onclick="reuseCustomer('${name}')" class="bg-orange-500 text-white text-[10px] px-3 py-1 rounded-xl font-bold">帶入資料</button>` : ''}
+                            <button onclick="reuseCustomer('${name}')" class="bg-green-600 text-white text-[10px] px-3 py-1 rounded-xl font-bold">+ 加單</button>
                             <button onclick="copyData('${first.receiver}\\n${first.phone}\\n${first.fullAddress}')" class="bg-blue-600 text-white text-[10px] px-3 py-1 rounded-xl font-bold">複製資料</button>
                         </div>
                     </div>
@@ -246,31 +209,24 @@
                         </div>
                         <div class="space-y-3">
                             ${items.map(item => `
-                                <div class="box-${item.status} p-3 rounded-xl border relative group">
+                                <div class="box-${item.status} p-3 rounded-xl border">
                                     <div class="flex flex-col gap-1">
-                                        <input type="text" value="${item.product}" onchange="updateRowField(${item.rowNum}, 'product', this.value)" class="font-black text-gray-800 text-xs w-full bg-transparent border-none outline-none">
+                                        <input type="text" value="${item.product}" onchange="updateRowField(${item.rowNum}, 'product', this.value)" class="font-black text-gray-800 text-xs w-full bg-transparent border-none">
                                         <div class="flex justify-between items-center text-[10px]">
                                             <div class="flex items-center gap-2">
-                                                <select onchange="updateRowField(${item.rowNum}, 'location', this.value)" class="bg-transparent border-none outline-none font-bold text-blue-600">
-                                                    <option ${item.location==='蝦皮'?'selected':''}>蝦皮</option>
-                                                    <option ${item.location==='7-11'?'selected':''}>7-11</option>
-                                                    <option ${item.location==='全家'?'selected':''}>全家</option>
-                                                    <option ${item.location==='宅配'?'selected':''}>宅配</option>
-                                                    <option ${item.location==='7仔預購'?'selected':''}>7仔預購</option>
-                                                </select>
-                                                <span class="text-gray-400">NT$</span>
-                                                <input type="number" value="${item.amount}" onchange="updateRowField(${item.rowNum}, 'amount', this.value)" class="w-16 font-black bg-transparent border-none outline-none">
+                                                <span class="font-bold text-blue-600">${item.location}</span>
+                                                <span class="text-gray-400">$</span>
+                                                <input type="number" value="${item.amount}" onchange="updateRowField(${item.rowNum}, 'amount', this.value)" class="w-16 bg-transparent border-none font-black">
                                             </div>
                                             <select onchange="updateRowField(${item.rowNum}, 'status', this.value, '${item.location}')" class="border rounded px-1">
                                                 <option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option>
                                                 <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
                                                 <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
-                                                <option value="已寄出" ${item.status==='已寄出'?'selected':''}>已寄出</option>
                                             </select>
                                         </div>
                                         <div class="flex items-center gap-2 mt-1">
                                             <span class="text-[9px] text-gray-400">📅</span>
-                                            <input type="text" value="${item.date || ''}" onchange="updateRowField(${item.rowNum}, 'date', this.value)" class="flex-1 bg-transparent border-none outline-none text-[9px] text-gray-500">
+                                            <input type="text" value="${item.date || ''}" onchange="updateRowField(${item.rowNum}, 'date', this.value)" class="flex-1 bg-transparent border-none text-[9px] text-gray-500">
                                         </div>
                                     </div>
                                 </div>`).join('')}
@@ -283,15 +239,14 @@
         async function updateRowField(rowNum, field, value, currentLoc = '') {
             let params = { action: "updateField", rowNum: rowNum, field: field, value: value };
             if (field === 'status' && currentLoc === '7仔預購' && value === '待取貨') {
-                params.newLoc = '7-11';
-                params.newPay = '已付';
+                params.newLoc = '7-11'; params.newPay = '已付';
             }
             await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(params), mode: 'no-cors' });
             setTimeout(loadOrders, 500);
         }
 
         async function submitOrder() {
-            const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "儲存中...";
+            const btn = document.getElementById('submitBtn'); btn.disabled = true;
             const d = new Date();
             const payload = {
                 orderID: "TW"+d.getTime().toString().slice(-4),
@@ -304,9 +259,7 @@
                 items: Array.from(document.querySelectorAll('.item-row')).map(row => {
                     const loc = row.querySelector('.prodLoc').value;
                     let dateStr = "";
-                    if(loc === '7仔預購') {
-                        dateStr = `(預:${row.querySelector('.pStart').value} 攞:${row.querySelector('.pEnd').value})`;
-                    }
+                    if(loc === '7仔預購') dateStr = `(預:${row.querySelector('.pStart').value} 攞:${row.querySelector('.pEnd').value})`;
                     return {
                         productName: row.querySelector('.prodName').value,
                         pickupLocation: loc,
@@ -323,79 +276,27 @@
 
         async function shipOrder(rowNum, customerName) {
             const track = document.getElementById(`track-${rowNum}`).value;
-            if(!track) return alert("請輸入運單");
+            if(!track) return;
             const groupItems = allData.filter(i => i.name === customerName);
-            const msg = `你好～貨件已準備好寄出，‍客人可以於聽日嘅下午時間利用順豐官網或app中查閱🙇🏻‍♀️\n\n運單編號：${track}\n\n謝謝🙏🏻🙏🏻`;
             for (let item of groupItems) {
                 await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateField", rowNum: item.rowNum, field: 'status', value: '已寄出', tracking: track }), mode: 'no-cors' });
             }
-            document.getElementById('modalCopyText').value = msg;
+            document.getElementById('modalCopyText').value = `運單編號：${track}\n\n謝謝🙏🏻🙏🏻`;
             document.getElementById('copyModal').style.display = 'flex';
         }
 
         function switchView(mode) {
             currentMode = mode;
-            ['active', 'history', 'profit'].forEach(n => {
-                document.getElementById(`nav-${n}`).className = (n === mode) ? "px-4 py-2 rounded-lg text-xs font-bold transition-all bg-white shadow-sm text-blue-600" : "px-4 py-2 rounded-lg text-xs font-bold transition-all text-gray-500";
-            });
             document.getElementById('add-section').style.display = (mode === 'active') ? "block" : "none";
-            document.getElementById('stat-section').style.display = (mode === 'active') ? "block" : "none";
-            if(mode === 'profit') {
-                document.getElementById('cardContainer').classList.add('hidden');
-                document.getElementById('profitContainer').classList.remove('hidden');
-                renderProfit();
-            } else {
-                document.getElementById('cardContainer').classList.remove('hidden');
-                document.getElementById('profitContainer').classList.add('hidden');
-                renderOrders();
-            }
+            loadOrders();
         }
-
-        function copyAndClose() {
-            const text = document.getElementById('modalCopyText');
-            navigator.clipboard.writeText(text.value).then(() => {
-                document.getElementById('copyModal').style.display = 'none';
-                loadOrders();
-            });
-        }
+        function copyAndClose() { document.getElementById('copyModal').style.display = 'none'; loadOrders(); }
         function addItemRow() { 
-            const container = document.getElementById('itemsContainer');
-            const row = document.querySelector('.item-row').cloneNode(true); 
-            row.querySelectorAll('input').forEach(i => i.value = ''); 
-            row.querySelector('.preorder-fields').classList.add('hidden');
-            container.appendChild(row); 
+            const row = document.querySelector('.item-row').cloneNode(true);
+            row.querySelectorAll('input').forEach(i => i.value = '');
+            document.getElementById('itemsContainer').appendChild(row);
         }
         function copyData(t) { navigator.clipboard.writeText(t).then(() => alert("✅ 已複製")); }
-        function reuseCustomer(name) {
-            const data = allData.find(i => i.name === name);
-            if(data) {
-                document.getElementById('custName').value = data.name;
-                document.getElementById('source').value = data.source;
-                document.getElementById('receiver').value = data.receiver;
-                document.getElementById('phone').value = data.phone;
-                document.getElementById('fullAddress').value = data.fullAddress.split(' (運單:')[0];
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        }
-        function renderProfit() {
-            const container = document.getElementById('profitContainer');
-            container.innerHTML = "";
-            const monthlyData = allData.reduce((acc, item) => {
-                if(!item.orderDate) return acc;
-                const d = item.orderDate.split('/');
-                const monthKey = `${d[0]}年 ${d[1]}月`;
-                if (!acc[monthKey]) acc[monthKey] = { twd: 0 };
-                acc[monthKey].twd += parseFloat(item.amount || 0);
-                return acc;
-            }, {});
-            Object.keys(monthlyData).sort().reverse().forEach(month => {
-                const data = monthlyData[month];
-                const card = document.createElement('div');
-                card.className = "bg-white p-6 rounded-3xl shadow-sm border border-gray-100";
-                card.innerHTML = `<h3 class="text-lg font-black mb-4">${month}</h3><div class="grid grid-cols-3 gap-4"><div class="bg-gray-50 p-4 rounded-2xl"><p class="text-[9px] font-bold text-gray-400 mb-1">營業額(HKD)</p><p class="text-xl font-black">$${(data.twd/3.6).toFixed(0)}</p></div><div class="bg-green-50 p-4 rounded-2xl text-green-700"><p class="text-[9px] font-bold mb-1">純利</p><p class="text-2xl font-black">$${(data.twd/3.6 - data.twd/4.0).toFixed(0)}</p></div></div>`;
-                container.appendChild(card);
-            });
-        }
     </script>
 </body>
 </html>
