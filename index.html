@@ -20,68 +20,68 @@
         .nav-active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); color: #2563eb; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen pb-20 text-gray-900">
+<body class="bg-gray-100 min-h-screen pb-20 text-gray-900 font-sans">
 
     <div id="loadingOverlay">
         <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
-        <p class="mt-4 font-bold text-blue-600">處理中...</p>
+        <p class="mt-4 font-bold text-blue-600 text-sm">正在處理，請稍候...</p>
     </div>
 
     <div class="max-w-6xl mx-auto p-4 space-y-6">
-        <div class="flex flex-col md:flex-row items-center justify-between bg-white p-5 rounded-2xl shadow-sm border border-gray-100 gap-4">
-            <h1 class="text-xl font-black text-gray-800">🇹🇼 台灣-訂單管理</h1>
-            <nav class="flex bg-gray-100 p-1 rounded-xl">
-                <button onclick="switchView('active')" id="nav-active" class="px-4 py-2 rounded-lg text-xs font-bold transition-all nav-active">進行中</button>
-                <button onclick="switchView('history')" id="nav-history" class="px-4 py-2 rounded-lg text-xs font-bold transition-all text-gray-500">歷史訂單</button>
-                <button onclick="switchView('profit')" id="nav-profit" class="px-4 py-2 rounded-lg text-xs font-bold transition-all text-gray-500">💰 利潤統計</button>
+        <div class="flex flex-col md:flex-row items-center justify-between bg-white p-5 rounded-3xl shadow-sm border border-gray-100 gap-4">
+            <h1 class="text-xl font-black text-gray-800 tracking-tight">🇹🇼 台灣-訂單管理</h1>
+            <nav class="flex bg-gray-100 p-1 rounded-2xl shadow-inner">
+                <button onclick="switchView('active')" id="nav-active" class="px-6 py-2 rounded-xl text-xs font-black transition-all nav-active">進行中</button>
+                <button onclick="switchView('history')" id="nav-history" class="px-6 py-2 rounded-xl text-xs font-black transition-all text-gray-400">歷史</button>
+                <button onclick="switchView('profit')" id="nav-profit" class="px-6 py-2 rounded-xl text-xs font-black transition-all text-gray-400">💰 利潤</button>
             </nav>
         </div>
 
-        <section id="black-box-section" class="bg-slate-900 p-6 rounded-3xl shadow-xl text-white">
-            <div id="summary-container" class="grid grid-cols-2 md:grid-cols-5 gap-3"></div>
+        <section id="black-box-section" class="bg-slate-900 p-6 rounded-[2.5rem] shadow-2xl text-white">
+            <div id="summary-container" class="grid grid-cols-2 md:grid-cols-5 gap-4"></div>
             <div id="filter-details" class="hidden mt-6 pt-6 border-t border-white/10">
                 <div class="flex justify-between items-center mb-4">
                     <h3 id="filter-title" class="text-sm font-bold text-blue-400 italic"></h3>
-                    <button onclick="closeFilter()" class="text-[10px] bg-white/10 px-2 py-1 rounded">關閉</button>
+                    <button onclick="closeFilter()" class="text-[10px] bg-white/10 px-3 py-1 rounded-full border border-white/20">關閉</button>
                 </div>
                 <div id="filter-items-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
             </div>
         </section>
 
-        <section id="add-section" class="bg-white p-6 rounded-3xl shadow-md border border-gray-100">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <section id="add-section" class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
                 <div class="space-y-4">
-                    <p class="font-bold text-gray-400 text-[10px] uppercase">客戶資訊</p>
+                    <p class="font-black text-gray-300 text-[11px] uppercase tracking-widest">客戶資訊 (Customer)</p>
                     <div class="grid grid-cols-2 gap-4">
-                        <input type="text" id="custName" placeholder="客戶名稱" class="border-b p-2 text-sm font-bold">
-                        <select id="source" class="border-b p-2 text-sm font-bold"><option>IG</option><option>WhatsApp</option><option>Threads</option></select>
+                        <input type="text" id="custName" placeholder="客戶名稱" class="border-b-2 border-gray-100 focus:border-blue-500 p-2 text-sm font-bold outline-none transition-all">
+                        <select id="source" class="border-b-2 border-gray-100 p-2 text-sm font-bold bg-white outline-none"><option>IG</option><option>WhatsApp</option><option>Threads</option></select>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
-                        <input type="text" id="receiver" placeholder="收件人" class="border-b p-2 text-sm font-bold">
-                        <input type="text" id="phone" placeholder="電話" class="border-b p-2 text-sm">
+                        <input type="text" id="receiver" placeholder="收件人" class="border-b-2 border-gray-100 focus:border-blue-500 p-2 text-sm font-bold outline-none">
+                        <input type="text" id="phone" placeholder="電話" class="border-b-2 border-gray-100 focus:border-blue-500 p-2 text-sm outline-none">
                     </div>
-                    <textarea id="fullAddress" placeholder="地址..." class="w-full border p-3 rounded-2xl h-20 text-xs bg-gray-50"></textarea>
+                    <textarea id="fullAddress" placeholder="輸入詳細地址..." class="w-full border-2 border-gray-50 p-4 rounded-3xl h-24 text-xs bg-gray-50 outline-none focus:bg-white focus:border-blue-100 transition-all"></textarea>
                 </div>
                 <div class="space-y-4">
                     <div class="flex justify-between items-center">
-                        <p class="font-bold text-gray-400 text-[10px] uppercase">商品明細</p>
-                        <button onclick="addItemRow()" class="text-blue-600 text-[10px] font-black underline">+ 增加品項</button>
+                        <p class="font-black text-gray-300 text-[11px] uppercase tracking-widest">商品明細 (Products)</p>
+                        <button onclick="addItemRow()" class="text-blue-600 text-[11px] font-black hover:scale-105 transition-transform">+ 增加品項</button>
                     </div>
-                    <div id="itemsContainer" class="space-y-3 max-h-[250px] overflow-y-auto pr-2">
-                        <div class="item-row bg-gray-50 p-4 rounded-2xl border">
-                            <input type="text" placeholder="商品名稱" class="prodName w-full mb-2 p-2 rounded-lg border text-sm">
+                    <div id="itemsContainer" class="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                        <div class="item-row bg-gray-50 p-4 rounded-3xl border border-gray-100">
+                            <input type="text" placeholder="商品名稱" class="prodName w-full mb-3 p-3 rounded-2xl border-none shadow-sm text-sm font-bold">
                             <div class="grid grid-cols-3 gap-2">
-                                <select onchange="togglePreDate(this)" class="prodLoc border p-2 rounded-lg text-[12px]"><option>蝦皮</option><option>7-11</option><option>全家</option><option>宅配</option><option>7仔預購</option></select>
-                                <input type="number" placeholder="金額" class="prodAmt border p-2 rounded-lg text-[12px]">
-                                <select class="prodPayment border p-2 rounded-lg text-[12px]"><option>已付</option><option>到付</option><option>待付</option></select>
+                                <select onchange="togglePreDate(this)" class="prodLoc border-none shadow-sm p-3 rounded-2xl text-[12px] font-bold"><option>蝦皮</option><option>7-11</option><option>全家</option><option>宅配</option><option>7仔預購</option></select>
+                                <input type="number" placeholder="金額" class="prodAmt border-none shadow-sm p-3 rounded-2xl text-[12px] font-bold">
+                                <select class="prodPayment border-none shadow-sm p-3 rounded-2xl text-[12px] font-bold"><option>已付</option><option>到付</option><option>待付</option></select>
                             </div>
-                            <div class="pre-dates hidden grid grid-cols-2 gap-2 mt-2">
-                                <input type="date" class="pStart border p-1 rounded text-[10px] bg-white" title="預購日期">
-                                <input type="date" class="pEnd border p-1 rounded text-[10px] bg-white" title="取貨日期">
+                            <div class="pre-dates hidden grid grid-cols-2 gap-2 mt-3">
+                                <div><label class="text-[9px] text-gray-400 ml-2">預購日期</label><input type="date" class="pStart w-full border-none shadow-sm p-2 rounded-xl text-[11px]"></div>
+                                <div><label class="text-[9px] text-gray-400 ml-2">取貨日期</label><input type="date" class="pEnd w-full border-none shadow-sm p-2 rounded-xl text-[11px]"></div>
                             </div>
                         </div>
                     </div>
-                    <button onclick="submitOrder()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg hover:bg-blue-700 transition-all">儲存訂單</button>
+                    <button onclick="submitOrder()" class="w-full bg-blue-600 text-white py-5 rounded-[2rem] font-black shadow-lg shadow-blue-100 hover:bg-blue-700 hover:-translate-y-1 active:translate-y-0 transition-all">儲存並建立訂單</button>
                 </div>
             </div>
         </section>
@@ -89,18 +89,20 @@
         <div id="cardContainer" class="flex flex-col gap-6"></div>
 
         <div id="profitSection" class="hidden space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-5 rounded-3xl border">
-                <div><label class="text-[10px] font-bold text-gray-400 uppercase">月份</label><select id="profitMonthFilter" onchange="renderProfit()" class="w-full border rounded-xl px-4 py-2 font-bold bg-gray-50"></select></div>
-                <div><label class="text-[10px] font-bold text-gray-400 uppercase">匯率 (HKD ➡️ TWD)</label><div class="flex gap-2"><input type="number" id="monthlyRateInput" step="0.01" class="w-full border rounded-xl px-4 py-2 font-bold bg-gray-50"><button onclick="saveMonthlyRate()" class="bg-blue-600 text-white px-6 rounded-xl text-xs font-bold">儲存</button></div></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-6 rounded-[2.5rem] border shadow-sm">
+                <div><label class="text-[10px] font-black text-gray-400 uppercase ml-2">選擇統計月份</label><select id="profitMonthFilter" onchange="renderProfit()" class="w-full border-none bg-gray-100 rounded-2xl px-5 py-3 font-bold mt-1 outline-none"></select></div>
+                <div><label class="text-[10px] font-black text-gray-400 uppercase ml-2">本月匯率 (HKD ➡️ TWD)</label><div class="flex gap-2 mt-1"><input type="number" id="monthlyRateInput" step="0.01" class="w-full border-none bg-gray-100 rounded-2xl px-5 py-3 font-bold outline-none"><button onclick="saveMonthlyRate()" class="bg-blue-600 text-white px-8 rounded-2xl text-xs font-black shadow-md">儲存匯率</button></div></div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-slate-900 p-6 rounded-3xl text-white">
-                    <p class="text-white/40 text-[10px] font-bold uppercase tracking-widest">該月總營業額 (TWD)</p><p id="totalProfit" class="text-3xl font-black text-blue-400 mt-1">$0</p>
-                    <div class="mt-4 pt-4 border-t border-white/10"><p class="text-white/40 text-[10px] font-bold uppercase tracking-widest">該月總收入 (HKD)</p><p id="totalIncomeHKD" class="text-2xl font-black text-green-400 mt-1">$0</p></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
+                    <div class="relative z-10">
+                        <p class="text-white/40 text-[11px] font-black uppercase tracking-widest">該月總營業額 (TWD)</p><p id="totalProfit" class="text-4xl font-black text-blue-400 mt-2">$0</p>
+                        <div class="mt-6 pt-6 border-t border-white/10"><p class="text-white/40 text-[11px] font-black uppercase tracking-widest">預估總純利 (HKD)</p><p id="totalIncomeHKD" class="text-3xl font-black text-green-400 mt-2">$0</p></div>
+                    </div>
                 </div>
-                <div class="bg-white p-6 rounded-3xl border border-gray-100 flex flex-col justify-center shadow-sm text-center"><p class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">訂單總數</p><p id="totalOrders" class="text-3xl font-black text-gray-800 mt-1">0</p></div>
+                <div class="bg-white p-8 rounded-[2.5rem] border border-gray-100 flex flex-col justify-center shadow-sm text-center"><p class="text-gray-400 text-[11px] font-black uppercase tracking-widest">本月完成單數</p><p id="totalOrders" class="text-4xl font-black text-gray-800 mt-2">0</p></div>
             </div>
-            <div class="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm"><table class="w-full text-left text-sm"><thead class="bg-gray-50 border-b"><tr><th class="p-4 font-bold">日期</th><th class="p-4 font-bold">客戶</th><th class="p-4 font-bold">商品</th><th class="p-4 font-bold text-right">金額 (TWD)</th></tr></thead><tbody id="profitTableBody"></tbody></table></div>
+            <div class="bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden shadow-sm"><table class="w-full text-left text-sm"><thead class="bg-gray-50 border-b"><tr><th class="p-5 font-black text-gray-400">日期</th><th class="p-5 font-black text-gray-400">客戶名稱</th><th class="p-5 font-black text-gray-400">商品</th><th class="p-5 font-black text-gray-400 text-right">金額 (TWD)</th></tr></thead><tbody id="profitTableBody"></tbody></table></div>
         </div>
     </div>
 
@@ -120,7 +122,7 @@
                 initMonthFilter();
                 updateSummaryUI();
                 renderUI();
-            } catch (e) { alert("讀取失敗"); }
+            } catch (e) { alert("讀取資料失敗，請重新整理"); }
             showLoading(false);
         }
 
@@ -139,7 +141,7 @@
             document.getElementById('add-section').style.display = (mode==='active'?'block':'none');
             ['nav-active','nav-history','nav-profit'].forEach(id => {
                 const el = document.getElementById(id);
-                el.className = `px-4 py-2 rounded-lg text-xs font-bold transition-all ${id==='nav-'+mode ? 'nav-active' : 'text-gray-500'}`;
+                el.className = `px-6 py-2 rounded-xl text-xs font-black transition-all ${id==='nav-'+mode ? 'nav-active' : 'text-gray-400'}`;
             });
             renderUI();
         }
@@ -152,44 +154,60 @@
         }
 
         function renderOrders() {
-            const container = document.getElementById('cardContainer');
-            container.innerHTML = "";
-            const groups = allData.reduce((acc, obj) => { if (!acc[obj.name]) acc[obj.name] = []; acc[obj.name].push(obj); return acc; }, {});
-            
-            Object.keys(groups).forEach(name => {
-                const items = groups[name].filter(i => currentMode === 'active' ? !i.fullAddress.includes("運單:") : i.fullAddress.includes("運單:"));
-                if (items.length === 0) return;
+    const container = document.getElementById('cardContainer');
+    container.innerHTML = "";
+    const groups = allData.reduce((acc, obj) => { if (!acc[obj.name]) acc[obj.name] = []; acc[obj.name].push(obj); return acc; }, {});
+    
+    Object.keys(groups).forEach(name => {
+        const items = groups[name].filter(i => currentMode === 'active' ? !i.fullAddress.includes("運單:") : i.fullAddress.includes("運單:"));
+        if (items.length === 0) return;
 
-                const isAllReady = items.every(i => i.status === '已取貨');
-                const first = items[0];
-                const card = document.createElement('div');
-                card.className = `bg-white rounded-3xl shadow-sm border ${isAllReady && currentMode === 'active' ? 'card-ready-to-ship' : 'border-gray-100'}`;
-                
-                card.innerHTML = `
-                    <div class="p-4 ${isAllReady && currentMode==='active' ? 'bg-red-50' : 'bg-gray-50/50'} border-b flex justify-between items-center">
-                        <div class="flex items-center space-x-2"><b class="text-lg font-black text-gray-800">${name}</b><span class="source-${first.source} badge uppercase">${first.source}</span><button onclick="deleteGroup('${name}')" class="text-red-500 text-[10px] ml-2 border border-red-200 px-2 py-0.5 rounded-lg hover:bg-red-50 transition-all">🗑️ 刪除</button></div>
-                        <div class="flex gap-2">
-                            <button onclick="addMoreItems('${name}')" class="bg-green-600 text-white text-[10px] px-3 py-1 rounded-xl font-bold shadow-sm">➕ 加單</button>
-                            <button onclick="copyData('${first.receiver}\\n${first.phone}\\n${first.fullAddress}')" class="bg-blue-600 text-white text-[10px] px-3 py-1 rounded-xl font-bold shadow-sm">複製資料</button>
-                        </div>
-                    </div>
-                    <div class="p-4 grid md:grid-cols-2 gap-4">
-                        <div class="text-[11px] font-bold space-y-2 text-gray-600">
-                            <p>👤 ${first.receiver}</p><p>📞 ${first.phone}</p><p class="text-gray-400 italic">📍 ${first.fullAddress}</p>
-                            ${currentMode === 'active' ? `<div class="flex gap-2 pt-2 border-t mt-2"><input type="text" id="track-${first.rowNum}" placeholder="輸入運單號" class="flex-1 border p-2 rounded-xl text-xs"><button onclick="shipOrder(${first.rowNum}, '${name}')" class="bg-slate-800 text-white px-4 rounded-xl text-[10px] font-bold">寄出</button></div>` : ''}
-                        </div>
-                        <div class="space-y-2">${items.map(item => `
-                            <div class="box-${item.status} p-2 rounded-xl border text-[10px]">
-                                <div class="flex justify-between font-black"><span class="text-gray-800">${item.product}</span><span class="text-pink-600">${item.date || ''}</span></div>
-                                <div class="flex justify-between items-center mt-1">
-                                    <div class="text-blue-600 font-bold">$${item.amount} (${item.location})</div>
-                                    ${currentMode==='active' ? `<select onchange="updateRowField(${item.rowNum}, 'status', this.value)" class="border rounded px-1 outline-none text-[10px] font-bold text-gray-700 bg-white shadow-sm"><option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option><option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option><option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option></select>` : `<span class="font-black text-gray-500 uppercase">${item.status}</span>`}
-                                </div>
-                            </div>`).join('')}</div>
-                    </div>`;
-                container.appendChild(card);
-            });
+        const isAllReady = items.every(i => i.status === '已取貨');
+        const first = items[0];
+        const card = document.createElement('div');
+        card.className = `bg-white rounded-[2.5rem] shadow-sm border ${isAllReady && currentMode === 'active' ? 'card-ready-to-ship' : 'border-gray-100'}`;
+        
+        // 提取運單號
+        let trackingNum = "";
+        if (first.fullAddress.includes("運單:")) {
+            trackingNum = first.fullAddress.split("運單:")[1].replace(")", "").trim();
         }
+
+        card.innerHTML = `
+            <div class="p-6 ${isAllReady && currentMode==='active' ? 'bg-red-50/50' : 'bg-gray-50/30'} border-b flex justify-between items-center">
+                <div class="flex items-center space-x-3"><b class="text-xl font-black text-gray-800">${name}</b><span class="source-${first.source} badge uppercase">${first.source}</span><button onclick="deleteGroup('${name}')" class="text-red-400 text-[10px] border border-red-100 px-3 py-1 rounded-full hover:bg-red-50">🗑️ 刪除</button></div>
+                <div class="flex gap-2">
+                    ${trackingNum ? `<button onclick="copyReplyText('${trackingNum}')" class="bg-indigo-600 text-white text-[10px] px-4 py-2 rounded-2xl font-black shadow-lg shadow-indigo-100">📋 複製回覆</button>` : ''}
+                    <button onclick="addMoreItems('${name}')" class="bg-green-600 text-white text-[10px] px-4 py-2 rounded-2xl font-black shadow-lg shadow-green-100">➕ 加單</button>
+                    <button onclick="copyData('${first.receiver}\\n${first.phone}\\n${first.fullAddress}')" class="bg-blue-600 text-white text-[10px] px-4 py-2 rounded-2xl font-black shadow-lg shadow-blue-100">複製地址</button>
+                </div>
+            </div>
+            <div class="p-6 grid md:grid-cols-2 gap-6">
+                <div class="text-[12px] font-bold space-y-3 text-gray-600">
+                    <p>👤 ${first.receiver}</p><p>📞 ${first.phone}</p><p class="text-gray-400 italic">📍 ${first.fullAddress}</p>
+                    ${currentMode === 'active' ? `<div class="flex gap-2 pt-3 border-t mt-4"><input type="text" id="track-${first.rowNum}" placeholder="在此輸入運單號" class="flex-1 border-2 border-gray-50 bg-gray-50 p-3 rounded-2xl text-xs outline-none"><button onclick="shipOrder(${first.rowNum}, '${name}')" class="bg-slate-800 text-white px-6 rounded-2xl text-[11px] font-black">寄出</button></div>` : ''}
+                </div>
+                <div class="space-y-3">${items.map(item => `
+                    <div class="box-${item.status} p-3 rounded-2xl border text-[11px] shadow-sm">
+                        <div class="flex justify-between font-black"><span>${item.product}</span><span class="text-pink-600 bg-pink-50 px-2 py-0.5 rounded-lg">${item.date || ''}</span></div>
+                        <div class="flex justify-between items-center mt-2">
+                            <div class="text-blue-600 font-black">$${item.amount} (${item.location})</div>
+                            ${currentMode==='active' ? `<select onchange="updateRowField(${item.rowNum}, 'status', this.value)" class="border-none rounded-xl px-2 py-1 text-[10px] font-black text-gray-700 bg-white shadow-sm ring-1 ring-gray-100"><option value="待預購" \${item.status==='待預購'?'selected':''}>待預購</option><option value="待取貨" \${item.status==='待取貨'?'selected':''}>待取貨</option><option value="已取貨" \${item.status==='已取貨'?'selected':''}>已取貨</option></select>` : `<span class="font-black text-gray-400 uppercase text-[9px]">\${item.status}</span>`}
+                        </div>
+                    </div>`).join('')}</div>
+            </div>`;
+        container.appendChild(card);
+    });
+}
+
+        // --- 核心邏輯補強 ---
+
+        function copyReplyText(track) {
+    const text = `你好～貨件已準備好寄出，‍客人可以於聽日嘅下午時間利用以下運單號碼查閱🙇🏻‍♀️\n\n${track}\n\n謝謝🙏🏻🙏🏻`;
+    navigator.clipboard.writeText(text).then(() => {
+        alert("✅ 運單號已儲存，並已自動複製回覆語句！\n\n內容：\n" + text);
+    });
+}
 
         function addMoreItems(name) {
             const data = allData.find(i => i.name === name);
@@ -199,7 +217,40 @@
             document.getElementById('phone').value = data.phone;
             document.getElementById('fullAddress').value = data.fullAddress;
             document.getElementById('add-section').scrollIntoView({ behavior: 'smooth' });
-            alert(`已載入「${name}」資料，請在商品明細增加品項後儲存。`);
+            alert(`已載入「${name}」資料，請在右側增加商品。`);
+        }
+
+        async function submitOrder() {
+            const name = document.getElementById('custName').value;
+            if(!name) return alert("請輸入客戶名稱");
+            showLoading(true);
+            
+            const d = new Date();
+            const currentMonth = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}`;
+            
+            // --- 自動尋找匯率 ---
+            let autoRate = "";
+            const match = allData.find(i => {
+                const idate = new Date(i.orderDate);
+                const imonth = isNaN(idate) ? "" : `${idate.getFullYear()}-${(idate.getMonth()+1).toString().padStart(2,'0')}`;
+                return imonth === currentMonth && i.monthlyRate;
+            });
+            if(match) autoRate = match.monthlyRate;
+
+            const payload = {
+                orderID: "TW"+d.getTime().toString().slice(-4), customerName: name, source: document.getElementById('source').value,
+                receiver: document.getElementById('receiver').value, phone: document.getElementById('phone').value,
+                fullAddress: document.getElementById('fullAddress').value,
+                orderDate: `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`,
+                monthlyRate: autoRate,
+                items: Array.from(document.querySelectorAll('.item-row')).map(row => {
+                    const loc = row.querySelector('.prodLoc').value;
+                    const dateStr = loc==='7仔預購' ? `(預:${row.querySelector('.pStart').value} 攞:${row.querySelector('.pEnd').value})` : "";
+                    return { productName: row.querySelector('.prodName').value, pickupLocation: loc, amount: row.querySelector('.prodAmt').value, paymentStatus: row.querySelector('.prodPayment').value, status: loc==='7仔預購'?'待預購':'待取貨', date: dateStr };
+                })
+            };
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
+            setTimeout(() => location.reload(), 800);
         }
 
         function renderProfit() {
@@ -213,87 +264,46 @@
                 return m === target;
             });
             rateInput.value = rate || "";
-            document.getElementById('profitTableBody').innerHTML = filtered.map(i => { total += parseFloat(i.amount||0); count++; return `<tr class="border-b text-[11px] hover:bg-gray-50 transition-colors"><td class="p-3 opacity-60 font-medium">${i.orderDate}</td><td class="p-3 font-black text-gray-700">${i.name}</td><td class="p-3 text-gray-600">${i.product}</td><td class="p-3 text-right font-black text-gray-800">$${i.amount}</td></tr>`; }).join('');
+            document.getElementById('profitTableBody').innerHTML = filtered.map(i => { total += parseFloat(i.amount||0); count++; return `<tr class="border-b text-[12px] hover:bg-gray-50 transition-colors"><td class="p-5 opacity-60 font-bold">${i.orderDate}</td><td class="p-5 font-black text-gray-800">${i.name}</td><td class="p-5 text-gray-500">${i.product}</td><td class="p-5 text-right font-black text-blue-600">$${i.amount}</td></tr>`; }).join('');
             document.getElementById('totalProfit').innerText = `$${total.toLocaleString()}`;
             document.getElementById('totalOrders').innerText = count;
             if(rate > 0) document.getElementById('totalIncomeHKD').innerText = `$${((total/3.6)-(total/rate)).toFixed(2)}`;
             else document.getElementById('totalIncomeHKD').innerText = "未設匯率";
         }
 
-        async function submitOrder() {
-            const name = document.getElementById('custName').value;
-            if(!name) return alert("請輸入客戶名稱");
-            showLoading(true);
-            const d = new Date();
-            const payload = {
-                orderID: "TW"+d.getTime().toString().slice(-4), customerName: name, source: document.getElementById('source').value,
-                receiver: document.getElementById('receiver').value, phone: document.getElementById('phone').value,
-                fullAddress: document.getElementById('fullAddress').value,
-                orderDate: `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`,
-                items: Array.from(document.querySelectorAll('.item-row')).map(row => {
-                    const loc = row.querySelector('.prodLoc').value;
-                    const dateStr = loc==='7仔預購' ? `(預:${row.querySelector('.pStart').value} 攞:${row.querySelector('.pEnd').value})` : "";
-                    return { productName: row.querySelector('.prodName').value, pickupLocation: loc, amount: row.querySelector('.prodAmt').value, paymentStatus: row.querySelector('.prodPayment').value, status: loc==='7仔預購'?'待預購':'待取貨', date: dateStr };
-                })
-            };
-            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
-            setTimeout(() => location.reload(), 800);
-        }
-
         async function shipOrder(rowNum, name) {
-            const track = document.getElementById(`track-${rowNum}`).value;
-            if(!track) return alert("請輸入運單號");
-            showLoading(true);
-            const items = allData.filter(i => i.name === name && !i.fullAddress.includes("運單:"));
-            for (let i of items) { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateField", rowNum: i.rowNum, field: 'status', value: '已寄出', tracking: track }), mode: 'no-cors' }); }
-            loadOrders();
-        }
+    const track = document.getElementById(`track-${rowNum}`).value;
+    if(!track) return alert("請輸入運單號");
+    showLoading(true);
+    const items = allData.filter(i => i.name === name && !i.fullAddress.includes("運單:"));
+    for (let i of items) { 
+        await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateField", rowNum: i.rowNum, field: 'status', value: '已寄出', tracking: track }), mode: 'no-cors' }); 
+    }
+    // 儲存成功後，自動觸發複製回覆語句
+    copyReplyText(track);
+    loadOrders();
+}
 
-        async function updateRowField(r, f, v) { 
-            showLoading(true); 
-            await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:"updateField",rowNum:r,field:f,value:v}),mode:'no-cors'}); 
-            setTimeout(loadOrders, 800); 
-        }
-
-        async function saveMonthlyRate() { 
-            const m = document.getElementById('profitMonthFilter').value;
-            const r = document.getElementById('monthlyRateInput').value;
-            if(!r) return alert("請輸入匯率");
-            showLoading(true); await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:"updateMonthlyRate",month:m,rate:r}),mode:'no-cors'});
-            alert("匯率已同步並更新至該月訂單"); setTimeout(loadOrders, 1000); 
-        }
-
+        async function updateRowField(r, f, v) { showLoading(true); await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:"updateField",rowNum:r,field:f,value:v}),mode:'no-cors'}); setTimeout(loadOrders, 800); }
+        async function saveMonthlyRate() { const m = document.getElementById('profitMonthFilter').value; const r = document.getElementById('monthlyRateInput').value; showLoading(true); await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:"updateMonthlyRate",month:m,rate:r}),mode:'no-cors'}); alert("匯率已同步"); setTimeout(loadOrders, 1000); }
         function updateSummaryUI() {
             const box = document.getElementById('summary-container');
             const s = { "蝦皮":0, "7-11":0, "全家":0, "宅配":0, "7仔預購":0 };
             allData.forEach(i => { if((i.status==='待取貨'||i.status==='待預購') && !i.fullAddress.includes("運單:")) if(s[i.location]!==undefined) s[i.location]++; });
-            box.innerHTML = Object.keys(s).map(l => `<div onclick="filterStatDetail('${l}')" class="bg-white/5 p-3 rounded-2xl border border-white/10 cursor-pointer hover:bg-white/10 transition-colors"><p class="text-[9px] opacity-40 uppercase font-black tracking-tighter">${l}</p><p class="text-xl font-black">${s[l]}</p></div>`).join('');
+            box.innerHTML = Object.keys(s).map(l => `<div onclick="filterStatDetail('${l}')" class="bg-white/5 p-4 rounded-3xl border border-white/10 cursor-pointer hover:bg-white/20 transition-all"><p class="text-[10px] opacity-40 uppercase font-black tracking-widest">${l}</p><p class="text-2xl font-black mt-1">${s[l]}</p></div>`).join('');
         }
-
         function filterStatDetail(loc) {
             const list = document.getElementById('filter-items-list');
             const filtered = allData.filter(i => i.location===loc && (i.status==='待取貨'||i.status==='待預購') && !i.fullAddress.includes("運單:"));
-            document.getElementById('filter-title').innerText = `🔍 ${loc} - (${filtered.length} 個待處理商品)`;
-            list.innerHTML = filtered.map(i => `
-                <div class="bg-white/10 p-3 rounded-xl border border-white/20">
-                    <div class="flex justify-between items-center mb-1">
-                        <p class="font-black text-xs text-blue-300">${i.name}</p>
-                        <select onchange="updateRowField(${i.rowNum}, 'status', this.value)" class="bg-slate-800 text-[10px] rounded border border-white/20 text-white px-1 outline-none font-bold">
-                            <option value="待預購" ${i.status==='待預購'?'selected':''}>待預購</option>
-                            <option value="待取貨" ${i.status==='待取貨'?'selected':''}>待取貨</option>
-                            <option value="已取貨" ${i.status==='已取貨'?'selected':''}>已取貨</option>
-                        </select>
-                    </div>
-                    <p class="text-[10px] opacity-80 leading-tight">${i.product} <span class="text-pink-400 font-bold ml-1">${i.date||''}</span></p>
-                </div>`).join('');
+            document.getElementById('filter-title').innerText = `🔍 ${loc} (${filtered.length})`;
+            list.innerHTML = filtered.map(i => `<div class="bg-white/10 p-4 rounded-2xl border border-white/10 shadow-lg"><div class="flex justify-between items-center mb-2"><p class="font-black text-sm text-blue-300">${i.name}</p><select onchange="updateRowField(${i.rowNum}, 'status', this.value)" class="bg-slate-800 text-[10px] rounded-xl border border-white/20 px-2 py-1 outline-none font-bold"><option value="待預購" ${i.status==='待預購'?'selected':''}>待預購</option><option value="待取貨" ${i.status==='待取貨'?'selected':''}>待取貨</option><option value="已取貨" ${i.status==='已取貨'?'selected':''}>已取貨</option></select></div><p class="text-[11px] opacity-70">${i.product} <span class="text-pink-400 font-bold ml-1">${i.date||''}</span></p></div>`).join('');
             document.getElementById('filter-details').classList.remove('hidden');
         }
-
         function togglePreDate(el) { el.closest('.item-row').querySelector('.pre-dates').classList.toggle('hidden', el.value!=='7仔預購'); }
         function addItemRow() { const rows = document.querySelectorAll('.item-row'); const newRow = rows[0].cloneNode(true); newRow.querySelectorAll('input').forEach(i=>i.value=''); newRow.querySelector('.pre-dates').classList.add('hidden'); document.getElementById('itemsContainer').appendChild(newRow); }
-        function copyData(t) { navigator.clipboard.writeText(t).then(()=>alert("已複製")); }
+        function copyData(t) { navigator.clipboard.writeText(t).then(()=>alert("✅ 已複製地址資料")); }
         function closeFilter() { document.getElementById('filter-details').classList.add('hidden'); }
-        async function deleteGroup(n) { if(!confirm(`確定要完全刪除「${n}」的所有訂單嗎？`)) return; showLoading(true); const targets = allData.filter(i=>i.name===n); for(let i of targets) await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:"deleteRow",rowNum:i.rowNum}),mode:'no-cors'}); setTimeout(loadOrders, 1000); }
+        async function deleteGroup(n) { if(!confirm(`確定要完全刪除「${n}」？`)) return; showLoading(true); for(let i of allData.filter(i=>i.name===n)) await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:"deleteRow",rowNum:i.rowNum}),mode:'no-cors'}); setTimeout(loadOrders, 1000); }
     </script>
 </body>
 </html>
