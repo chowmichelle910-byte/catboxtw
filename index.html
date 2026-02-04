@@ -98,29 +98,50 @@
 
         <div id="cardContainer" class="grid gap-6"></div>
 
-        <div id="profitSection" class="hidden space-y-4">
-            <div class="flex justify-between items-center bg-white p-4 rounded-2xl border shadow-sm">
-                <p class="font-bold text-sm">選擇月份篩選：</p>
-                <select id="profitMonthFilter" onchange="renderProfit()" class="border rounded-lg px-4 py-2 text-sm font-bold bg-gray-50"></select>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-slate-900 p-6 rounded-3xl shadow-sm text-white">
-                    <p class="text-white/40 text-[10px] font-bold uppercase">該月總營業額</p>
-                    <p id="totalProfit" class="text-3xl font-black text-blue-400 mt-1">$0</p>
-                </div>
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                    <p class="text-gray-400 text-[10px] font-bold uppercase">訂單總數 (含未寄出)</p>
-                    <p id="totalOrders" class="text-3xl font-black text-gray-800 mt-1">0</p>
-                </div>
-            </div>
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-gray-50 border-b"><tr><th class="p-4 font-bold">日期</th><th class="p-4 font-bold">客戶</th><th class="p-4 font-bold">商品</th><th class="p-4 font-bold text-right">金額</th></tr></thead>
-                    <tbody id="profitTableBody"></tbody>
-                </table>
+        <div id="profitSection" class="hidden space-y-6">
+    <div class="flex flex-col md:flex-row gap-4 bg-white p-5 rounded-3xl border shadow-sm items-end">
+        <div class="flex-1 space-y-2">
+            <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">選擇月份</label>
+            <select id="profitMonthFilter" onchange="renderProfit()" class="w-full border rounded-xl px-4 py-3 text-sm font-bold bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all"></select>
+        </div>
+        <div class="flex-1 space-y-2">
+            <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">該月匯率 (TWD ➡️ HKD)</label>
+            <div class="flex gap-2">
+                <input type="number" id="monthlyRateInput" step="0.0001" placeholder="例如 0.24" class="w-full border rounded-xl px-4 py-3 text-sm font-bold bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                <button onclick="saveMonthlyRate()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-xs font-black shadow-md shrink-0 transition-transform active:scale-95">儲存</button>
             </div>
         </div>
     </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-slate-900 p-6 rounded-3xl shadow-xl text-white">
+            <p class="text-white/40 text-[10px] font-bold uppercase tracking-widest">該月總營業額 (TWD)</p>
+            <p id="totalProfit" class="text-3xl font-black text-blue-400 mt-1">$0</p>
+        </div>
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+            <p class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">訂單總數 (含未寄出)</p>
+            <p id="totalOrders" class="text-3xl font-black text-gray-800 mt-1">0</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-gray-50 border-b">
+                    <tr>
+                        <th class="p-4 font-bold text-gray-500 text-xs">日期</th>
+                        <th class="p-4 font-bold text-gray-500 text-xs">客戶</th>
+                        <th class="p-4 font-bold text-gray-500 text-xs">商品內容</th>
+                        <th class="p-4 font-bold text-gray-500 text-xs text-right">TWD</th>
+                        <th class="p-4 font-bold text-blue-600 text-xs text-right bg-blue-50">折合 HKD</th>
+                    </tr>
+                </thead>
+                <tbody id="profitTableBody" class="divide-y divide-gray-50">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycby5vPRE71thYhYY-4XDMZ2oByLBsaZmy_FQPHzjHvAthhCTFmUCC29SycppE4d7pJ4mWA/exec";
@@ -211,24 +232,50 @@
         }
 
         function renderProfit() {
-            const targetMonth = document.getElementById('profitMonthFilter').value;
-            const body = document.getElementById('profitTableBody');
-            let total = 0, count = 0;
-            
-            const filtered = allData.filter(i => {
-                const d = new Date(i.orderDate);
-                const m = isNaN(d) ? "" : `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-                return m === targetMonth;
-            });
+    const targetMonth = document.getElementById('profitMonthFilter').value;
+    const body = document.getElementById('profitTableBody');
+    const rateInput = document.getElementById('monthlyRateInput');
+    
+    let totalTWD = 0;
+    let count = 0;
+    let currentRate = 0;
 
-            body.innerHTML = filtered.map(i => {
-                total += parseFloat(i.amount || 0); count++;
-                return `<tr class="border-b text-[11px]"><td class="p-3 opacity-60">${i.orderDate}</td><td class="p-3 font-bold">${i.name}</td><td class="p-3">${i.product}</td><td class="p-3 text-right font-black">$${i.amount}</td></tr>`;
-            }).join('');
-            
-            document.getElementById('totalProfit').innerText = `$${total.toLocaleString()}`;
-            document.getElementById('totalOrders').innerText = count;
+    // 1. 篩選出該月資料
+    const filtered = allData.filter(i => {
+        const d = new Date(i.orderDate);
+        const m = isNaN(d) ? "" : `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+        if (m === targetMonth && i.monthlyRate) {
+            currentRate = parseFloat(i.monthlyRate); // 取得該月已存匯率
         }
+        return m === targetMonth;
+    });
+
+    // 2. 更新匯率輸入框
+    rateInput.value = currentRate || "";
+
+    // 3. 生成表格內容
+    body.innerHTML = filtered.map(i => {
+        const amt = parseFloat(i.amount || 0);
+        totalTWD += amt;
+        count++;
+        
+        // 如果有匯率就計算 HKD，否則顯示 --
+        const hkd = currentRate ? (amt * currentRate).toFixed(2) : "--";
+
+        return `
+            <tr class="hover:bg-gray-50 transition-colors">
+                <td class="p-4 text-[11px] text-gray-400 font-medium">${i.orderDate}</td>
+                <td class="p-4 font-bold text-gray-800">${i.name}</td>
+                <td class="p-4 text-xs text-gray-600">${i.product}</td>
+                <td class="p-4 text-right font-bold text-gray-700">$${amt.toLocaleString()}</td>
+                <td class="p-4 text-right font-black text-blue-600 bg-blue-50/50">$${hkd}</td>
+            </tr>
+        `;
+    }).join('');
+    
+    document.getElementById('totalProfit').innerText = `$${totalTWD.toLocaleString()}`;
+    document.getElementById('totalOrders').innerText = count;
+}
 
         async function deleteGroup(name) {
             if (!confirm(`確定要刪除「${name}」的所有訂單嗎？此動作無法復原。`)) return;
