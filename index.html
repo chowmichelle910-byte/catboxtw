@@ -20,15 +20,26 @@
         .nav-active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); color: #2563eb; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        /* 統一修改所有訂單狀態下拉選單的字體 */
-    select.status-dropdown, 
+        /* 強制修正 Status 下拉選單的顏色與字體 */
+    select[onchange*="status"], 
     select[onchange*="updateRowField"] {
-        font-size: 8px !important;    /* 這裡改成你心目中的大小 */
+        background-color: #FFFFFF !important; /* 強制背景為純白色 */
+        color: #1F2937 !important;            /* 強制文字為深灰色/黑色 (Slate-800) */
+        font-size: 10px !important;           /* 調整字體大小 */
         font-weight: 900 !important;
-        padding: 2px 4px !important;
-        border-radius: 6px !important;
-        background-color: #f8fafc !important; /* 淡淡的灰色背景 */
+        border: 1px solid #E5E7EB !important; /* 加入淺灰色邊框 */
+        padding: 2px 6px !important;
+        border-radius: 8px !important;
+        appearance: auto !important;          /* 確保顯示下拉箭頭 */
         cursor: pointer;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+    }
+
+    /* 針對黑色區域內的選單特別優化 */
+    #filter-items-list select {
+        background-color: #1e293b !important; /* 黑框內的選單改用深藍背景 */
+        color: #60a5fa !important;            /* 文字改用淺藍色 */
+        border-color: #334155 !important;
     }
     </style>
 </head>
@@ -89,9 +100,10 @@
                         <button onclick="addItemRow()" class="text-blue-600 text-[11px] font-black hover:scale-105 transition-transform">+ 增加品項</button>
                     </div>
                     <div id="itemsContainer" class="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                        <div class="item-row bg-gray-50 p-4 rounded-3xl border border-gray-100">
-                            <button onclick="this.parentElement.remove()" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full text-[10px] font-black shadow-md hover:bg-red-600 transition-all z-10">✕</button>
-                            <input type="text" placeholder="商品名稱" class="prodName w-full mb-3 p-3 rounded-2xl border-none shadow-sm text-sm font-bold">
+                        <div class="item-row bg-gray-50 p-4 rounded-3xl border border-gray-100 relative mb-4">
+    <button onclick="removeRow(this)" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full text-[10px] font-black shadow-lg hover:bg-red-600 transition-all z-10 flex items-center justify-center">✕</button>
+    
+    <input type="text" placeholder="商品名稱" class="prodName w-full mb-3 p-3 rounded-2xl border-none shadow-sm text-sm font-bold">
                             <div class="grid grid-cols-3 gap-2">
                                 <select onchange="togglePreDate(this)" class="prodLoc border-none shadow-sm p-3 rounded-2xl text-[12px] font-bold">
                                     <option>蝦皮</option><option>7-11</option><option>全家</option><option>宅配</option><option>7仔預購</option>
@@ -368,10 +380,19 @@ ${currentMode==='active' ?
     newRow.querySelectorAll('input').forEach(i => i.value = '');
     newRow.querySelector('.pre-dates').classList.add('hidden');
     
-    // 確保新行也有刪除按鈕的功能 (cloneNode 會連按鈕一起複製)
-    // 如果你希望第一行不能被刪除，可以加個判斷，但通常全部都能刪除最直覺
+    // 確保新行的按鈕點擊時能刪除自己
+    const deleteBtn = newRow.querySelector('button');
+    deleteBtn.onclick = function() { removeRow(this); };
     
     container.appendChild(newRow);
+}
+        function removeRow(btn) {
+    const rows = document.querySelectorAll('.item-row');
+    if (rows.length > 1) {
+        btn.closest('.item-row').remove();
+    } else {
+        alert("最少需要保留一個商品品項");
+    }
 }
         function copyData(t) { navigator.clipboard.writeText(t).then(()=>alert("✅ 已複製地址資料")); }
         function closeFilter() { document.getElementById('filter-details').classList.add('hidden'); }
