@@ -209,9 +209,16 @@
                                 <div class="flex justify-between font-black"><span class="text-gray-800">${item.product}</span><span class="text-pink-600">${item.date || ''}</span></div>
                                 <div class="flex justify-between items-center mt-1.5">
                                     <div class="text-blue-600 font-black">$${item.amount} (${item.location})</div>
-                                    ${currentMode==='active' ? 
-                                        `<select onchange="updateRowField(${item.rowNum}, 'status', this.value)" class="border-none rounded-lg px-2 py-1 text-[9px] font-black text-gray-700 bg-white shadow-sm ring-1 ring-gray-100"><option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option><option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option><option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option></select>` 
-                                        : `<span class="font-black text-gray-400 uppercase text-[9px] tracking-tighter">${item.status}</span>`}
+                                    // 在 renderOrders 的 items.map 裡面替換這一行：
+${currentMode==='active' ? 
+    `<select onchange="updateRowField(${item.rowNum}, 'status', this.value)" 
+             class="border-none rounded-lg px-1 py-0.5 text-[8px] font-black text-gray-700 bg-white shadow-sm ring-1 ring-gray-100 scale-95 origin-right outline-none">
+        <option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option>
+        <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
+        <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
+    </select>` 
+    : `<span class="font-black text-gray-400 uppercase text-[9px] tracking-tighter">${item.status}</span>`
+}
                                 </div>
                             </div>`).join('')}</div>
                     </div>`;
@@ -302,10 +309,24 @@
         
         function filterStatDetail(loc) {
             const list = document.getElementById('filter-items-list');
-            const filtered = allData.filter(i => i.location===loc && (i.status==='待取貨'||i.status==='待預購') && !i.fullAddress.includes("運單:"));
+            const filtered = allData.filter(i => i.location === loc && (i.status === '待取貨' || i.status === '待預購') && !i.fullAddress.includes("運單:"));
             document.getElementById('filter-details').classList.remove('hidden');
             document.getElementById('filter-title').innerText = `🔍 ${loc} (${filtered.length})`;
-            list.innerHTML = filtered.map(i => `<div class="bg-white/10 p-3 rounded-2xl border border-white/10"><div class="flex justify-between items-center mb-2"><p class="font-black text-xs text-blue-300">${i.name}</p></div><p class="text-[10px] opacity-70">${i.product}</p></div>`).join('');
+    
+            // 補回 select 切換功能，並縮小字體
+            list.innerHTML = filtered.map(i => `
+                <div class="bg-white/10 p-3 rounded-2xl border border-white/10">
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="font-black text-xs text-blue-300">${i.name}</p>
+                        <select onchange="updateRowField(${i.rowNum}, 'status', this.value)" 
+                                class="bg-slate-800 text-[9px] rounded-lg border border-white/20 px-1 py-0.5 outline-none text-white scale-90 origin-right">
+                            <option value="待預購" ${i.status === '待預購' ? 'selected' : ''}>待預購</option>
+                            <option value="待取貨" ${i.status === '待取貨' ? 'selected' : ''}>待取貨</option>
+                            <option value="已取貨" ${i.status === '已取貨' ? 'selected' : ''}>已取貨</option>
+                        </select>
+                    </div>
+                    <p class="text-[10px] opacity-70">${i.product}</p>
+                </div>`).join('');
         }
         
         function initMonthFilter() {
