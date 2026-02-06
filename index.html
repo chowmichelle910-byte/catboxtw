@@ -190,77 +190,85 @@
         }
 
         function renderOrders() {
-            const container = document.getElementById('cardContainer');
-            container.innerHTML = "";
-            const groups = allData.reduce((acc, obj) => { if (!acc[obj.name]) acc[obj.name] = []; acc[obj.name].push(obj); return acc; }, {});
-            
-            Object.keys(groups).forEach(name => {
-                const items = groups[name].filter(i => currentMode === 'active' ? !i.fullAddress.includes("運單:") : i.fullAddress.includes("運單:"));
-                if (items.length === 0) return;
+    const container = document.getElementById('cardContainer');
+    container.innerHTML = "";
+    const groups = allData.reduce((acc, obj) => { if (!acc[obj.name]) acc[obj.name] = []; acc[obj.name].push(obj); return acc; }, {});
+    
+    Object.keys(groups).forEach(name => {
+        const items = groups[name].filter(i => currentMode === 'active' ? !i.fullAddress.includes("運單:") : i.fullAddress.includes("運單:"));
+        if (items.length === 0) return;
 
-                const isAllReady = items.every(i => i.status === '已取貨');
-                const first = items[0];
-                const card = document.createElement('div');
-                card.className = `bg-white rounded-[2rem] shadow-sm border ${isAllReady && currentMode === 'active' ? 'card-ready-to-ship' : 'border-gray-100'}`;
-                
-                let trackingNum = "";
-                if (first.fullAddress.includes("運單:")) {
-                    trackingNum = first.fullAddress.split("運單:")[1].replace(")", "").trim();
-                }
-
-                card.innerHTML = `
-                    <div class="p-5 ${isAllReady && currentMode==='active' ? 'bg-red-50/50' : 'bg-gray-50/30'} border-b flex justify-between items-center">
-                        <div class="flex flex-col">
-                            <span class="source-${first.source} badge uppercase w-max mb-1" style="transform: scale(0.85); transform-origin: left;">${first.source}</span>
-                            <b class="text-lg font-black text-gray-800 leading-none">${name}</b>
-                        </div>
-                        <div class="flex gap-1.5">
-                            ${currentMode === 'history' && trackingNum ? `<button onclick="copyReplyText('${trackingNum}')" class="bg-indigo-600 text-white text-[9px] px-3 py-1.5 rounded-xl font-black">📋 回覆</button>` : ''}
-                            ${currentMode === 'active' ? `<button onclick="addMoreItems('${name}')" class="bg-green-600 text-white text-[9px] px-3 py-1.5 rounded-xl font-black">➕ 加單</button>` : ''}
-                            // 1. 卡片頂部的「複製地址」按鈕 (確保格式正確)
-<button onclick='copyData(${JSON.stringify(first.receiver)}, ${JSON.stringify(first.phone)}, ${JSON.stringify(first.fullAddress)})' 
-        class="bg-blue-600 text-white text-[9px] px-3 py-1.5 rounded-xl font-black">
-    複製地址
-</button>
-
-// 2. 地址顯示區域的「修改資料」按鈕
-<div class="bg-blue-50/50 p-3 rounded-2xl border border-blue-100/50 relative">
-    <p>👤 ${first.receiver}</p>
-    <p>📞 ${first.phone}</p>
-    <p class="text-gray-400 italic">📍 ${first.fullAddress}</p>
-    <button type="button" 
-            onclick='openEditModal("${name}", ${JSON.stringify(first.receiver)}, ${JSON.stringify(first.phone)}, ${JSON.stringify(first.fullAddress)})' 
-            class="absolute top-2 right-2 text-blue-500 font-black underline scale-90">
-        ✏️ 修改
-    </button>
-</div>
-
-    ${currentMode === 'active' ? `
-        <div class="flex gap-2 pt-2 border-t mt-2">
-            <input type="text" id="track-${first.rowNum}" placeholder="輸入單號" class="flex-1 border p-2 rounded-xl text-xs">
-            <button onclick="shipOrder(${first.rowNum}, '${name}')" class="bg-slate-800 text-white px-4 rounded-xl text-[10px] font-black">寄出</button>
-        </div>` : ''}
-</div>
-                        <div class="space-y-2">${items.map(item => `
-                            <div class="box-${item.status} p-2.5 rounded-xl border text-[10px]">
-                                <div class="flex justify-between font-black"><span class="text-gray-800">${item.product}</span><span class="text-pink-600">${item.date || ''}</span></div>
-                                <div class="flex justify-between items-center mt-1.5">
-                                    <div class="text-blue-600 font-black">$${item.amount} (${item.location})</div>
-${currentMode==='active' ? 
-    `<select onchange="updateRowField(${item.rowNum}, 'status', this.value)" 
-             class="border-none rounded-lg px-1 py-0.5 text-[8px] font-black text-gray-700 bg-white shadow-sm ring-1 ring-gray-100 scale-85 origin-right outline-none">
-        <option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option>
-        <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
-        <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
-    </select>` 
-    : `<span class="font-black text-gray-400 uppercase text-[9px] tracking-tighter">${item.status}</span>`
-}
-                                </div>
-                            </div>`).join('')}</div>
-                    </div>`;
-                container.appendChild(card);
-            });
+        const isAllReady = items.every(i => i.status === '已取貨');
+        const first = items[0];
+        const card = document.createElement('div');
+        card.className = `bg-white rounded-[2rem] shadow-sm border overflow-hidden ${isAllReady && currentMode === 'active' ? 'card-ready-to-ship' : 'border-gray-100'}`;
+        
+        let trackingNum = "";
+        if (first.fullAddress.includes("運單:")) {
+            trackingNum = first.fullAddress.split("運單:")[1].replace(")", "").trim();
         }
+
+        card.innerHTML = `
+            <div class="p-5 ${isAllReady && currentMode==='active' ? 'bg-red-50/50' : 'bg-gray-50/30'} border-b flex justify-between items-start">
+                <div class="flex flex-col">
+                    <span class="source-${first.source} badge uppercase w-max mb-1" style="transform: scale(0.85); transform-origin: left;">${first.source}</span>
+                    <b class="text-lg font-black text-gray-800 leading-none">${name}</b>
+                </div>
+                <div class="flex flex-wrap justify-end gap-1.5 max-w-[180px]">
+                    ${currentMode === 'history' && trackingNum ? `<button onclick="copyReplyText('${trackingNum}')" class="bg-indigo-600 text-white text-[9px] px-3 py-1.5 rounded-xl font-black shadow-sm">📋 回覆</button>` : ''}
+                    ${currentMode === 'active' ? `<button onclick="addMoreItems('${name}')" class="bg-green-600 text-white text-[9px] px-3 py-1.5 rounded-xl font-black shadow-sm">➕ 加單</button>` : ''}
+                    <button onclick='copyData(${JSON.stringify(first.receiver)}, ${JSON.stringify(first.phone)}, ${JSON.stringify(first.fullAddress)})' 
+                            class="bg-blue-600 text-white text-[9px] px-3 py-1.5 rounded-xl font-black shadow-sm">
+                        複製地址
+                    </button>
+                    <button onclick="deleteGroup('${name}')" class="bg-gray-200 text-gray-500 text-[9px] px-3 py-1.5 rounded-xl font-black hover:bg-red-500 hover:text-white transition-all">🗑️ 刪除</button>
+                </div>
+            </div>
+
+            <div class="p-5 space-y-4">
+                <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 relative text-[11px] font-bold text-gray-600 leading-relaxed">
+                    <p>👤 ${first.receiver}</p>
+                    <p>📞 ${first.phone}</p>
+                    <p class="text-gray-400 italic">📍 ${first.fullAddress}</p>
+                    <button type="button" 
+                            onclick='openEditModal("${name}", ${JSON.stringify(first.receiver)}, ${JSON.stringify(first.phone)}, ${JSON.stringify(first.fullAddress)})' 
+                            class="absolute top-3 right-3 text-blue-500 font-black underline scale-90">
+                        ✏️ 修改資料
+                    </button>
+                </div>
+
+                ${currentMode === 'active' ? `
+                    <div class="flex gap-2 bg-gray-50 p-2 rounded-2xl border border-gray-100">
+                        <input type="text" id="track-${first.rowNum}" placeholder="輸入順豐單號" class="flex-1 bg-transparent px-3 py-2 text-xs font-bold outline-none">
+                        <button onclick="shipOrder(${first.rowNum}, '${name}')" class="bg-slate-800 text-white px-5 py-2 rounded-xl text-[10px] font-black shadow-md active:scale-95 transition-all">確認寄出</button>
+                    </div>` : ''}
+
+                <div class="space-y-2 pt-2">
+                    <p class="text-[9px] font-black text-gray-300 uppercase tracking-widest ml-1">商品明細</p>
+                    ${items.map(item => `
+                        <div class="box-${item.status} p-3 rounded-xl border text-[10px] shadow-sm">
+                            <div class="flex justify-between font-black">
+                                <span class="text-gray-800">${item.product}</span>
+                                <span class="text-pink-600">${item.date || ''}</span>
+                            </div>
+                            <div class="flex justify-between items-center mt-2">
+                                <div class="text-blue-600 font-black bg-blue-50 px-2 py-0.5 rounded-md">$${item.amount} (${item.location})</div>
+                                ${currentMode==='active' ? 
+                                    `<select onchange="updateRowField(${item.rowNum}, 'status', this.value)" 
+                                             class="border border-gray-200 rounded-lg px-2 py-1 text-[9px] font-black text-gray-700 bg-white shadow-sm outline-none">
+                                        <option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option>
+                                        <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
+                                        <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
+                                    </select>` 
+                                    : `<span class="font-black text-gray-400 uppercase text-[9px] tracking-tighter">${item.status}</span>`
+                                }
+                            </div>
+                        </div>`).join('')}
+                </div>
+            </div>`;
+        container.appendChild(card);
+    });
+}
 
         async function searchSF() {
             const code = document.getElementById('sfCode').value.trim();
@@ -510,26 +518,47 @@ async function saveEditInfo() {
         async function deleteGroup(n) { if(!confirm(`確定要完全刪除「${n}」？`)) return; showLoading(true); for(let i of allData.filter(i=>i.name===n)) await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:"deleteRow",rowNum:i.rowNum}),mode:'no-cors'}); setTimeout(loadOrders, 1000); }
     </script>
     <div id="editModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4">
-    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" onclick="closeEditModal()"></div>
-    <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl relative z-10 space-y-4">
-        <h3 class="text-lg font-black text-gray-800">✏️ 修改客戶資料</h3>
-        <div class="space-y-3">
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="closeEditModal()"></div>
+    
+    <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl relative z-10 space-y-5 animate-in fade-in zoom-in duration-200">
+        <div class="flex justify-between items-center mb-2">
+            <h3 class="text-xl font-black text-gray-800">✏️ 修改客戶資料</h3>
+            <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <div class="space-y-4">
+            <input type="hidden" id="edit-custName"> 
+
             <div>
-                <label class="text-[10px] font-black text-gray-400 uppercase ml-2">收件人</label>
-                <input type="text" id="edit-receiver" class="w-full border-none bg-gray-100 rounded-2xl px-5 py-3 font-bold outline-none mt-1">
+                <label class="text-[10px] font-black text-gray-400 uppercase ml-2 tracking-widest">收件人名稱</label>
+                <input type="text" id="edit-receiver" 
+                       class="w-full border-2 border-gray-50 bg-gray-50 rounded-2xl px-5 py-3.5 font-bold outline-none mt-1 focus:bg-white focus:border-blue-200 transition-all">
             </div>
+
             <div>
-                <label class="text-[10px] font-black text-gray-400 uppercase ml-2">電話</label>
-                <input type="text" id="edit-phone" class="w-full border-none bg-gray-100 rounded-2xl px-5 py-3 font-bold outline-none mt-1">
+                <label class="text-[10px] font-black text-gray-400 uppercase ml-2 tracking-widest">聯絡電話</label>
+                <input type="text" id="edit-phone" 
+                       class="w-full border-2 border-gray-50 bg-gray-50 rounded-2xl px-5 py-3.5 font-bold outline-none mt-1 focus:bg-white focus:border-blue-200 transition-all">
             </div>
+
             <div>
-                <label class="text-[10px] font-black text-gray-400 uppercase ml-2">詳細地址</label>
-                <textarea id="edit-address" class="w-full border-none bg-gray-100 rounded-2xl px-5 py-3 font-bold outline-none mt-1 h-24 text-xs"></textarea>
+                <label class="text-[10px] font-black text-gray-400 uppercase ml-2 tracking-widest">詳細地址</label>
+                <textarea id="edit-address" 
+                          class="w-full border-2 border-gray-50 bg-gray-50 rounded-2xl px-5 py-3.5 font-bold outline-none mt-1 h-28 text-xs leading-relaxed focus:bg-white focus:border-blue-200 transition-all"></textarea>
             </div>
         </div>
-        <input type="hidden" id="edit-custName"> <div class="flex gap-2 pt-2">
-            <button onclick="closeEditModal()" class="flex-1 bg-gray-100 text-gray-500 py-4 rounded-2xl font-black text-xs">取消</button>
-            <button onclick="saveEditInfo()" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg shadow-blue-100">儲存更新</button>
+
+        <div class="flex gap-3 pt-2">
+            <button onclick="closeEditModal()" 
+                    class="flex-1 bg-gray-100 text-gray-500 py-4 rounded-2xl font-black text-xs hover:bg-gray-200 transition-all">
+                取消
+            </button>
+            <button onclick="saveEditInfo()" 
+                    class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg shadow-blue-100 hover:bg-blue-700 active:scale-95 transition-all">
+                確認儲存
+            </button>
         </div>
     </div>
 </div>
