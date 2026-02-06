@@ -31,10 +31,11 @@
         <div class="flex flex-col md:flex-row items-center justify-between bg-white p-5 rounded-3xl shadow-sm border border-gray-100 gap-4">
             <h1 class="text-xl font-black text-gray-800 tracking-tight">🇹🇼 台灣-訂單管理</h1>
             <nav class="flex bg-gray-100 p-1 rounded-2xl shadow-inner">
-                <button onclick="switchView('active')" id="nav-active" class="px-6 py-2 rounded-xl text-xs font-black transition-all nav-active">進行中</button>
-                <button onclick="switchView('history')" id="nav-history" class="px-6 py-2 rounded-xl text-xs font-black transition-all text-gray-400">歷史</button>
-                <button onclick="switchView('profit')" id="nav-profit" class="px-6 py-2 rounded-xl text-xs font-black transition-all text-gray-400">💰 利潤</button>
-            </nav>
+    <button onclick="switchView('active')" id="nav-active" class="px-4 py-2 rounded-lg text-xs font-black transition-all nav-active">進行中</button>
+    <button onclick="switchView('history')" id="nav-history" class="px-4 py-2 rounded-lg text-xs font-black transition-all text-gray-400">歷史</button>
+    <button onclick="switchView('profit')" id="nav-profit" class="px-4 py-2 rounded-lg text-xs font-black transition-all text-gray-400">💰 利潤</button>
+    <button onclick="switchView('sf')" id="nav-sf" class="px-4 py-2 rounded-lg text-xs font-black transition-all text-gray-400">📍 順豐搜尋</button>
+</nav>
         </div>
 
         <section id="black-box-section" class="bg-slate-900 p-6 rounded-[2.5rem] shadow-2xl text-white">
@@ -128,18 +129,55 @@ async function loadOrders() {
 
 function switchView(mode) {
     currentMode = mode;
-    // 控制區塊顯示
-    document.getElementById('black-box-section').style.display = (mode==='active'?'block':'none');
-    document.getElementById('add-section').style.display = (mode==='active'?'block':'none');
-    document.getElementById('sf-section').style.display = (mode==='sf'?'block':'none');
     
-    // 導航按鈕樣式切換
-    const btns = ['nav-active','nav-history','nav-profit','nav-sf'];
-    btns.forEach(id => {
-        const el = document.getElementById(id);
-        if(el) el.className = `px-4 py-2 rounded-lg text-xs font-black transition-all ${id==='nav-'+mode ? 'nav-active' : 'text-gray-400'}`;
+    // 1. 控制各個大區塊的顯示與隱藏
+    const activeSection = document.getElementById('add-section');
+    const blackBox = document.getElementById('black-box-section');
+    const profitSection = document.getElementById('profitSection');
+    const sfSection = document.getElementById('sf-section');
+    const cardContainer = document.getElementById('cardContainer');
+
+    // 先全部隱藏/重設
+    if(activeSection) activeSection.style.display = (mode === 'active' ? 'block' : 'none');
+    if(blackBox) blackBox.style.display = (mode === 'active' ? 'block' : 'none');
+    if(sfSection) sfSection.style.display = (mode === 'sf' ? 'block' : 'none');
+    
+    if(profitSection) {
+        if(mode === 'profit') profitSection.classList.remove('hidden');
+        else profitSection.classList.add('hidden');
+    }
+
+    if(cardContainer) {
+        // 只有「進行中」和「歷史」需要顯示訂單卡片
+        cardContainer.style.display = (mode === 'active' || mode === 'history') ? 'flex' : 'none';
+    }
+
+    // 2. 更新導航按鈕的樣式 (加入防錯)
+    const navButtons = {
+        'active': 'nav-active',
+        'history': 'nav-history',
+        'profit': 'nav-profit',
+        'sf': 'nav-sf'
+    };
+
+    Object.keys(navButtons).forEach(key => {
+        const btnId = navButtons[key];
+        const btnEl = document.getElementById(btnId);
+        if (btnEl) {
+            if (key === mode) {
+                btnEl.className = "px-4 py-2 rounded-lg text-xs font-black transition-all nav-active";
+            } else {
+                btnEl.className = "px-4 py-2 rounded-lg text-xs font-black transition-all text-gray-400";
+            }
+        }
     });
-    renderUI();
+
+    // 3. 觸發重新渲染
+    if (mode === 'profit') {
+        renderProfit();
+    } else if (mode !== 'sf') {
+        renderOrders();
+    }
 }
 
 function renderUI() {
