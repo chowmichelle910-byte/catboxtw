@@ -209,10 +209,9 @@
                                 <div class="flex justify-between font-black"><span class="text-gray-800">${item.product}</span><span class="text-pink-600">${item.date || ''}</span></div>
                                 <div class="flex justify-between items-center mt-1.5">
                                     <div class="text-blue-600 font-black">$${item.amount} (${item.location})</div>
-                                    // 在 renderOrders 的 items.map 裡面替換這一行：
 ${currentMode==='active' ? 
     `<select onchange="updateRowField(${item.rowNum}, 'status', this.value)" 
-             class="border-none rounded-lg px-1 py-0.5 text-[8px] font-black text-gray-700 bg-white shadow-sm ring-1 ring-gray-100 scale-95 origin-right outline-none">
+             class="border-none rounded-lg px-1 py-0.5 text-[8px] font-black text-gray-700 bg-white shadow-sm ring-1 ring-gray-100 scale-85 origin-right outline-none">
         <option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option>
         <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
         <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
