@@ -217,28 +217,22 @@
                         <div class="flex gap-1.5">
                             ${currentMode === 'history' && trackingNum ? `<button onclick="copyReplyText('${trackingNum}')" class="bg-indigo-600 text-white text-[9px] px-3 py-1.5 rounded-xl font-black">📋 回覆</button>` : ''}
                             ${currentMode === 'active' ? `<button onclick="addMoreItems('${name}')" class="bg-green-600 text-white text-[9px] px-3 py-1.5 rounded-xl font-black">➕ 加單</button>` : ''}
-                            <button onclick="copyData('${first.receiver}\\n${first.phone}\\n${first.fullAddress}')" class="bg-blue-600 text-white text-[9px] px-3 py-1.5 rounded-xl font-black">複製地址</button>
-                            <button onclick="deleteGroup('${name}')" class="text-red-400 text-[9px] border border-red-100 px-2 py-1 rounded-xl">🗑️</button>
-                        </div>
-                    </div>
-                    <div class="p-5 grid md:grid-cols-2 gap-4">
-                        <div class="text-[11px] font-bold space-y-2 text-gray-600">
-    <p>👤 ${first.receiver} / 📞 ${first.phone}</p>
-    
-    <div class="relative py-1">
-        <p class="text-gray-400 italic mb-1">📍 ${first.fullAddress}</p>
-        <button type="button" 
-                onclick='triggerEditAddress("${name}", ${JSON.stringify(first.fullAddress)})' 
-                class="bg-blue-50 text-blue-600 px-2 py-1 rounded-md text-[9px] font-black border border-blue-100 active:scale-95 transition-all">
-            ✏️ 修改地址
-        </button>
-    </div>
+                            // 1. 卡片頂部的「複製地址」按鈕 (確保格式正確)
+<button onclick='copyData(${JSON.stringify(first.receiver)}, ${JSON.stringify(first.phone)}, ${JSON.stringify(first.fullAddress)})' 
+        class="bg-blue-600 text-white text-[9px] px-3 py-1.5 rounded-xl font-black">
+    複製地址
+</button>
 
-    ${currentMode === 'active' ? `
-        <div class="flex gap-2 pt-2 border-t mt-2">
-            <input type="text" id="track-${first.rowNum}" placeholder="輸入單號" class="flex-1 border p-2 rounded-xl text-xs">
-            <button onclick="shipOrder(${first.rowNum}, '${name}')" class="bg-slate-800 text-white px-4 rounded-xl text-[10px] font-black">寄出</button>
-        </div>` : ''}
+// 2. 地址顯示區域的「修改資料」按鈕
+<div class="bg-blue-50/50 p-3 rounded-2xl border border-blue-100/50 relative">
+    <p>👤 ${first.receiver}</p>
+    <p>📞 ${first.phone}</p>
+    <p class="text-gray-400 italic">📍 ${first.fullAddress}</p>
+    <button type="button" 
+            onclick='openEditModal("${name}", ${JSON.stringify(first.receiver)}, ${JSON.stringify(first.phone)}, ${JSON.stringify(first.fullAddress)})' 
+            class="absolute top-2 right-2 text-blue-500 font-black underline scale-90">
+        ✏️ 修改
+    </button>
 </div>
 
     ${currentMode === 'active' ? `
@@ -448,40 +442,96 @@ function triggerEditAddress(name, addr) {
         alert("最少需要保留一個商品品項");
     }
 }
-        function copyData(t) {
-    // 預處理：確保傳進來的是字串
-    const textToCopy = String(t).trim();
-    
-    // 建立一個看不見的 textarea
+        // --- 1. 複製功能 (ABC \n 123 \n HongKong) ---
+function copyData(receiver, phone, address) {
+    const textToCopy = `${receiver}\n${phone}\n${address}`.trim();
     const textArea = document.createElement("textarea");
     textArea.value = textToCopy;
-    
-    // 確保它在畫面內但不可見，避免畫面跳動
-    textArea.style.position = "fixed";
-    textArea.style.left = "-9999px";
-    textArea.style.top = "0";
     document.body.appendChild(textArea);
-    
-    // 選取並執行複製
-    textArea.focus();
     textArea.select();
-    textArea.setSelectionRange(0, 99999); // 針對手機加強選取範圍
+    try {
+        document.execCommand('copy');
+        alert("✅ 格式已複製：\n" + textToCopy);
+    } catch (err) {
+        alert("❌ 無法自動複製");
+    }
+    document.body.removeChild(textArea);
+}
+
+// --- 2. 彈窗控制 ---
+function openEditModal(name, receiver, phone, address) {
+    document.getElementById('edit-custName').value = name;
+    document.getElementById('edit-receiver').value = receiver;
+    document.getElementById('edit-phone').value = phone;
+    document.getElementById('edit-address').value = address;
+    document.getElementById('editModal').classList.remove('hidden');
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').classList.add('hidden');
+}
+
+// --- 3. 儲存更新邏輯 ---
+async function saveEditInfo() {
+    const customerName = document.getElementById('edit-custName').value;
+    const newR = document.getElementById('edit-receiver').value;
+    const newP = document.getElementById('edit-phone').value;
+    const newA = document.getElementById('edit-address').value;
+
+    closeEditModal();
+    showLoading(true);
 
     try {
-        const successful = document.execCommand('copy');
-        if (successful) {
-            alert("✅ 已複製地址資料");
-        } else {
-            alert("❌ 複製失敗，請手動選取");
+        const targets = allData.filter(i => i.name === customerName && !i.fullAddress.includes("運單:"));
+        
+        for (let i of targets) {
+            // 同時更新三個欄位 (GAS 會跑三遍，稍慢但穩定)
+            const fields = [
+                { f: 'receiver', v: newR },
+                { f: 'phone', v: newP },
+                { f: 'fullAddress', v: newA }
+            ];
+            for (let item of fields) {
+                await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "updateField", rowNum: i.rowNum, field: item.f, value: item.v }),
+                    mode: 'no-cors'
+                });
+            }
         }
-    } catch (err) {
-        alert("❌ 瀏覽器不支持自動複製");
+        alert("✅ 資料更新成功");
+        loadOrders();
+    } catch (e) {
+        alert("❌ 更新失敗");
+        showLoading(false);
     }
-
-    document.body.removeChild(textArea);
 }
         function closeFilter() { document.getElementById('filter-details').classList.add('hidden'); }
         async function deleteGroup(n) { if(!confirm(`確定要完全刪除「${n}」？`)) return; showLoading(true); for(let i of allData.filter(i=>i.name===n)) await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:"deleteRow",rowNum:i.rowNum}),mode:'no-cors'}); setTimeout(loadOrders, 1000); }
     </script>
+    <div id="editModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4">
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" onclick="closeEditModal()"></div>
+    <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl relative z-10 space-y-4">
+        <h3 class="text-lg font-black text-gray-800">✏️ 修改客戶資料</h3>
+        <div class="space-y-3">
+            <div>
+                <label class="text-[10px] font-black text-gray-400 uppercase ml-2">收件人</label>
+                <input type="text" id="edit-receiver" class="w-full border-none bg-gray-100 rounded-2xl px-5 py-3 font-bold outline-none mt-1">
+            </div>
+            <div>
+                <label class="text-[10px] font-black text-gray-400 uppercase ml-2">電話</label>
+                <input type="text" id="edit-phone" class="w-full border-none bg-gray-100 rounded-2xl px-5 py-3 font-bold outline-none mt-1">
+            </div>
+            <div>
+                <label class="text-[10px] font-black text-gray-400 uppercase ml-2">詳細地址</label>
+                <textarea id="edit-address" class="w-full border-none bg-gray-100 rounded-2xl px-5 py-3 font-bold outline-none mt-1 h-24 text-xs"></textarea>
+            </div>
+        </div>
+        <input type="hidden" id="edit-custName"> <div class="flex gap-2 pt-2">
+            <button onclick="closeEditModal()" class="flex-1 bg-gray-100 text-gray-500 py-4 rounded-2xl font-black text-xs">取消</button>
+            <button onclick="saveEditInfo()" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg shadow-blue-100">儲存更新</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
