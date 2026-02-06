@@ -62,30 +62,59 @@
                         <input type="text" id="phone" placeholder="電話" class="border-b-2 border-gray-100 focus:border-blue-500 p-2 text-sm outline-none">
                     </div>
                     <textarea id="fullAddress" placeholder="輸入詳細地址..." class="w-full border-2 border-gray-50 p-4 rounded-3xl h-24 text-xs bg-gray-50 outline-none focus:bg-white focus:border-blue-100 transition-all"></textarea>
+                </div><section id="add-section" class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <div class="space-y-4">
+            <p class="font-black text-gray-300 text-[11px] uppercase tracking-widest">客戶資訊 (Customer)</p>
+            <div class="grid grid-cols-2 gap-4">
+                <input type="text" id="custName" placeholder="客戶名稱" class="border-b-2 border-gray-100 focus:border-blue-500 p-2 text-sm font-bold outline-none transition-all">
+                <select id="source" class="border-b-2 border-gray-100 p-2 text-sm font-bold bg-white outline-none">
+                    <option>IG</option>
+                    <option>WhatsApp</option>
+                    <option>Threads</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <input type="text" id="receiver" placeholder="收件人" class="border-b-2 border-gray-100 focus:border-blue-500 p-2 text-sm font-bold outline-none">
+                <input type="text" id="phone" placeholder="電話" class="border-b-2 border-gray-100 focus:border-blue-500 p-2 text-sm outline-none">
+            </div>
+            
+            <div class="space-y-2 pt-2">
+                <div class="flex gap-2">
+                    <input type="text" id="sfCode" placeholder="輸入順豐店碼 (如 852TAL)" class="flex-1 border-b-2 border-gray-100 focus:border-blue-500 p-2 text-xs font-bold outline-none bg-blue-50/30">
+                    <button onclick="searchSF()" class="bg-slate-800 text-white px-4 py-1 rounded-xl text-[10px] font-black hover:bg-black transition-all">🔍 搜尋地址</button>
                 </div>
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center">
-                        <p class="font-black text-gray-300 text-[11px] uppercase tracking-widest">商品明細 (Products)</p>
-                        <button onclick="addItemRow()" class="text-blue-600 text-[11px] font-black hover:scale-105 transition-transform">+ 增加品項</button>
+                <textarea id="fullAddress" placeholder="搜尋後自動填入或手動輸入詳細地址..." class="w-full border-2 border-gray-50 p-4 rounded-3xl h-24 text-xs bg-gray-50 outline-none focus:bg-white focus:border-blue-100 transition-all"></textarea>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <div class="flex justify-between items-center">
+                <p class="font-black text-gray-300 text-[11px] uppercase tracking-widest">商品明細 (Products)</p>
+                <button onclick="addItemRow()" class="text-blue-600 text-[11px] font-black hover:scale-105 transition-transform">+ 增加品項</button>
+            </div>
+            <div id="itemsContainer" class="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                <div class="item-row bg-gray-50 p-4 rounded-3xl border border-gray-100">
+                    <input type="text" placeholder="商品名稱" class="prodName w-full mb-3 p-3 rounded-2xl border-none shadow-sm text-sm font-bold">
+                    <div class="grid grid-cols-3 gap-2">
+                        <select onchange="togglePreDate(this)" class="prodLoc border-none shadow-sm p-3 rounded-2xl text-[12px] font-bold">
+                            <option>蝦皮</option><option>7-11</option><option>全家</option><option>宅配</option><option>7仔預購</option>
+                        </select>
+                        <input type="number" placeholder="金額" class="prodAmt border-none shadow-sm p-3 rounded-2xl text-[12px] font-bold">
+                        <select class="prodPayment border-none shadow-sm p-3 rounded-2xl text-[12px] font-bold">
+                            <option>已付</option><option>到付</option><option>待付</option>
+                        </select>
                     </div>
-                    <div id="itemsContainer" class="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                        <div class="item-row bg-gray-50 p-4 rounded-3xl border border-gray-100">
-                            <input type="text" placeholder="商品名稱" class="prodName w-full mb-3 p-3 rounded-2xl border-none shadow-sm text-sm font-bold">
-                            <div class="grid grid-cols-3 gap-2">
-                                <select onchange="togglePreDate(this)" class="prodLoc border-none shadow-sm p-3 rounded-2xl text-[12px] font-bold"><option>蝦皮</option><option>7-11</option><option>全家</option><option>宅配</option><option>7仔預購</option></select>
-                                <input type="number" placeholder="金額" class="prodAmt border-none shadow-sm p-3 rounded-2xl text-[12px] font-bold">
-                                <select class="prodPayment border-none shadow-sm p-3 rounded-2xl text-[12px] font-bold"><option>已付</option><option>到付</option><option>待付</option></select>
-                            </div>
-                            <div class="pre-dates hidden grid grid-cols-2 gap-2 mt-3">
-                                <div><label class="text-[9px] text-gray-400 ml-2">預購日期</label><input type="date" class="pStart w-full border-none shadow-sm p-2 rounded-xl text-[11px]"></div>
-                                <div><label class="text-[9px] text-gray-400 ml-2">取貨日期</label><input type="date" class="pEnd w-full border-none shadow-sm p-2 rounded-xl text-[11px]"></div>
-                            </div>
-                        </div>
+                    <div class="pre-dates hidden grid grid-cols-2 gap-2 mt-3">
+                        <div><label class="text-[9px] text-gray-400 ml-2">預購日期</label><input type="date" class="pStart w-full border-none shadow-sm p-2 rounded-xl text-[11px]"></div>
+                        <div><label class="text-[9px] text-gray-400 ml-2">取貨日期</label><input type="date" class="pEnd w-full border-none shadow-sm p-2 rounded-xl text-[11px]"></div>
                     </div>
-                    <button onclick="submitOrder()" class="w-full bg-blue-600 text-white py-5 rounded-[2rem] font-black shadow-lg shadow-blue-100 hover:bg-blue-700 hover:-translate-y-1 active:translate-y-0 transition-all">儲存並建立訂單</button>
                 </div>
             </div>
-        </section>
+            <button onclick="submitOrder()" class="w-full bg-blue-600 text-white py-5 rounded-[2rem] font-black shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">儲存並建立訂單</button>
+        </div>
+    </div>
+</section>
 
         <div id="cardContainer" class="flex flex-col gap-6"></div>
 
@@ -130,54 +159,30 @@ async function loadOrders() {
 function switchView(mode) {
     currentMode = mode;
     
-    // 1. 控制各個大區塊的顯示與隱藏
+    // 控制顯示
     const activeSection = document.getElementById('add-section');
     const blackBox = document.getElementById('black-box-section');
     const profitSection = document.getElementById('profitSection');
-    const sfSection = document.getElementById('sf-section');
     const cardContainer = document.getElementById('cardContainer');
 
-    // 先全部隱藏/重設
     if(activeSection) activeSection.style.display = (mode === 'active' ? 'block' : 'none');
     if(blackBox) blackBox.style.display = (mode === 'active' ? 'block' : 'none');
-    if(sfSection) sfSection.style.display = (mode === 'sf' ? 'block' : 'none');
+    if(cardContainer) cardContainer.style.display = (mode === 'active' || mode === 'history') ? 'flex' : 'none';
     
     if(profitSection) {
         if(mode === 'profit') profitSection.classList.remove('hidden');
         else profitSection.classList.add('hidden');
     }
 
-    if(cardContainer) {
-        // 只有「進行中」和「歷史」需要顯示訂單卡片
-        cardContainer.style.display = (mode === 'active' || mode === 'history') ? 'flex' : 'none';
-    }
-
-    // 2. 更新導航按鈕的樣式 (加入防錯)
-    const navButtons = {
-        'active': 'nav-active',
-        'history': 'nav-history',
-        'profit': 'nav-profit',
-        'sf': 'nav-sf'
-    };
-
-    Object.keys(navButtons).forEach(key => {
-        const btnId = navButtons[key];
-        const btnEl = document.getElementById(btnId);
-        if (btnEl) {
-            if (key === mode) {
-                btnEl.className = "px-4 py-2 rounded-lg text-xs font-black transition-all nav-active";
-            } else {
-                btnEl.className = "px-4 py-2 rounded-lg text-xs font-black transition-all text-gray-400";
-            }
-        }
+    // 更新導航樣式
+    const btns = { 'active': 'nav-active', 'history': 'nav-history', 'profit': 'nav-profit' };
+    Object.keys(btns).forEach(key => {
+        const el = document.getElementById(btns[key]);
+        if(el) el.className = `px-4 py-2 rounded-lg text-xs font-black transition-all ${key === mode ? 'nav-active' : 'text-gray-400'}`;
     });
 
-    // 3. 觸發重新渲染
-    if (mode === 'profit') {
-        renderProfit();
-    } else if (mode !== 'sf') {
-        renderOrders();
-    }
+    if (mode === 'profit') renderProfit();
+    else renderOrders();
 }
 
 function renderUI() {
@@ -214,8 +219,8 @@ function renderOrders() {
         card.innerHTML = `
             <div class="p-5 ${isAllReady && currentMode==='active' ? 'bg-red-50/50' : 'bg-gray-50/30'} border-b flex justify-between items-center">
                 <div class="flex flex-col">
-                    <span class="source-${first.source} badge uppercase w-max mb-0.5" style="transform: scale(0.8); transform-origin: left;">${first.source}</span>
-                    <b class="text-lg font-black text-gray-800 leading-tight">${name}</b>
+                    <span class="source-${first.source} badge uppercase w-max mb-1" style="transform: scale(0.85); transform-origin: left;">${first.source}</span>
+                    <b class="text-lg font-black text-gray-800 leading-none">${name}</b>
                 </div>
                 <div class="flex gap-1.5">
                     ${currentMode === 'history' && trackingNum ? `<button onclick="copyReplyText('${trackingNum}')" class="bg-indigo-600 text-white text-[9px] px-3 py-1.5 rounded-xl font-black">📋 回覆</button>` : ''}
@@ -235,8 +240,10 @@ function renderOrders() {
                         <div class="flex justify-between font-black"><span class="text-gray-800">${item.product}</span><span class="text-pink-600">${item.date || ''}</span></div>
                         <div class="flex justify-between items-center mt-1.5">
                             <div class="text-blue-600 font-black">$${item.amount} (${item.location})</div>
-                            ${currentMode==='active' ? `<select onchange="updateRowField(${item.rowNum}, 'status', this.value)" class="border-none rounded-lg px-2 py-1 text-[9px] font-black text-gray-700 bg-white shadow-sm ring-1 ring-gray-100"><option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option><option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option><option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option></select>` 
-                            : `<span class="font-black text-gray-400 uppercase text-[9px] tracking-tighter">${item.status}</span>`}
+                            ${currentMode==='active' ? 
+                                `<select onchange="updateRowField(${item.rowNum}, 'status', this.value)" class="border-none rounded-lg px-2 py-1 text-[9px] font-black text-gray-700 bg-white shadow-sm ring-1 ring-gray-100"><option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option><option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option><option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option></select>` 
+                                : `<span class="font-black text-gray-400 uppercase text-[9px] tracking-tighter">${item.status}</span>`
+                            }
                         </div>
                     </div>`).join('')}</div>
             </div>`;
@@ -332,6 +339,29 @@ function renderProfit() {
     document.getElementById('totalOrders').innerText = count;
     if(rate > 0) document.getElementById('totalIncomeHKD').innerText = `$${((total/3.6)-(total/rate)).toFixed(2)}`;
     else document.getElementById('totalIncomeHKD').innerText = "未設匯率";
+}
+        async function searchSF() {
+    const code = document.getElementById('sfCode').value.trim();
+    if (!code) return alert("請輸入店碼或名稱");
+    
+    showLoading(true);
+    try {
+        // 對接你 GAS 的 action=searchSF 和 code 參數
+        const resp = await fetch(`${GAS_URL}?action=searchSF&code=${encodeURIComponent(code)}`);
+        const result = await resp.json();
+        
+        if (result.found) {
+            // 自動填入地址欄位
+            document.getElementById('fullAddress').value = result.address;
+            // 搜尋完自動清空搜尋框，方便下次搜尋
+            document.getElementById('sfCode').value = ""; 
+        } else {
+            alert("❌ 找不到該順豐地點，請檢查編號");
+        }
+    } catch (e) {
+        alert("搜尋出錯，請檢查網路或 GAS 是否正確發佈");
+    }
+    showLoading(false);
 }
 function togglePreDate(el) { el.closest('.item-row').querySelector('.pre-dates').classList.toggle('hidden', el.value!=='7仔預購'); }
 function addItemRow() { const rows = document.querySelectorAll('.item-row'); const newRow = rows[0].cloneNode(true); newRow.querySelectorAll('input').forEach(i=>i.value=''); newRow.querySelector('.pre-dates').classList.add('hidden'); document.getElementById('itemsContainer').appendChild(newRow); }
