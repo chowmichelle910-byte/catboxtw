@@ -20,6 +20,16 @@
         .nav-active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); color: #2563eb; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        /* 統一修改所有訂單狀態下拉選單的字體 */
+    select.status-dropdown, 
+    select[onchange*="updateRowField"] {
+        font-size: 8px !important;    /* 這裡改成你心目中的大小 */
+        font-weight: 900 !important;
+        padding: 2px 4px !important;
+        border-radius: 6px !important;
+        background-color: #f8fafc !important; /* 淡淡的灰色背景 */
+        cursor: pointer;
+    }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen pb-20 text-gray-900 font-sans">
@@ -80,6 +90,7 @@
                     </div>
                     <div id="itemsContainer" class="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                         <div class="item-row bg-gray-50 p-4 rounded-3xl border border-gray-100">
+                            <button onclick="this.parentElement.remove()" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full text-[10px] font-black shadow-md hover:bg-red-600 transition-all z-10">✕</button>
                             <input type="text" placeholder="商品名稱" class="prodName w-full mb-3 p-3 rounded-2xl border-none shadow-sm text-sm font-bold">
                             <div class="grid grid-cols-3 gap-2">
                                 <select onchange="togglePreDate(this)" class="prodLoc border-none shadow-sm p-3 rounded-2xl text-[12px] font-bold">
@@ -348,7 +359,20 @@ ${currentMode==='active' ?
         }
 
         function togglePreDate(el) { el.closest('.item-row').querySelector('.pre-dates').classList.toggle('hidden', el.value!=='7仔預購'); }
-        function addItemRow() { const rows = document.querySelectorAll('.item-row'); const newRow = rows[0].cloneNode(true); newRow.querySelectorAll('input').forEach(i=>i.value=''); newRow.querySelector('.pre-dates').classList.add('hidden'); document.getElementById('itemsContainer').appendChild(newRow); }
+        function addItemRow() {
+    const container = document.getElementById('itemsContainer');
+    const rows = document.querySelectorAll('.item-row');
+    const newRow = rows[0].cloneNode(true);
+    
+    // 清空新行的數值
+    newRow.querySelectorAll('input').forEach(i => i.value = '');
+    newRow.querySelector('.pre-dates').classList.add('hidden');
+    
+    // 確保新行也有刪除按鈕的功能 (cloneNode 會連按鈕一起複製)
+    // 如果你希望第一行不能被刪除，可以加個判斷，但通常全部都能刪除最直覺
+    
+    container.appendChild(newRow);
+}
         function copyData(t) { navigator.clipboard.writeText(t).then(()=>alert("✅ 已複製地址資料")); }
         function closeFilter() { document.getElementById('filter-details').classList.add('hidden'); }
         async function deleteGroup(n) { if(!confirm(`確定要完全刪除「${n}」？`)) return; showLoading(true); for(let i of allData.filter(i=>i.name===n)) await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:"deleteRow",rowNum:i.rowNum}),mode:'no-cors'}); setTimeout(loadOrders, 1000); }
