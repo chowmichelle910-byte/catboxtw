@@ -104,19 +104,31 @@
     <button onclick="removeRow(this)" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full text-[10px] font-black shadow-lg hover:bg-red-600 transition-all z-10 flex items-center justify-center">✕</button>
     
     <input type="text" placeholder="商品名稱" class="prodName w-full mb-3 p-3 rounded-2xl border-none shadow-sm text-sm font-bold">
-                            <div class="grid grid-cols-3 gap-2">
-                                <select onchange="togglePreDate(this)" class="prodLoc border-none shadow-sm p-3 rounded-2xl text-[12px] font-bold">
-                                    <option>蝦皮</option><option>7-11</option><option>全家</option><option>宅配</option><option>7仔預購</option>
-                                </select>
-                                <input type="number" placeholder="金額" class="prodAmt border-none shadow-sm p-3 rounded-2xl text-[12px] font-bold">
-                                <select class="prodPayment border-none shadow-sm p-3 rounded-2xl text-[12px] font-bold">
-                                    <option>已付</option><option>到付</option><option>待付</option>
-                                </select>
-                            </div>
-                            <div class="pre-dates hidden grid grid-cols-2 gap-2 mt-3">
-                                <div><label class="text-[9px] text-gray-400 ml-2">預購日期</label><input type="date" class="pStart w-full border-none shadow-sm p-2 rounded-xl text-[11px]"></div>
-                                <div><label class="text-[9px] text-gray-400 ml-2">取貨日期</label><input type="date" class="pEnd w-full border-none shadow-sm p-2 rounded-xl text-[11px]"></div>
-                            </div>
+<div class="grid grid-cols-3 gap-2">
+    <select onchange="handleLocChange(this)" class="prodLoc border-none shadow-sm p-3 rounded-2xl text-[12px] font-bold">
+        <option>蝦皮</option>
+        <option>7-11</option>
+        <option>全家</option>
+        <option>宅配</option>
+        <option>7仔預購</option>
+        <option>賣貨便</option> </select>
+    <input type="number" placeholder="金額" class="prodAmt border-none shadow-sm p-3 rounded-2xl text-[12px] font-bold">
+    <select class="prodPayment border-none shadow-sm p-3 rounded-2xl text-[12px] font-bold">
+        <option>已付</option>
+        <option>到付</option>
+        <option>待付</option>
+    </select>
+</div>
+
+<div class="cmx-area hidden mt-3">
+    <label class="text-[9px] text-gray-400 ml-2">賣貨便編號</label>
+    <input type="text" class="cmxNum w-full border-none shadow-sm p-3 rounded-2xl text-[12px] font-bold bg-blue-50" placeholder="CM1234567890">
+</div>
+
+<div class="pre-dates hidden grid grid-cols-2 gap-2 mt-3">
+    <div><label class="text-[9px] text-gray-400 ml-2">預購日期</label><input type="date" class="pStart w-full border-none shadow-sm p-2 rounded-xl text-[11px]"></div>
+    <div><label class="text-[9px] text-gray-400 ml-2">取貨日期</label><input type="date" class="pEnd w-full border-none shadow-sm p-2 rounded-xl text-[11px]"></div>
+</div>
                         </div>
                     </div>
                     <button onclick="submitOrder()" class="w-full bg-blue-600 text-white py-5 rounded-[2rem] font-black shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">儲存並建立訂單</button>
@@ -435,13 +447,20 @@ function addMoreItems(name) {
         items: Array.from(document.querySelectorAll('.item-row')).map(row => {
             const loc = row.querySelector('.prodLoc').value;
             const dateStr = loc === '7仔預購' ? `(預:${row.querySelector('.pStart').value} 攞:${row.querySelector('.pEnd').value})` : "";
+            
+            // --- 新增：抓取隱藏框中的賣貨便編號 ---
+            const cmx = loc === '賣貨便' ? row.querySelector('.cmxNum').value : "";
+            // -------------------------------------
+
             return { 
                 productName: row.querySelector('.prodName').value, 
                 pickupLocation: loc, 
                 amount: row.querySelector('.prodAmt').value, 
                 paymentStatus: row.querySelector('.prodPayment').value, 
-                status: loc==='7仔預購'?'待預購':'待取貨', 
-                date: dateStr 
+                // 如果是賣貨便，狀態自動設為「已寄出」
+                status: loc === '賣貨便' ? '已寄出' : (loc === '7仔預購' ? '待預購' : '待取貨'), 
+                date: dateStr,
+                cmxNumber: cmx  // <-- 新增這個欄位傳給 GAS
             };
         })
     };
@@ -473,33 +492,56 @@ function addMoreItems(name) {
         async function saveMonthlyRate() { const m = document.getElementById('profitMonthFilter').value; const r = document.getElementById('monthlyRateInput').value; showLoading(true); await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:"updateMonthlyRate",month:m,rate:r}),mode:'no-cors'}); alert("匯率已同步"); setTimeout(loadOrders, 1000); }
         
         function updateSummaryUI() {
-            const box = document.getElementById('summary-container');
-            const s = { "蝦皮":0, "7-11":0, "全家":0, "宅配":0, "7仔預購":0 };
-            allData.forEach(i => { if((i.status==='待取貨'||i.status==='待預購') && !i.fullAddress.includes("運單:")) if(s[i.location]!==undefined) s[i.location]++; });
-            box.innerHTML = Object.keys(s).map(l => `<div onclick="filterStatDetail('${l}')" class="bg-white/5 p-4 rounded-3xl border border-white/10 cursor-pointer hover:bg-white/20 transition-all"><p class="text-[10px] opacity-40 uppercase font-black">${l}</p><p class="text-2xl font-black mt-1">${s[l]}</p></div>`).join('');
+    const box = document.getElementById('summary-container');
+    // 1. 初始化所有分類，包含賣貨便
+    const s = { "蝦皮": 0, "7-11": 0, "全家": 0, "宅配": 0, "7仔預購": 0, "賣貨便": 0 }; 
+    
+    allData.forEach(i => { 
+        // 2. 判定邏輯：
+        // (a) 狀態必須是：待取貨、待預購 或 已寄出
+        // (b) 地址欄還沒填入「運單:」（代表還在手邊或物流中，還沒真正完成結案）
+        const isPending = ['待取貨', '待預購', '已寄出'].includes(i.status);
+        const notShippedOut = !i.fullAddress.includes("運單:");
+
+        if (isPending && notShippedOut) {
+            if (s[i.location] !== undefined) {
+                s[i.location]++; 
+            }
         }
+    });
+
+    // 3. 渲染 UI
+    box.innerHTML = Object.keys(s).map(l => `
+        <div onclick="filterStatDetail('${l}')" class="bg-white/5 p-4 rounded-3xl border border-white/10 cursor-pointer hover:bg-white/20 transition-all">
+            <p class="text-[10px] opacity-40 uppercase font-black">${l}</p>
+            <p class="text-2xl font-black mt-1">${s[l]}</p>
+        </div>
+    `).join('');
+}
         
         function filterStatDetail(loc) {
-            const list = document.getElementById('filter-items-list');
-            const filtered = allData.filter(i => i.location === loc && (i.status === '待取貨' || i.status === '待預購') && !i.fullAddress.includes("運單:"));
-            document.getElementById('filter-details').classList.remove('hidden');
-            document.getElementById('filter-title').innerText = `🔍 ${loc} (${filtered.length})`;
+    const list = document.getElementById('filter-items-list');
+    // --- 修改點：加入 i.status === '已寄出' ---
+    const filtered = allData.filter(i => i.location === loc && (i.status === '待取貨' || i.status === '待預購' || i.status === '已寄出') && !i.fullAddress.includes("運單:"));
     
-            // 補回 select 切換功能，並縮小字體
-            list.innerHTML = filtered.map(i => `
-                <div class="bg-white/10 p-3 rounded-2xl border border-white/10">
-                    <div class="flex justify-between items-center mb-2">
-                        <p class="font-black text-xs text-blue-300">${i.name}</p>
-                        <select onchange="updateRowField(${i.rowNum}, 'status', this.value)" 
-                                class="bg-slate-800 text-[9px] rounded-lg border border-white/20 px-1 py-0.5 outline-none text-white scale-90 origin-right">
-                            <option value="待預購" ${i.status === '待預購' ? 'selected' : ''}>待預購</option>
-                            <option value="待取貨" ${i.status === '待取貨' ? 'selected' : ''}>待取貨</option>
-                            <option value="已取貨" ${i.status === '已取貨' ? 'selected' : ''}>已取貨</option>
-                        </select>
-                    </div>
-                    <p class="text-[10px] opacity-70">${i.product}</p>
-                </div>`).join('');
-        }
+    document.getElementById('filter-details').classList.remove('hidden');
+    document.getElementById('filter-title').innerText = `🔍 ${loc} (${filtered.length})`;
+
+    list.innerHTML = filtered.map(i => `
+        <div class="bg-white/10 p-3 rounded-2xl border border-white/10">
+            <div class="flex justify-between items-center mb-2">
+                <p class="font-black text-xs text-blue-300">${i.name}</p>
+                <select onchange="updateRowField(${i.rowNum}, 'status', this.value)" 
+                        class="bg-slate-800 text-[9px] rounded-lg border border-white/20 px-1 py-0.5 outline-none text-white scale-90 origin-right">
+                    <option value="待預購" ${i.status === '待預購' ? 'selected' : ''}>待預購</option>
+                    <option value="待取貨" ${i.status === '待取貨' ? 'selected' : ''}>待取貨</option>
+                    <option value="已寄出" ${i.status === '已寄出' ? 'selected' : ''}>已寄出</option>
+                    <option value="已取貨" ${i.status === '已取貨' ? 'selected' : ''}>已取貨</option>
+                </select>
+            </div>
+            <p class="text-[10px] opacity-70">${i.product}</p>
+        </div>`).join('');
+}
         
         function initMonthFilter() {
             const filter = document.getElementById('profitMonthFilter');
@@ -520,7 +562,17 @@ function addMoreItems(name) {
             else document.getElementById('totalIncomeHKD').innerText = "未設匯率";
         }
 
-        function togglePreDate(el) { el.closest('.item-row').querySelector('.pre-dates').classList.toggle('hidden', el.value!=='7仔預購'); }
+        function handleLocChange(el) {
+    const row = el.closest('.item-row');
+    const preDates = row.querySelector('.pre-dates');
+    const cmxArea = row.querySelector('.cmx-area');
+    
+    // 處理 7仔預購
+    preDates.classList.toggle('hidden', el.value !== '7仔預購');
+    
+    // 處理 賣貨便
+    cmxArea.classList.toggle('hidden', el.value !== '賣貨便');
+}
         function addItemRow() {
     const container = document.getElementById('itemsContainer');
     const rows = document.querySelectorAll('.item-row');
