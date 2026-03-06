@@ -192,17 +192,87 @@
         function renderOrders() {
     const container = document.getElementById('cardContainer');
     container.innerHTML = "";
-    const groups = allData.reduce((acc, obj) => { if (!acc[obj.name]) acc[obj.name] = []; acc[obj.name].push(obj); return acc; }, {});
+
+    // 1. 先按客戶名稱分組
+    const groups = allData.reduce((acc, obj) => { 
+        if (!acc[obj.name]) acc[obj.name] = []; 
+        acc[obj.name].push(obj); 
+        return acc; 
+    }, {});
     
-    Object.keys(groups).forEach(name => {
+    // 2. 排序客戶 (按最後更新時間/行號，由大到小)
+    const sortedNames = Object.keys(groups).sort((a, b) => {
+        const maxA = Math.max(...groups[a].map(i => i.rowNum));
+        const maxB = Math.max(...groups[b].map(i => i.rowNum));
+        return maxB - maxA;
+    });
+
+    sortedNames.forEach(name => {
+        // 過濾當前模式需要的項目
         const items = groups[name].filter(i => currentMode === 'active' ? !i.fullAddress.includes("運單:") : i.fullAddress.includes("運單:"));
         if (items.length === 0) return;
 
         const isAllReady = items.every(i => i.status === '已取貨');
         const first = items[0];
         const card = document.createElement('div');
-        card.className = `bg-white rounded-[2rem] shadow-sm border overflow-hidden ${isAllReady && currentMode === 'active' ? 'card-ready-to-ship' : 'border-gray-100'}`;
+        card.className = `bg-white rounded-[2rem] shadow-sm border overflow-hidden mb-4 ${isAllReady && currentMode === 'active' ? 'card-ready-to-ship' : 'border-gray-100'}`;
         
+        // --- 核心修改：如果是歷史模式，按 Order ID 分組顯示 ---
+        let contentHtml = "";
+        if (currentMode === 'history') {
+            const orderGroups = items.reduce((acc, obj) => {
+                if (!acc[obj.orderID]) acc[obj.orderID] = [];
+                acc[obj.orderID].push(obj);
+                return acc;
+            }, {});
+
+            // 排序 Order ID (新的在上)
+            const sortedOrderIds = Object.keys(orderGroups).sort((a, b) => b.localeCompare(a));
+
+            contentHtml = sortedOrderIds.map(oid => {
+                const oItems = orderGroups[oid];
+                const shipDate = oItems[0].shipDate || "未記錄"; // 這裡對應 GAS 的第 15 欄
+                return `
+                    <div class="mb-4 border-2 border-slate-50 rounded-2xl p-3 bg-slate-50/30">
+                        <div class="flex justify-between items-center mb-2 px-1">
+                            <span class="text-[10px] font-black bg-slate-200 text-slate-600 px-2 py-0.5 rounded">單號: ${oid}</span>
+                            <span class="text-[9px] font-bold text-gray-400">🚚 寄出日期: ${shipDate}</span>
+                        </div>
+                        <div class="space-y-2">
+                            ${oItems.map(item => `
+                                <div class="bg-white p-2 rounded-lg border border-gray-100 flex justify-between items-center shadow-sm">
+                                    <div class="flex flex-col">
+                                        <span class="text-[11px] font-black text-gray-800">${item.product}</span>
+                                        <span class="text-[9px] text-blue-500 font-bold">${item.location} | $${item.amount}</span>
+                                    </div>
+                                    <span class="text-[9px] font-black text-gray-300 uppercase">${item.status}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            // --- 保持原本的 Active 模式顯示 ---
+            contentHtml = items.map(item => `
+                <div class="box-${item.status} p-3 rounded-xl border text-[10px] shadow-sm mb-2">
+                    <div class="flex justify-between font-black">
+                        <span class="text-gray-800">${item.product}</span>
+                        <span class="text-pink-600">${item.date || ''}</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-2">
+                        <div class="text-blue-600 font-black bg-blue-50 px-2 py-0.5 rounded-md">$${item.amount} (${item.location})</div>
+                        <select onchange="updateRowField(${item.rowNum}, 'status', this.value, '${item.location}')" 
+                                class="border border-gray-200 rounded-lg px-2 py-1 text-[9px] font-black text-gray-700 bg-white shadow-sm outline-none">
+                            <option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option>
+                            <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
+                            <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
+                        </select> 
+                    </div>
+                </div>`).join('');
+        }
+
+        // 組合卡片
         let trackingNum = "";
         if (first.fullAddress.includes("運單:")) {
             trackingNum = first.fullAddress.split("運單:")[1].replace(")", "").trim();
@@ -218,52 +288,22 @@
                     ${currentMode === 'history' && trackingNum ? `<button onclick="copyReplyText('${trackingNum}')" class="bg-indigo-600 text-white text-[9px] px-3 py-1.5 rounded-xl font-black shadow-sm">📋 回覆</button>` : ''}
                     ${currentMode === 'active' ? `<button onclick="addMoreItems('${name}')" class="bg-green-600 text-white text-[9px] px-3 py-1.5 rounded-xl font-black shadow-sm">➕ 加單</button>` : ''}
                     <button onclick='copyData(${JSON.stringify(first.receiver)}, ${JSON.stringify(first.phone)}, ${JSON.stringify(first.fullAddress)})' 
-                            class="bg-blue-600 text-white text-[9px] px-3 py-1.5 rounded-xl font-black shadow-sm">
-                        複製地址
-                    </button>
+                            class="bg-blue-600 text-white text-[9px] px-3 py-1.5 rounded-xl font-black shadow-sm">複製地址</button>
                     <button onclick="deleteGroup('${name}')" class="bg-gray-200 text-gray-500 text-[9px] px-3 py-1.5 rounded-xl font-black hover:bg-red-500 hover:text-white transition-all">🗑️ 刪除</button>
                 </div>
             </div>
-
-            <div class="p-5 space-y-4">
-                <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 relative text-[11px] font-bold text-gray-600 leading-relaxed">
-                    <p>👤 ${first.receiver}</p>
-                    <p>📞 ${first.phone}</p>
+            <div class="p-5">
+                <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 relative text-[11px] font-bold text-gray-600 leading-relaxed mb-4">
+                    <p>👤 ${first.receiver} | 📞 ${first.phone}</p>
                     <p class="text-gray-400 italic">📍 ${first.fullAddress}</p>
-                    <button type="button" 
-                            onclick='openEditModal("${name}", ${JSON.stringify(first.receiver)}, ${JSON.stringify(first.phone)}, ${JSON.stringify(first.fullAddress)})' 
-                            class="absolute top-3 right-3 text-blue-500 font-black underline scale-90">
-                        ✏️ 修改資料
-                    </button>
                 </div>
-
                 ${currentMode === 'active' ? `
-                    <div class="flex gap-2 bg-gray-50 p-2 rounded-2xl border border-gray-100">
+                    <div class="flex gap-2 bg-gray-50 p-2 rounded-2xl border border-gray-100 mb-4">
                         <input type="text" id="track-${first.rowNum}" placeholder="輸入順豐單號" class="flex-1 bg-transparent px-3 py-2 text-xs font-bold outline-none">
-                        <button onclick="shipOrder(${first.rowNum}, '${name}')" class="bg-slate-800 text-white px-5 py-2 rounded-xl text-[10px] font-black shadow-md active:scale-95 transition-all">確認寄出</button>
+                        <button onclick="shipOrder(${first.rowNum}, '${name}')" class="bg-slate-800 text-white px-5 py-2 rounded-xl text-[10px] font-black shadow-md">確認寄出</button>
                     </div>` : ''}
-
-                <div class="space-y-2 pt-2">
-                    <p class="text-[9px] font-black text-gray-300 uppercase tracking-widest ml-1">商品明細</p>
-                    ${items.map(item => `
-                        <div class="box-${item.status} p-3 rounded-xl border text-[10px] shadow-sm">
-                            <div class="flex justify-between font-black">
-                                <span class="text-gray-800">${item.product}</span>
-                                <span class="text-pink-600">${item.date || ''}</span>
-                            </div>
-                            <div class="flex justify-between items-center mt-2">
-                                <div class="text-blue-600 font-black bg-blue-50 px-2 py-0.5 rounded-md">$${item.amount} (${item.location})</div>
-                                ${currentMode==='active' ? 
-                                    `<select onchange="updateRowField(${item.rowNum}, 'status', this.value)" 
-                                             class="border border-gray-200 rounded-lg px-2 py-1 text-[9px] font-black text-gray-700 bg-white shadow-sm outline-none">
-                                        <option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option>
-                                        <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
-                                        <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
-                                    </select>` 
-                                    : `<span class="font-black text-gray-400 uppercase text-[9px] tracking-tighter">${item.status}</span>`
-                                }
-                            </div>
-                        </div>`).join('')}
+                <div class="space-y-2">
+                    ${contentHtml}
                 </div>
             </div>`;
         container.appendChild(card);
@@ -375,7 +415,23 @@ function triggerEditAddress(name, addr) {
             setTimeout(() => location.reload(), 800);
         }
 
-        async function updateRowField(r, f, v) { showLoading(true); await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:"updateField",rowNum:r,field:f,value:v}),mode:'no-cors'}); setTimeout(loadOrders, 800); }
+        async function updateRowField(r, f, v, currentLoc = '') { 
+    showLoading(true); 
+    let params = { action: "updateField", rowNum: r, field: f, value: v };
+    
+    // 新增：自動轉換邏輯
+    if (f === 'status' && v === '待取貨' && currentLoc === '7仔預購') {
+        params.newLoc = '7-11';
+        params.newPay = '已付'; // 根據你之前的要求，通常預購到貨代表已付
+    }
+
+    await fetch(GAS_URL, {
+        method: 'POST', 
+        body: JSON.stringify(params), 
+        mode: 'no-cors'
+    }); 
+    setTimeout(loadOrders, 800); 
+}
         async function saveMonthlyRate() { const m = document.getElementById('profitMonthFilter').value; const r = document.getElementById('monthlyRateInput').value; showLoading(true); await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:"updateMonthlyRate",month:m,rate:r}),mode:'no-cors'}); alert("匯率已同步"); setTimeout(loadOrders, 1000); }
         
         function updateSummaryUI() {
