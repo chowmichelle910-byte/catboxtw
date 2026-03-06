@@ -376,44 +376,82 @@ function triggerEditAddress(name, addr) {
     }
 }
 
-        function addMoreItems(name) {
-            const data = allData.find(i => i.name === name);
-            document.getElementById('custName').value = data.name;
-            document.getElementById('source').value = data.source;
-            document.getElementById('receiver').value = data.receiver;
-            document.getElementById('phone').value = data.phone;
-            document.getElementById('fullAddress').value = data.fullAddress;
-            document.getElementById('add-section').scrollIntoView({ behavior: 'smooth' });
-        }
+function addMoreItems(name) {
+    const data = allData.find(i => i.name === name);
+    
+    // 1. 填入原本的客戶資料（這部分必須保留，否則表單會沒資料）
+    document.getElementById('custName').value = data.name;
+    document.getElementById('source').value = data.source;
+    document.getElementById('receiver').value = data.receiver;
+    document.getElementById('phone').value = data.phone;
+    document.getElementById('fullAddress').value = data.fullAddress;
+    
+    // 2. 【新增邏輯】判定是否沿用 Order ID
+    if (currentMode === 'active') {
+        // 進行中模式：記錄舊 ID，等等 submitOrder 會用到
+        window.currentAddingOrderID = data.orderID; 
+    } else {
+        // 歷史模式：設為 null，等等 submitOrder 會生成新 ID
+        window.currentAddingOrderID = null; 
+    }
+    
+    // 3. 捲動到輸入區域
+    document.getElementById('add-section').scrollIntoView({ behavior: 'smooth' });
+}
 
         async function submitOrder() {
-            const name = document.getElementById('custName').value;
-            if(!name) return alert("請輸入客戶");
-            showLoading(true);
-            const d = new Date();
-            const currentMonth = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}`;
-            let autoRate = "";
-            const match = allData.find(i => {
-                const idate = new Date(i.orderDate);
-                return (!isNaN(idate) && `${idate.getFullYear()}-${(idate.getMonth()+1).toString().padStart(2,'0')}` === currentMonth && i.monthlyRate);
-            });
-            if(match) autoRate = match.monthlyRate;
+    const name = document.getElementById('custName').value;
+    if(!name) return alert("請輸入客戶");
+    showLoading(true);
+    
+    const d = new Date();
+    const currentMonth = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}`;
+    
+    // --- 修改這裡：判定要用舊 ID 還是新 ID ---
+    let finalID;
+    if (window.currentAddingOrderID) {
+        finalID = window.currentAddingOrderID; // 沿用
+    } else {
+        finalID = "TW" + d.getTime().toString().slice(-4); // 生成新 ID
+    }
+    // ---------------------------------------
 
-            const payload = {
-                orderID: "TW"+d.getTime().toString().slice(-4), customerName: name, source: document.getElementById('source').value,
-                receiver: document.getElementById('receiver').value, phone: document.getElementById('phone').value,
-                fullAddress: document.getElementById('fullAddress').value,
-                orderDate: `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`,
-                monthlyRate: autoRate,
-                items: Array.from(document.querySelectorAll('.item-row')).map(row => {
-                    const loc = row.querySelector('.prodLoc').value;
-                    const dateStr = loc==='7仔預購' ? `(預:${row.querySelector('.pStart').value} 攞:${row.querySelector('.pEnd').value})` : "";
-                    return { productName: row.querySelector('.prodName').value, pickupLocation: loc, amount: row.querySelector('.prodAmt').value, paymentStatus: row.querySelector('.prodPayment').value, status: loc==='7仔預購'?'待預購':'待取貨', date: dateStr };
-                })
+    let autoRate = "";
+    const match = allData.find(i => {
+        const idate = new Date(i.orderDate);
+        return (!isNaN(idate) && `${idate.getFullYear()}-${(idate.getMonth()+1).toString().padStart(2,'0')}` === currentMonth && i.monthlyRate);
+    });
+    if(match) autoRate = match.monthlyRate;
+
+    const payload = {
+        orderID: finalID, // 使用上面判定後的 finalID
+        customerName: name, 
+        source: document.getElementById('source').value,
+        receiver: document.getElementById('receiver').value, 
+        phone: document.getElementById('phone').value,
+        fullAddress: document.getElementById('fullAddress').value,
+        orderDate: `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`,
+        monthlyRate: autoRate,
+        items: Array.from(document.querySelectorAll('.item-row')).map(row => {
+            const loc = row.querySelector('.prodLoc').value;
+            const dateStr = loc === '7仔預購' ? `(預:${row.querySelector('.pStart').value} 攞:${row.querySelector('.pEnd').value})` : "";
+            return { 
+                productName: row.querySelector('.prodName').value, 
+                pickupLocation: loc, 
+                amount: row.querySelector('.prodAmt').value, 
+                paymentStatus: row.querySelector('.prodPayment').value, 
+                status: loc==='7仔預購'?'待預購':'待取貨', 
+                date: dateStr 
             };
-            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
-            setTimeout(() => location.reload(), 800);
-        }
+        })
+    };
+
+    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
+    
+    // 成功後重設 ID 變數，避免下次誤用
+    window.currentAddingOrderID = null;
+    setTimeout(() => location.reload(), 800);
+}
 
         async function updateRowField(r, f, v, currentLoc = '') { 
     showLoading(true); 
