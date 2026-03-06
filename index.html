@@ -164,77 +164,91 @@
         }
 
         function renderOrders() {
-            const container = document.getElementById('cardContainer');
-            container.innerHTML = "";
-            const groups = allData.reduce((acc, obj) => { if (!acc[obj.name]) acc[obj.name] = []; acc[obj.name].push(obj); return acc; }, {});
-            
-            const sortedKeys = Object.keys(groups).sort((a, b) => {
-                const isReadyA = groups[a].filter(i => !i.fullAddress.includes("運單:")).every(i => i.status === '已取貨');
-                const isReadyB = groups[b].filter(i => !i.fullAddress.includes("運單:")).every(i => i.status === '已取貨');
-                return (isReadyA === isReadyB) ? 0 : isReadyA ? -1 : 1;
-            });
+    const container = document.getElementById('cardContainer');
+    container.innerHTML = "";
 
-            sortedKeys.forEach(name => {
-                const items = groups[name].filter(item => {
-                    const hasTrack = item.fullAddress.includes("運單:");
-                    return currentMode === 'active' ? !hasTrack : hasTrack;
-                });
-                if (items.length === 0) return;
+    // 1. 過濾資料 (進行中 vs 歷史)
+    const filteredData = allData.filter(item => {
+        const hasTrack = item.fullAddress.includes("運單:");
+        return currentMode === 'active' ? !hasTrack : hasTrack;
+    });
 
-                const isAllReady = items.every(i => i.status === '已取貨');
-                const first = items[0];
-                const card = document.createElement('div');
-                card.className = `bg-white rounded-3xl shadow-sm border overflow-hidden mb-6 ${isAllReady && currentMode === 'active' ? 'card-ready-to-ship' : 'border-gray-100'}`;
-                
-                card.innerHTML = `
-                    <div class="p-4 ${isAllReady && currentMode === 'active' ? 'bg-red-50' : 'bg-gray-50/50'} border-b flex justify-between items-center">
-                        <div class="flex items-center space-x-2">
-                            <b class="text-gray-800 text-lg">${name}</b>
-                            <span class="source-${first.source} badge uppercase">${first.source}</span>
-                            ${isAllReady && currentMode === 'active' ? '<span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-black ml-2">貨品到齊</span>' : ''}
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="reuseCustomer('${name}')" class="bg-green-600 text-white text-[10px] px-3 py-1 rounded-xl font-bold">+ 加單</button>
-                            <button onclick="copyData('${first.receiver}\\n${first.phone}\\n${first.fullAddress}')" class="bg-blue-600 text-white text-[10px] px-3 py-1 rounded-xl font-bold">複製資料</button>
-                        </div>
-                    </div>
-                    <div class="p-4 grid md:grid-cols-2 gap-6">
-                        <div class="text-[11px] font-bold space-y-1">
-                            <p>👤 ${first.receiver}</p><p>📞 ${first.phone}</p><p class="text-gray-400">📍 ${first.fullAddress}</p>
-                            ${currentMode === 'active' ? `
-                            <div class="flex gap-2 pt-4 border-t mt-2">
-                                <input type="text" id="track-${first.rowNum}" placeholder="輸入運單" class="flex-1 border p-2 rounded-xl text-xs">
-                                <button onclick="shipOrder(${first.rowNum}, '${name}')" class="bg-slate-800 text-white px-3 rounded-xl text-[10px]">寄出並記錄</button>
-                            </div>` : ''}
-                        </div>
-                        <div class="space-y-3">
-                            ${items.map(item => `
-                                <div class="box-${item.status} p-3 rounded-xl border">
-                                    <div class="flex flex-col gap-1">
-                                        <input type="text" value="${item.product}" onchange="updateRowField(${item.rowNum}, 'product', this.value)" class="font-black text-gray-800 text-xs w-full bg-transparent border-none">
-                                        <div class="flex justify-between items-center text-[10px]">
-                                            <div class="flex items-center gap-2">
-                                                <span class="font-bold text-blue-600">${item.location}</span>
-                                                <span class="text-gray-400">$</span>
-                                                <input type="number" value="${item.amount}" onchange="updateRowField(${item.rowNum}, 'amount', this.value)" class="w-16 bg-transparent border-none font-black">
+    // 2. 依照客戶名稱 (Name) 進行第一層分組
+    const customerGroups = filteredData.reduce((acc, obj) => {
+        if (!acc[obj.name]) acc[obj.name] = [];
+        acc[obj.name].push(obj);
+        return acc;
+    }, {});
+
+    // 3. 排序客戶：最新的訂單號在最前面 (假設 OrderID 越大越新，或根據 rowNum)
+    const sortedCustomerKeys = Object.keys(customerGroups).sort((a, b) => {
+        const maxRowA = Math.max(...customerGroups[a].map(i => i.rowNum));
+        const maxRowB = Math.max(...customerGroups[b].map(i => i.rowNum));
+        return maxRowB - maxRowA;
+    });
+
+    sortedCustomerKeys.forEach(name => {
+        const customerItems = customerGroups[name];
+        const first = customerItems[0];
+        
+        // 4. 在客戶內部，依照 Order ID 進行第二層分組
+        const orderGroups = customerItems.reduce((acc, obj) => {
+            if (!acc[obj.orderID]) acc[obj.orderID] = [];
+            acc[obj.orderID].push(obj);
+            return acc;
+        }, {});
+
+        // 排序 OrderID (新的在上)
+        const sortedOrderIds = Object.keys(orderGroups).sort((a, b) => b.localeCompare(a));
+
+        const card = document.createElement('div');
+        card.className = "bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-6";
+        
+        // 卡片頭部 (客戶資訊)
+        card.innerHTML = `
+            <div class="p-4 bg-gray-50/50 border-b flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <b class="text-gray-800 text-lg">${name}</b>
+                    <span class="source-${first.source} badge uppercase">${first.source}</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="reuseCustomer('${name}')" class="bg-green-600 text-white text-[10px] px-3 py-1 rounded-xl font-bold">+ 加單</button>
+                    <button onclick="copyData('${first.receiver}\\n${first.phone}\\n${first.fullAddress}')" class="bg-blue-600 text-white text-[10px] px-3 py-1 rounded-xl font-bold">複製資料</button>
+                </div>
+            </div>
+            <div class="p-4 space-y-4">
+                <div class="text-[11px] font-bold text-gray-500 pb-2 border-b border-dashed">
+                    👤 ${first.receiver} | 📞 ${first.phone} <br> 📍 ${first.fullAddress}
+                </div>
+                <div class="space-y-4">
+                    ${sortedOrderIds.map(orderId => {
+                        const items = orderGroups[orderId];
+                        const sDate = items[0].shipDate || "未記錄";
+                        return `
+                            <div class="border-2 border-blue-50 rounded-2xl p-3 bg-slate-50/30">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-[10px] font-black bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md">單號: ${orderId}</span>
+                                    <span class="text-[10px] font-bold text-gray-400">🚚 寄出日期: ${sDate}</span>
+                                </div>
+                                <div class="space-y-2">
+                                    ${items.map(item => `
+                                        <div class="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-100 shadow-sm">
+                                            <div class="flex flex-col">
+                                                <span class="text-xs font-bold text-gray-800">${item.product}</span>
+                                                <span class="text-[9px] text-blue-500">${item.location} | $${item.amount} | ${item.payment}</span>
                                             </div>
-                                            <select onchange="updateRowField(${item.rowNum}, 'status', this.value, '${item.location}')" class="border rounded px-1">
-                                                <option value="待預購" ${item.status==='待預購'?'selected':''}>待預購</option>
-                                                <option value="待取貨" ${item.status==='待取貨'?'selected':''}>待取貨</option>
-                                                <option value="已取貨" ${item.status==='已取貨'?'selected':''}>已取貨</option>
-                                            </select>
+                                            <span class="text-[9px] font-bold text-gray-400">${item.status}</span>
                                         </div>
-                                        <div class="flex items-center gap-2 mt-1">
-                                            <span class="text-[9px] text-gray-400">📅</span>
-                                            <input type="text" value="${item.date || ''}" onchange="updateRowField(${item.rowNum}, 'date', this.value)" class="flex-1 bg-transparent border-none text-[9px] text-gray-500">
-                                        </div>
-                                    </div>
-                                </div>`).join('')}
-                        </div>
-                    </div>`;
-                container.appendChild(card);
-            });
-        }
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>`;
+        container.appendChild(card);
+    });
+}
 
 async function updateRowField(rowNum, field, value, currentLoc = '') {
     let params = { action: "updateField", rowNum: rowNum, field: field, value: value };
