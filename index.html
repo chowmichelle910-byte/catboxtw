@@ -275,16 +275,40 @@
         }
 
         async function shipOrder(rowNum, customerName) {
-            const track = document.getElementById(`track-${rowNum}`).value;
-            if(!track) return;
-            const groupItems = allData.filter(i => i.name === customerName);
-            for (let item of groupItems) {
-                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateField", rowNum: item.rowNum, field: 'status', value: '已寄出', tracking: track }), mode: 'no-cors' });
-            }
-            document.getElementById('modalCopyText').value = `運單編號：${track}\n\n謝謝🙏🏻🙏🏻`;
-            document.getElementById('copyModal').style.display = 'flex';
-        }
+    const track = document.getElementById(`track-${rowNum}`).value;
+    if(!track) return alert("請輸入運單編號");
 
+    // 取得該客戶名下所有屬於「目前顯示」狀態的項目
+    const groupItems = allData.filter(i => i.name === customerName && !i.fullAddress.includes("運單:"));
+    
+    // 顯示讀取中狀態（選配）
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = "處理中...";
+    btn.disabled = true;
+
+    for (let item of groupItems) {
+        // 這裡發送 POST 給 GAS，GAS 會因為收到 tracking 參數而自動去填寫 O 欄
+        await fetch(GAS_URL, { 
+            method: 'POST', 
+            body: JSON.stringify({ 
+                action: "updateField", 
+                rowNum: item.rowNum, 
+                field: 'status', 
+                value: '已寄出', 
+                tracking: track 
+            }), 
+            mode: 'no-cors' 
+        });
+    }
+
+    btn.innerText = originalText;
+    btn.disabled = false;
+
+    // 顯示成功視窗
+    document.getElementById('modalCopyText').value = `運單編號：${track}\n\n謝謝🙏🏻🙏🏻`;
+    document.getElementById('copyModal').style.display = 'flex';
+}
         function switchView(mode) {
             currentMode = mode;
             document.getElementById('add-section').style.display = (mode === 'active') ? "block" : "none";
