@@ -448,19 +448,20 @@ function addMoreItems(name) {
             const loc = row.querySelector('.prodLoc').value;
             const dateStr = loc === '7仔預購' ? `(預:${row.querySelector('.pStart').value} 攞:${row.querySelector('.pEnd').value})` : "";
             
-            // --- 新增：抓取隱藏框中的賣貨便編號 ---
+            // 抓取賣貨便編號
             const cmx = loc === '賣貨便' ? row.querySelector('.cmxNum').value : "";
-            // -------------------------------------
 
             return { 
                 productName: row.querySelector('.prodName').value, 
                 pickupLocation: loc, 
                 amount: row.querySelector('.prodAmt').value, 
                 paymentStatus: row.querySelector('.prodPayment').value, 
-                // 如果是賣貨便，狀態自動設為「已寄出」
-                status: loc === '賣貨便' ? '已寄出' : (loc === '7仔預購' ? '待預購' : '待取貨'), 
+                
+                // --- 修改這裡：賣貨便預設為「待取貨」 ---
+                status: loc === '7仔預購' ? '待預購' : '待取貨', 
+                
                 date: dateStr,
-                cmxNumber: cmx  // <-- 新增這個欄位傳給 GAS
+                cmxNumber: cmx  
             };
         })
     };
