@@ -236,14 +236,20 @@
             });
         }
 
-        async function updateRowField(rowNum, field, value, currentLoc = '') {
-            let params = { action: "updateField", rowNum: rowNum, field: field, value: value };
-            if (field === 'status' && currentLoc === '7仔預購' && value === '待取貨') {
-                params.newLoc = '7-11'; params.newPay = '已付';
-            }
-            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(params), mode: 'no-cors' });
-            setTimeout(loadOrders, 500);
-        }
+async function updateRowField(rowNum, field, value, currentLoc = '') {
+    let params = { action: "updateField", rowNum: rowNum, field: field, value: value };
+    
+    // 你原本的功能：7仔預購轉待取貨時，自動設定為 7-11 且 已付
+    if (field === 'status' && currentLoc === '7仔預購' && value === '待取貨') {
+        params.newLoc = '7-11'; 
+        params.newPay = '已付';
+    }
+    
+    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(params), mode: 'no-cors' });
+    
+    // 稍微延長一點時間再 reload，確保 Google Sheet 寫入完成
+    setTimeout(loadOrders, 800);
+}
 
         async function submitOrder() {
             const btn = document.getElementById('submitBtn'); btn.disabled = true;
@@ -277,18 +283,12 @@
         async function shipOrder(rowNum, customerName) {
     const track = document.getElementById(`track-${rowNum}`).value;
     if(!track) return alert("請輸入運單編號");
-
-    // 取得該客戶名下所有屬於「目前顯示」狀態的項目
+    
+    // 找出該客戶所有尚未寄出的項目
     const groupItems = allData.filter(i => i.name === customerName && !i.fullAddress.includes("運單:"));
     
-    // 顯示讀取中狀態（選配）
-    const btn = event.target;
-    const originalText = btn.innerText;
-    btn.innerText = "處理中...";
-    btn.disabled = true;
-
     for (let item of groupItems) {
-        // 這裡發送 POST 給 GAS，GAS 會因為收到 tracking 參數而自動去填寫 O 欄
+        // 這裡傳送 tracking 參數，會觸發 GAS 寫入 O 欄日期
         await fetch(GAS_URL, { 
             method: 'POST', 
             body: JSON.stringify({ 
@@ -301,6 +301,10 @@
             mode: 'no-cors' 
         });
     }
+    
+    document.getElementById('modalCopyText').value = `運單編號：${track}\n\n謝謝🙏🏻🙏🏻`;
+    document.getElementById('copyModal').style.display = 'flex';
+}
 
     btn.innerText = originalText;
     btn.disabled = false;
