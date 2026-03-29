@@ -250,41 +250,79 @@
         }
 
         function renderCardList(list) {
-            const container = document.getElementById('cardContainer');
-            list.forEach(items => {
-                const first = items[0];
-                const allPicked = items.every(i => i.status === '已取貨' || i.status === '已寄出');
-                const isFinished = first.fullAddress.includes("運單:");
-                const card = document.createElement('div');
-                card.className = `bg-white rounded-3xl shadow-sm border overflow-hidden mb-4 ${ (allPicked && !isFinished) ? 'card-ready-to-ship' : 'border-gray-100'}`;
-                card.innerHTML = `
-                    <div class="p-4 bg-gray-50 flex justify-between items-center border-b">
-                        <div class="flex items-center"><span class="badge source-${first.source} mr-2 uppercase">${first.source}</span><b class="text-base font-black">${first.name}</b></div>
-                        <div class="flex gap-1">
-                            <button onclick="reuseCustomer('${first.name}')" class="bg-green-600 text-white text-[10px] px-2 py-1 rounded-lg font-bold">+ 加單</button>
-                            <button onclick="copyAddr('${first.receiver}','${first.phone}','${first.fullAddress}')" class="bg-blue-600 text-white text-[10px] px-2 py-1 rounded-lg font-bold">📋 地址</button>
+    const container = document.getElementById('cardContainer');
+    container.innerHTML = ""; // 清空容器
+
+    list.forEach(items => {
+        const first = items[0];
+        
+        // 1. 判斷是否所有貨品都已經「準備好寄出」(已取貨 或 已寄出)
+        const allPicked = items.every(i => i.status === '已取貨' || i.status === '已寄出');
+        
+        // 2. 判斷是否已經填寫運單結單
+        const isFinished = first.fullAddress.includes("運單:");
+
+        // 3. 過濾：在「進行中」模式下，大框內不顯示單獨「已寄出」的小項
+        // 如果是「歷史訂單」模式，則全部顯示
+        const displayItems = (currentMode === 'active') 
+            ? items.filter(si => si.status !== '已寄出') 
+            : items;
+
+        // 如果在進行中模式，且過濾後沒有東西顯示（理論上不應發生），則跳過
+        if (displayItems.length === 0 && currentMode === 'active') return;
+
+        const card = document.createElement('div');
+        // 紅框邏輯：如果所有項目都 OK 了但還沒結單，就變紅框置頂
+        card.className = `bg-white rounded-3xl shadow-sm border overflow-hidden mb-4 ${ (allPicked && !isFinished) ? 'card-ready-to-ship' : 'border-gray-100'}`;
+        
+        card.innerHTML = `
+            <div class="p-4 bg-gray-50 flex justify-between items-center border-b">
+                <div class="flex items-center">
+                    <span class="badge source-${first.source} mr-2 uppercase">${first.source}</span>
+                    <b class="text-base font-black">${first.name}</b>
+                </div>
+                <div class="flex gap-1">
+                    <button onclick="reuseCustomer('${first.name}')" class="bg-green-600 text-white text-[10px] px-2 py-1 rounded-lg font-bold">+ 加單</button>
+                    <button onclick="copyAddr('${first.receiver}','${first.phone}','${first.fullAddress}')" class="bg-blue-600 text-white text-[10px] px-2 py-1 rounded-lg font-bold">📋 地址</button>
+                </div>
+            </div>
+            <div class="p-4">
+                <div class="text-[11px] text-gray-500 mb-4 bg-gray-100/50 p-2 rounded-xl">
+                    <p>收件: ${first.receiver} | ${first.phone}</p>
+                    <p class="truncate">地址: ${first.fullAddress}</p>
+                </div>
+                <div class="space-y-3">
+                    ${displayItems.map(si => `
+                        <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg">
+                            <div class="flex-1">
+                                <p class="text-xs font-black">${si.product}</p>
+                                <p class="text-[9px] text-gray-400">${si.location} | $${si.amount}</p>
+                            </div>
+                            <select onchange="updateItemStatus(${si.rowNum}, this.value)" class="badge badge-${si.status} border-none outline-none appearance-none cursor-pointer">
+                                <option value="待預購" ${si.status==='待預購'?'selected':''}>待預購</option>
+                                <option value="待取貨" ${si.status==='待取貨'?'selected':''}>待取貨</option>
+                                <option value="已取貨" ${si.status==='已取貨'?'selected':''}>已取貨</option>
+                                <option value="已寄出" ${si.status==='已寄出'?'selected':''}>已寄出</option>
+                            </select>
                         </div>
-                    </div>
-                    <div class="p-4">
-                        <div class="text-[11px] text-gray-500 mb-4 bg-gray-100/50 p-2 rounded-xl"><p>收件: ${first.receiver} | ${first.phone}</p><p class="truncate">地址: ${first.fullAddress}</p></div>
-                        <div class="space-y-3">
-                            ${items.map(si => `
-                                <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg">
-                                    <div class="flex-1"><p class="text-xs font-black">${si.product}</p><p class="text-[9px] text-gray-400">${si.location} | $${si.amount}</p></div>
-                                    <select onchange="updateItemStatus(${si.rowNum}, this.value)" class="badge badge-${si.status} border-none outline-none">
-                                        <option value="待預購" ${si.status==='待預購'?'selected':''}>待預購</option><option value="待取貨" ${si.status==='待取貨'?'selected':''}>待取貨</option><option value="已取貨" ${si.status==='已取貨'?'selected':''}>已取貨</option><option value="已寄出" ${si.status==='已寄出'?'selected':''}>已寄出</option>
-                                    </select>
-                                </div>
-                            `).join('')}
+                    `).join('')}
+                </div>
+                
+                ${/* 如果貨到齊了，顯示輸入單號結單的區域 */ 
+                  (!isFinished && allPicked) ? `
+                    <div class="mt-6 pt-4 border-t-2 border-dashed border-red-200">
+                        <div class="flex gap-2">
+                            <input type="text" id="track-${first.name}" placeholder="輸入順豐單號結單" class="flex-1 text-xs p-3 rounded-xl border-2 border-red-200 outline-none focus:border-red-500">
+                            <button onclick="shipAllByName('${first.name}')" class="bg-red-500 text-white text-xs px-6 py-2 rounded-xl font-black shadow-md hover:bg-red-600 transition-colors">全部寄出</button>
                         </div>
-                        ${(!isFinished && allPicked) ? `
-                            <div class="mt-6 pt-4 border-t-2 border-dashed border-red-200"><div class="flex gap-2"><input type="text" id="track-${first.name}" placeholder="輸入順豐單號結單" class="flex-1 text-xs p-3 rounded-xl border-2 border-red-200 outline-none"><button onclick="shipAllByName('${first.name}')" class="bg-red-500 text-white text-xs px-6 py-2 rounded-xl font-black">全部寄出</button></div></div>
-                        ` : ''}
+                        <p class="text-[9px] text-red-400 mt-2 font-bold text-center">⚠️ 點擊「全部寄出」後，此人所有貨品將移至歷史訂單</p>
                     </div>
-                `;
-                container.appendChild(card);
-            });
-        }
+                ` : ''}
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
 
         async function updateItemStatus(rowNum, newVal) {
             await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateField", rowNum: rowNum, field: 'status', value: newVal }), mode: 'no-cors' });
