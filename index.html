@@ -6,35 +6,26 @@
     <title>🇹🇼 台灣-訂單管理</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .box-待預購 { border-left: 5px solid #EC4899; background-color: #FDF2F8; }
-        .box-待取貨 { border-left: 5px solid #F59E0B; background-color: #FFFBEB; }
-        .box-已取貨 { border-left: 5px solid #10B981; background-color: #F0FDF4; }
-        .box-已寄出 { border-left: 5px solid #9CA3AF; background-color: #F9FAFB; opacity: 0.8; }
-        .card-ready-to-ship { border: 3px solid #EF4444 !important; background-color: #FEF2F2 !important; box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.2); }
         .badge { font-size: 8px; padding: 2px 4px; border-radius: 4px; color: white; font-weight: 900; }
         .badge-待預購 { background: #EC4899; }
         .badge-待取貨 { background: #F59E0B; }
         .badge-已取貨 { background: #10B981; }
+        .badge-已寄出 { background: #9CA3AF; }
         .source-IG { background-color: #E1306C; color: white; }
         .source-WhatsApp { background-color: #22C55E; color: white; }
         .source-Threads { background-color: #000000; color: white; }
         #copyModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
-        /* 統計方塊樣式 */
         .stat-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: all 0.2s; }
-        .stat-card:hover { background: rgba(255,255,255,0.15); }
+        .card-ready-to-ship { border: 2px solid #EF4444 !important; background-color: #FEF2F2 !important; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen pb-20 font-sans text-gray-900">
 
     <div id="copyModal">
         <div class="bg-white p-6 rounded-3xl max-w-sm w-full mx-4 shadow-2xl">
-            <div class="flex items-center mb-4">
-                <span class="text-2xl mr-2">📦</span>
-                <h3 class="text-lg font-black">寄出成功！</h3>
-            </div>
-            <p class="text-[10px] text-gray-400 mb-2 font-bold uppercase">回覆句子已產生</p>
-            <textarea id="modalCopyText" class="w-full h-32 p-4 border rounded-2xl text-[12px] bg-gray-50 mb-4 outline-none leading-relaxed" readonly></textarea>
-            <button onclick="copyAndClose()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm shadow-lg hover:bg-blue-700 transition-all">一鍵複製並關閉</button>
+            <h3 class="text-lg font-black mb-4">📦 寄出成功！</h3>
+            <textarea id="modalCopyText" class="w-full h-32 p-4 border rounded-2xl text-[12px] bg-gray-50 mb-4 outline-none" readonly></textarea>
+            <button onclick="copyAndClose()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm">一鍵複製並關閉</button>
         </div>
     </div>
 
@@ -54,54 +45,42 @@
         <section id="stat-section" class="bg-slate-900 p-6 rounded-3xl shadow-xl text-white">
             <div id="summary-container" class="grid grid-cols-2 md:grid-cols-6 gap-3"></div>
             <div id="filter-details" class="hidden mt-6 pt-6 border-t border-white/10">
-                <h3 id="filter-title" class="text-sm font-bold mb-4 text-blue-400 italic tracking-widest"></h3>
+                <h3 id="filter-title" class="text-sm font-bold mb-4 text-blue-400 italic"></h3>
                 <div id="filter-items-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
             </div>
         </section>
 
-        <section id="add-section" class="bg-white p-6 rounded-3xl shadow-md border border-gray-100 transition-all duration-500">
+        <section id="add-section" class="bg-white p-6 rounded-3xl shadow-md border border-gray-100">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="space-y-4">
                     <p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">客戶資訊</p>
                     <div class="grid grid-cols-2 gap-4">
-                        <input type="text" id="custName" placeholder="客戶名稱" class="border-b p-2 outline-none text-sm font-bold focus:border-blue-500 transition-all">
+                        <input type="text" id="custName" placeholder="客戶名稱" class="border-b p-2 outline-none text-sm font-bold">
                         <select id="source" class="border-b p-2 outline-none text-sm font-bold">
-                            <option value="IG">IG</option>
-                            <option value="WhatsApp">WhatsApp</option>
-                            <option value="Threads">Threads</option>
+                            <option value="IG">IG</option><option value="WhatsApp">WhatsApp</option><option value="Threads">Threads</option>
                         </select>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
-                        <input type="text" id="receiver" placeholder="收件人姓名" class="border-b p-2 outline-none text-sm font-bold focus:border-blue-500 transition-all">
-                        <input type="text" id="phone" placeholder="電話號碼" class="border-b p-2 outline-none text-sm focus:border-blue-500 transition-all">
+                        <input type="text" id="receiver" placeholder="收件人姓名" class="border-b p-2 outline-none text-sm font-bold">
+                        <input type="text" id="phone" placeholder="電話號碼" class="border-b p-2 outline-none text-sm">
                     </div>
                     <div class="relative">
-                        <textarea id="fullAddress" placeholder="輸入順豐點碼或地址..." class="w-full border p-3 rounded-2xl h-24 text-xs bg-gray-50 outline-none pr-16 focus:bg-white focus:ring-1 focus:ring-blue-500 transition-all"></textarea>
-                        <button onclick="searchSFAddress()" class="absolute right-2 top-2 bg-blue-100 text-blue-600 px-2 py-1 rounded-lg text-[10px] font-bold hover:bg-blue-200 transition-all">搜尋點碼</button>
+                        <textarea id="fullAddress" placeholder="輸入地址或點碼..." class="w-full border p-3 rounded-2xl h-24 text-xs bg-gray-50 outline-none pr-16"></textarea>
+                        <button onclick="searchSFAddress()" class="absolute right-2 top-2 bg-blue-100 text-blue-600 px-2 py-1 rounded-lg text-[10px] font-bold">搜尋點碼</button>
                     </div>
                 </div>
                 <div class="space-y-4">
-                    <div class="flex justify-between items-center">
-                        <p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">商品明細</p>
-                        <button onclick="addItemRow()" class="text-blue-600 text-[10px] font-black underline hover:text-blue-800">+ 增加品項</button>
-                    </div>
-                    <div id="itemsContainer" class="space-y-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-                        <div class="item-row bg-gray-50 p-4 rounded-2xl border border-gray-100 relative group">
-                            <input type="text" placeholder="商品名稱" class="prodName w-full mb-3 p-2 rounded-lg border text-sm focus:ring-1 focus:ring-blue-400 outline-none">
+                    <div class="flex justify-between items-center"><p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">商品明細</p><button onclick="addItemRow()" class="text-blue-600 text-[10px] font-black underline">+ 增加品項</button></div>
+                    <div id="itemsContainer" class="space-y-3 max-h-[350px] overflow-y-auto pr-2">
+                        <div class="item-row bg-gray-50 p-4 rounded-2xl border border-gray-100 relative">
+                            <input type="text" placeholder="商品名稱" class="prodName w-full mb-3 p-2 rounded-lg border text-sm">
                             <div class="grid grid-cols-3 gap-2">
-                                <select onchange="handleLocChange(this)" class="prodLoc border p-2 rounded-lg text-[10px] outline-none">
-                                    <option value="蝦皮">蝦皮</option>
-                                    <option value="7-11">7-11</option>
-                                    <option value="全家">全家</option>
-                                    <option value="宅配">宅配</option>
-                                    <option value="7仔預購">7仔預購</option>
-                                    <option value="賣貨便">賣貨便</option>
+                                <select onchange="handleLocChange(this)" class="prodLoc border p-2 rounded-lg text-[10px]">
+                                    <option value="蝦皮">蝦皮</option><option value="7-11">7-11</option><option value="全家">全家</option><option value="宅配">宅配</option><option value="7仔預購">7仔預購</option><option value="賣貨便">賣貨便</option>
                                 </select>
-                                <input type="number" placeholder="金額" class="prodAmt border p-2 rounded-lg text-[10px] outline-none">
-                                <select class="prodPayment border p-2 rounded-lg text-[10px] outline-none">
-                                    <option value="已付">已付</option>
-                                    <option value="到付">到付</option>
-                                    <option value="待付">待付</option>
+                                <input type="number" placeholder="金額" class="prodAmt border p-2 rounded-lg text-[10px]">
+                                <select class="prodPayment border p-2 rounded-lg text-[10px]">
+                                    <option value="已付">已付</option><option value="到付">到付</option><option value="待付">待付</option>
                                 </select>
                             </div>
                             <div class="pre-dates hidden grid grid-cols-2 gap-2 mt-2">
@@ -111,54 +90,17 @@
                             <div class="cmx-area hidden mt-2">
                                 <input type="text" class="cmxNum w-full border p-2 rounded-lg text-[10px] font-bold text-blue-600" placeholder="輸入 CM 賣貨便編號">
                             </div>
-                            <button onclick="removeRow(this)" class="absolute -right-2 -top-2 bg-red-500 text-white w-5 h-5 rounded-full text-[10px] hidden group-hover:flex items-center justify-center shadow-md">✕</button>
                         </div>
                     </div>
-                    <button id="submitBtn" onclick="submitOrder()" class="w-full mt-4 bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg hover:bg-blue-700 active:scale-[0.98] transition-all">確認儲存並提交</button>
+                    <button id="submitBtn" onclick="submitOrder()" class="w-full mt-4 bg-blue-600 text-white py-4 rounded-2xl font-black">確認儲存並提交</button>
                 </div>
             </div>
         </section>
 
         <div id="cardContainer" class="grid gap-6"></div>
-        
         <div id="profitContainer" class="hidden bg-white p-6 rounded-3xl shadow-md border border-gray-100">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-black">💰 財務利潤報告</h2>
-                <div class="flex gap-2">
-                    <select id="profitMonthFilter" onchange="renderProfit()" class="bg-gray-100 p-2 rounded-xl text-xs font-bold outline-none"></select>
-                </div>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-center">
-                    <p class="text-[10px] text-blue-400 font-black uppercase mb-1">本月總額 (TWD)</p>
-                    <p id="totalProfit" class="text-2xl font-black text-blue-600">$0</p>
-                </div>
-                <div class="bg-green-50 p-4 rounded-2xl border border-green-100 text-center">
-                    <p class="text-[10px] text-green-400 font-black uppercase mb-1">訂單數量</p>
-                    <p id="totalOrders" class="text-2xl font-black text-green-600">0</p>
-                </div>
-                <div class="bg-purple-50 p-4 rounded-2xl border border-purple-100 text-center">
-                    <p class="text-[10px] text-purple-400 font-black uppercase mb-1">估算純利 (HKD)</p>
-                    <p id="totalIncomeHKD" class="text-2xl font-black text-purple-600">$0</p>
-                </div>
-                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200 text-center">
-                    <p class="text-[10px] text-gray-400 font-black uppercase mb-1">設定本月匯率</p>
-                    <div class="flex items-center justify-center gap-1">
-                        <input type="number" id="monthlyRateInput" step="0.01" class="w-16 bg-transparent text-center font-black border-b border-gray-300 outline-none" placeholder="0.00">
-                        <button onclick="updateBatchRate()" class="text-[10px] bg-gray-800 text-white px-2 py-0.5 rounded">更新</button>
-                    </div>
-                </div>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="text-[10px] text-gray-400 border-b uppercase font-black">
-                            <th class="p-3">日期</th><th class="p-3">客戶</th><th class="p-3">商品</th><th class="p-3 text-right">金額 (TWD)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="profitTableBody"></tbody>
-                </table>
-            </div>
+            <h2 class="text-xl font-black mb-6">💰 財務利潤報告</h2>
+            <div id="profitTableBody" class="space-y-2"></div>
         </div>
     </div>
 
@@ -166,61 +108,150 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycby5vPRE71thYhYY-4XDMZ2oByLBsaZmy_FQPHzjHvAthhCTFmUCC29SycppE4d7pJ4mWA/exec";
         let allData = [];
         let currentMode = 'active';
-        window.currentAddingOrderID = null; // 用於加單時沿用 ID
 
         window.onload = loadOrders;
 
-        // 核心：載入資料
         async function loadOrders() {
             const container = document.getElementById('cardContainer');
-            if (currentMode !== 'profit') container.innerHTML = "<div class='text-center py-20 text-gray-400 animate-pulse font-bold'>🔄 正在與 Google Sheets 同步中...</div>";
-            
-            try {
-                const res = await fetch(GAS_URL);
-                allData = await res.json();
-                updateSummaryUI();
-                initMonthFilter();
-                
-                if (currentMode === 'profit') {
-                    renderProfit();
-                } else {
-                    renderOrders();
-                }
-            } catch (e) {
-                container.innerHTML = "<div class='text-center py-20 text-red-400'>❌ 同步失敗，請重新整理頁面</div>";
-            }
+            if (currentMode !== 'profit') container.innerHTML = "<div class='text-center py-20 text-gray-400 font-bold'>🔄 同步數據中...</div>";
+            const res = await fetch(GAS_URL);
+            allData = await res.json();
+            updateSummaryUI();
+            if (currentMode === 'profit') renderProfit(); else renderOrders();
         }
 
-        // 順豐點碼搜尋
-        async function searchSFAddress() {
-            const addrInput = document.getElementById('fullAddress');
-            const code = addrInput.value.trim().toUpperCase();
-            if (!code) return alert("請輸入點碼 (例如: 852M)");
-            
-            const btn = event.target;
-            btn.innerText = "搜尋中...";
-            const res = await fetch(`${GAS_URL}?action=searchSF&code=${code}`);
-            const data = await res.json();
-            btn.innerText = "搜尋點碼";
-            
-            if (data.found) {
-                addrInput.value = data.address;
-            } else {
-                alert("找不到此點碼，請檢查輸入是否正確");
-            }
-        }
-
-        // 處理地點變更 (顯示預購日期或賣貨便編號)
         function handleLocChange(el) {
             const row = el.closest('.item-row');
-            const preDates = row.querySelector('.pre-dates');
-            const cmxArea = row.querySelector('.cmx-area');
-            preDates.classList.toggle('hidden', el.value !== '7仔預購');
-            cmxArea.classList.toggle('hidden', el.value !== '賣貨便');
+            row.querySelector('.pre-dates').classList.toggle('hidden', el.value !== '7仔預購');
+            row.querySelector('.cmx-area').classList.toggle('hidden', el.value !== '賣貨便');
         }
 
-        // 複用客戶資料 (加單)
-        function reuseCustomer(name, orderID = null) {
+        function updateSummaryUI() {
+            const box = document.getElementById('summary-container');
+            const s = { "蝦皮":0, "7-11":0, "全家":0, "宅配":0, "7仔預購":0, "賣貨便":0 };
+            allData.forEach(i => { 
+                if(!i.fullAddress.includes("運單:") && (i.status==='待取貨'||i.status==='待預購'||i.status==='已寄出')) {
+                    if(s[i.location]!==undefined) s[i.location]++;
+                }
+            });
+            box.innerHTML = Object.keys(s).map(l => `<div onclick="filterStatDetail('${l}')" class="stat-card p-4 rounded-3xl text-center"><p class="text-[10px] opacity-40 uppercase font-black">${l}</p><p class="text-2xl font-black mt-1">${s[l]}</p></div>`).join('');
+        }
+
+        function renderOrders() {
+            const container = document.getElementById('cardContainer');
+            container.innerHTML = "";
+
+            // 1. 分組
+            const groups = allData.reduce((acc, obj) => {
+                const oid = obj.orderID;
+                if (!acc[oid]) acc[oid] = [];
+                acc[oid].push(obj);
+                return acc;
+            }, {});
+
+            // 2. 判定進行中與歷史單
+            const activeOrders = [];
+            const historyOrders = [];
+
+            Object.keys(groups).forEach(oid => {
+                const items = groups[oid];
+                // 只要這張單裡面有任何一項沒填"運單:"，就是進行中
+                const isFinished = items.every(i => i.fullAddress.includes("運單:"));
+                if (isFinished) historyOrders.push(items); else activeOrders.push(items);
+            });
+
+            // 3. 排序：歷史單最新完成（rowNum最大）排最前
+            historyOrders.sort((a,b) => b[0].rowNum - a[0].rowNum);
+            activeOrders.sort((a,b) => b[0].rowNum - a[0].rowNum);
+
+            const displayList = currentMode === 'active' ? activeOrders : historyOrders;
+
+            displayList.forEach(items => {
+                const first = items[0];
+                const isReady = items.every(i => i.status === '待取貨' || i.status === '已寄出');
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-3xl shadow-md border border-gray-100 overflow-hidden mb-4 ${ (isReady && currentMode==='active') ? 'card-ready-to-ship' : ''}`;
+                
+                card.innerHTML = `
+                    <div class="p-4 bg-gray-50 flex justify-between items-center">
+                        <div>
+                            <span class="text-[10px] font-black bg-blue-100 text-blue-700 px-2 py-0.5 rounded mr-2">${first.orderID}</span>
+                            <b class="text-lg">${first.name}</b>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="reuseCustomer('${first.name}')" class="bg-green-600 text-white text-[10px] px-3 py-1.5 rounded-xl font-bold">+ 加單</button>
+                            <button onclick="enableEdit('${first.orderID}')" id="editBtn-${first.orderID}" class="bg-gray-800 text-white text-[10px] px-3 py-1.5 rounded-xl font-bold">📝 修改資料</button>
+                        </div>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        <div id="info-${first.orderID}" class="text-[11px] font-bold text-gray-500 space-y-1">
+                            <p>收件人: <span id="view-rcv-${first.orderID}">${first.receiver}</span></p>
+                            <p>電話: <span id="view-phn-${first.orderID}">${first.phone}</span></p>
+                            <p>地址: <span id="view-adr-${first.orderID}">${first.fullAddress}</span></p>
+                        </div>
+                        <div id="edit-area-${first.orderID}" class="hidden space-y-2 bg-blue-50 p-3 rounded-xl">
+                            <input type="text" id="edit-rcv-${first.orderID}" value="${first.receiver}" class="w-full p-2 text-xs rounded border" placeholder="收件人">
+                            <input type="text" id="edit-phn-${first.orderID}" value="${first.phone}" class="w-full p-2 text-xs rounded border" placeholder="電話">
+                            <textarea id="edit-adr-${first.orderID}" class="w-full p-2 text-xs rounded border h-16" placeholder="地址">${first.fullAddress}</textarea>
+                            <button onclick="saveCustomerInfo('${first.orderID}')" class="w-full bg-blue-600 text-white py-2 rounded-lg text-xs font-bold">儲存修改</button>
+                        </div>
+
+                        <div class="space-y-2 border-t pt-3">
+                            ${items.map(si => `
+                                <div class="flex justify-between items-center bg-white p-2 rounded-xl border shadow-sm">
+                                    <div class="text-xs">
+                                        <p class="font-black">${si.product}</p>
+                                        <p class="text-[9px] text-gray-400">${si.location} | $${si.amount} | ${si.payment}</p>
+                                    </div>
+                                    <span class="badge badge-${si.status}">${si.status}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${(currentMode === 'active' && isReady) ? `
+                            <div class="mt-3 flex gap-2">
+                                <input type="text" id="track-${first.orderID}" placeholder="順豐單號" class="flex-1 text-xs p-2 rounded-xl border">
+                                <button onclick="shipOrder('${first.orderID}', '${first.name}')" class="bg-red-500 text-white text-xs px-4 py-2 rounded-xl font-black">確認寄出</button>
+                            </div>
+                        ` : ''}
+                    </div>`;
+                container.appendChild(card);
+            });
+        }
+
+        function enableEdit(oid) {
+            document.getElementById(`info-${oid}`).classList.add('hidden');
+            document.getElementById(`edit-area-${oid}`).classList.remove('hidden');
+            document.getElementById(`editBtn-${oid}`).classList.add('hidden');
+        }
+
+        async function saveCustomerInfo(oid) {
+            const rcv = document.getElementById(`edit-rcv-${oid}`).value;
+            const phn = document.getElementById(`edit-phn-${oid}`).value;
+            const adr = document.getElementById(`edit-adr-${oid}`).value;
+            
+            // 找出該 OrderID 的所有行號並更新
+            const relatedItems = allData.filter(i => i.orderID === oid);
+            for (let item of relatedItems) {
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateCustomer", rowNum: item.rowNum, receiver: rcv, phone: phn, fullAddress: adr }), mode: 'no-cors' });
+            }
+            alert("修改成功！");
+            loadOrders();
+        }
+
+        async function shipOrder(oid, name) {
+            const track = document.getElementById(`track-${oid}`).value;
+            if(!track) return alert("請輸入單號");
+            const relatedItems = allData.filter(i => i.orderID === oid);
+            for (let item of relatedItems) {
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateField", rowNum: item.rowNum, field: 'status', value: '已取貨', tracking: track }), mode: 'no-cors' });
+            }
+            const msg = `你好 ${name}，你購買的訂單已經寄出囉！\n順豐單號：${track}\n謝謝🙏🏻🙏🏻`;
+            await navigator.clipboard.writeText(msg);
+            document.getElementById('modalCopyText').value = msg;
+            document.getElementById('copyModal').style.display = 'flex';
+        }
+
+        function reuseCustomer(name) {
             const data = allData.find(i => i.name === name);
             if(data) {
                 document.getElementById('custName').value = data.name;
@@ -228,365 +259,46 @@
                 document.getElementById('receiver').value = data.receiver;
                 document.getElementById('phone').value = data.phone;
                 document.getElementById('fullAddress').value = data.fullAddress.split(' (運單:')[0];
-                
-                // 如果傳入 orderID 代表要加在同一單
-                window.currentAddingOrderID = orderID;
-                
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                document.getElementById('add-section').classList.add('ring-4', 'ring-blue-400');
-                setTimeout(() => document.getElementById('add-section').classList.remove('ring-4', 'ring-blue-400'), 2000);
             }
         }
 
-        // 統計 UI
-        function updateSummaryUI() {
-            const box = document.getElementById('summary-container');
-            const s = { "蝦皮":0, "7-11":0, "全家":0, "宅配":0, "7仔預購":0, "賣貨便":0 };
-            
-            allData.forEach(i => { 
-                const isPending = ['待取貨', '待預購', '已寄出'].includes(i.status);
-                const notFinished = !i.fullAddress.includes("運單:");
-                if(isPending && notFinished) {
-                    if(s[i.location]!==undefined) s[i.location]++; 
-                }
-            });
-
-            box.innerHTML = Object.keys(s).map(l => `
-                <div onclick="filterStatDetail('${l}')" class="stat-card p-4 rounded-3xl text-center">
-                    <p class="text-[10px] opacity-40 uppercase font-black tracking-widest">${l}</p>
-                    <p class="text-2xl font-black mt-1">${s[l]}</p>
-                </div>
-            `).join('');
-        }
-
-        // 篩選細節顯示
-        function filterStatDetail(loc) {
-            const list = document.getElementById('filter-items-list');
-            const filtered = allData.filter(i => i.location === loc && ['待取貨', '待預購', '已寄出'].includes(i.status) && !i.fullAddress.includes("運單:"));
-            
-            document.getElementById('filter-details').classList.remove('hidden');
-            document.getElementById('filter-title').innerText = `🔍 ${loc} 待處理清單 (${filtered.length})`;
-            
-            list.innerHTML = filtered.map(i => `
-                <div class="bg-white/10 p-3 rounded-2xl border border-white/10 hover:bg-white/20 transition-all">
-                    <div class="flex justify-between items-center mb-2">
-                        <p class="font-black text-xs text-blue-300">${i.name}</p>
-                        <select onchange="updateRowField(${i.rowNum}, 'status', this.value, '${i.location}')" 
-                                class="bg-slate-800 text-[9px] rounded-lg border border-white/20 px-1 py-0.5 outline-none text-white scale-90 origin-right">
-                            <option value="待預購" ${i.status === '待預購' ? 'selected' : ''}>待預購</option>
-                            <option value="待取貨" ${i.status === '待取貨' ? 'selected' : ''}>待取貨</option>
-                            <option value="已寄出" ${i.status === '已寄出' ? 'selected' : ''}>已寄出</option>
-                            <option value="已取貨" ${i.status === '已取貨' ? 'selected' : ''}>已取貨</option>
-                        </select>
-                    </div>
-                    <p class="text-[10px] opacity-70">${i.product}</p>
-                </div>`).join('');
-        }
-
-        // 渲染主訂單列表
-        function renderOrders() {
-            const container = document.getElementById('cardContainer');
-            container.innerHTML = "";
-
-            // 過濾資料
-            const filteredData = allData.filter(item => {
-                const hasTrack = item.fullAddress.includes("運單:");
-                const isFinished = item.status === '已取貨';
-                return currentMode === 'active' ? (!hasTrack && !isFinished) : (hasTrack || isFinished);
-            });
-
-            // 客戶分組
-            const groups = filteredData.reduce((acc, obj) => {
-                if (!acc[obj.name]) acc[obj.name] = [];
-                acc[obj.name].push(obj);
-                return acc;
-            }, {});
-
-            // 排序 (歷史單：最新 rowNum 在前；進行中：最新在下)
-            const sortedKeys = Object.keys(groups).sort((a, b) => {
-                const maxA = Math.max(...groups[a].map(i => i.rowNum));
-                const maxB = Math.max(...groups[b].map(i => i.rowNum));
-                return currentMode === 'active' ? maxA - maxB : maxB - maxA;
-            });
-
-            sortedKeys.forEach(name => {
-                const items = groups[name];
-                const first = items[0];
-                
-                // 按 OrderID 再次分組 (同客戶可能分兩次下單)
-                const orderSubGroups = items.reduce((acc, obj) => {
-                    if (!acc[obj.orderID]) acc[obj.orderID] = [];
-                    acc[obj.orderID].push(obj);
-                    return acc;
-                }, {});
-                const sortedOrderIDs = Object.keys(orderSubGroups).sort((a,b) => b.localeCompare(a));
-
-                const card = document.createElement('div');
-                card.className = "bg-white rounded-3xl shadow-md border border-gray-100 overflow-hidden mb-4";
-                
-                card.innerHTML = `
-                    <div class="p-4 bg-gray-50 flex justify-between items-center">
-                        <div>
-                            <b class="text-lg mr-2">${name}</b>
-                            <span class="source-${first.source} badge uppercase">${first.source}</span>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="reuseCustomer('${name}')" class="bg-green-600 text-white text-[10px] px-3 py-1.5 rounded-xl font-bold hover:bg-green-700">+ 加單</button>
-                            <button onclick="copyData('${first.receiver}\\n${first.phone}\\n${first.fullAddress}')" class="bg-blue-600 text-white text-[10px] px-3 py-1.5 rounded-xl font-bold hover:bg-blue-700">複製地址</button>
-                        </div>
-                    </div>
-                    <div class="p-4 space-y-4">
-                        <div class="text-[11px] font-bold text-gray-500 pb-3 border-b border-dashed flex justify-between items-center">
-                            <div>👤 ${first.receiver} | 📞 ${first.phone}</div>
-                            <input type="text" value="${first.fullAddress}" 
-                                onchange="updateRowField(${first.rowNum}, 'fullAddress', this.value)"
-                                class="bg-gray-100 px-2 py-1 rounded w-1/2 text-right outline-none focus:ring-1 focus:ring-blue-400">
-                        </div>
-                        <div class="space-y-4">
-                            ${sortedOrderIDs.map(oid => {
-                                const subItems = orderSubGroups[oid];
-                                const isReady = subItems.every(i => i.status === '待取貨' || i.status === '已寄出');
-                                const allProductsStr = subItems.map(i => i.product).join(' + ');
-                                
-                                return `
-                                    <div class="${(isReady && currentMode==='active') ? 'card-ready-to-ship' : 'bg-slate-50'} p-3 rounded-2xl transition-all">
-                                        <div class="flex justify-between items-center mb-2">
-                                            <span class="text-[10px] font-black bg-blue-100 text-blue-700 px-2 py-0.5 rounded">ID: ${oid}</span>
-                                            <span class="text-[10px] font-bold text-gray-400">${subItems[0].orderDate}</span>
-                                        </div>
-                                        <div class="space-y-2">
-                                            ${subItems.map(si => `
-                                                <div class="flex justify-between items-center bg-white p-2 rounded-xl border border-gray-100 shadow-sm">
-                                                    <div>
-                                                        <p class="text-xs font-black">${si.product}</p>
-                                                        <p class="text-[9px] text-gray-400">${si.location} | $${si.amount} | ${si.payment} ${si.date ? '| '+si.date : ''}</p>
-                                                    </div>
-                                                    <div class="flex items-center gap-2">
-                                                        <span class="badge badge-${si.status}">${si.status}</span>
-                                                        <button onclick="deleteSingleRow(${si.rowNum})" class="text-red-300 hover:text-red-500 text-[10px]">✕</button>
-                                                    </div>
-                                                </div>
-                                            `).join('')}
-                                        </div>
-                                        
-                                        ${(currentMode === 'active' && isReady) ? `
-                                            <div class="mt-3 flex gap-2">
-                                                <input type="text" id="track-${oid}" placeholder="輸入運單號碼" class="flex-1 text-[11px] p-2 rounded-xl border-none shadow-inner outline-none">
-                                                <button onclick="shipOrder('${oid}', '${name}', '${allProductsStr}')" class="bg-red-500 text-white text-[11px] px-4 py-2 rounded-xl font-black">確認寄出</button>
-                                            </div>
-                                        ` : ''}
-
-                                        ${subItems[0].fullAddress.includes('運單:') ? `
-                                            <div class="mt-2 text-[10px] text-blue-600 font-bold bg-blue-50 p-2 rounded-lg">
-                                                🚚 ${subItems[0].fullAddress.split(' (運單:')[1].replace(')', '')} | 寄出日: ${subItems[0].shipDate || 'N/A'}
-                                            </div>
-                                        ` : ''}
-                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        // 修改單筆欄位
-        async function updateRowField(rowNum, field, value, currentLoc = '') {
-            let params = { action: "updateField", rowNum: rowNum, field: field, value: value };
-            if (field === 'status' && currentLoc === '7仔預購' && value === '待取貨') {
-                params.newLoc = '7-11'; params.newPay = '已付';
-            }
-            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(params), mode: 'no-cors' });
-            setTimeout(loadOrders, 800);
-        }
-
-        // 提交新訂單
         async function submitOrder() {
-            const name = document.getElementById('custName').value;
-            if(!name) return alert("請輸入客戶姓名");
-            
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.innerText = "正在儲存中...";
-
             const d = new Date();
-            const currentMonth = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}`;
-            
-            // 判定 ID：沿用或生成
-            let finalID = window.currentAddingOrderID || ("TW" + d.getTime().toString().slice(-4));
-
-            let autoRate = "";
-            const match = allData.find(i => {
-                const idate = new Date(i.orderDate);
-                return (!isNaN(idate) && `${idate.getFullYear()}-${(idate.getMonth()+1).toString().padStart(2,'0')}` === currentMonth && i.monthlyRate);
-            });
-            if(match) autoRate = match.monthlyRate;
-
             const payload = {
-                orderID: finalID,
-                customerName: name,
+                orderID: "TW"+d.getTime().toString().slice(-4),
+                customerName: document.getElementById('custName').value,
                 source: document.getElementById('source').value,
                 receiver: document.getElementById('receiver').value,
                 phone: document.getElementById('phone').value,
                 fullAddress: document.getElementById('fullAddress').value,
                 orderDate: `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`,
-                monthlyRate: autoRate,
                 items: Array.from(document.querySelectorAll('.item-row')).map(row => {
                     const loc = row.querySelector('.prodLoc').value;
-                    const dateStr = loc === '7仔預購' ? `(預:${row.querySelector('.pStart').value} 攞:${row.querySelector('.pEnd').value})` : "";
-                    const cmx = loc === '賣貨便' ? row.querySelector('.cmxNum').value : "";
-                    
                     return {
                         productName: row.querySelector('.prodName').value,
                         pickupLocation: loc,
                         amount: row.querySelector('.prodAmt').value,
                         paymentStatus: row.querySelector('.prodPayment').value,
                         status: loc === '7仔預購' ? '待預購' : '待取貨',
-                        date: dateStr,
-                        cmxNumber: cmx
+                        date: loc === '7仔預購' ? `(預:${row.querySelector('.pStart').value} 攞:${row.querySelector('.pEnd').value})` : "",
+                        cmxNumber: loc === '賣貨便' ? row.querySelector('.cmxNum').value : ""
                     };
                 })
             };
-
             await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
-            window.currentAddingOrderID = null;
-            setTimeout(() => location.reload(), 800);
+            location.reload();
         }
 
-        // 執行寄出功能
-        async function shipOrder(orderID, customerName, productNames) {
-            const track = document.getElementById(`track-${orderID}`).value;
-            if(!track) return alert("請輸入運單號碼");
-
-            // 找出該訂單編號下所有未寄出的項目
-            const orderItems = allData.filter(i => i.orderID === orderID && !i.fullAddress.includes("運單:"));
-            
-            for (let item of orderItems) {
-                await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: "updateField",
-                        rowNum: item.rowNum,
-                        field: 'status',
-                        value: '已取貨', // 寄出即視為完成，狀態改為已取貨（歷史單）
-                        tracking: track
-                    }),
-                    mode: 'no-cors'
-                });
-            }
-
-            // 生成回覆文字並自動複製
-            const replyMsg = `你好 ${customerName}，你購買的「${productNames}」已經寄出囉！\n運單編號：${track}\n謝謝🙏🏻🙏🏻`;
-            await navigator.clipboard.writeText(replyMsg);
-            
-            document.getElementById('modalCopyText').value = replyMsg;
-            document.getElementById('copyModal').style.display = 'flex';
-        }
-
-        // 刪除單筆
-        async function deleteSingleRow(rowNum) {
-            if(!confirm("確定要刪除這筆商品紀錄嗎？")) return;
-            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "deleteRow", rowNum: rowNum }), mode: 'no-cors' });
-            setTimeout(loadOrders, 500);
-        }
-
-        // 財務分頁功能
-        function initMonthFilter() {
-            const filter = document.getElementById('profitMonthFilter');
-            const months = [...new Set(allData.map(i => {
-                const d = new Date(i.orderDate);
-                return isNaN(d) ? null : `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}`;
-            }))].filter(Boolean).sort().reverse();
-            filter.innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join('');
-        }
-
-        function renderProfit() {
-            const target = document.getElementById('profitMonthFilter').value;
-            const rateInput = document.getElementById('monthlyRateInput');
-            let total = 0, count = 0, rate = 0;
-
-            const filtered = allData.filter(i => {
-                const d = new Date(i.orderDate);
-                const m = isNaN(d) ? "" : `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}`;
-                if (m === target && i.monthlyRate) rate = parseFloat(i.monthlyRate);
-                return m === target;
-            });
-
-            rateInput.value = rate || "";
-            document.getElementById('profitTableBody').innerHTML = filtered.map(i => {
-                total += parseFloat(i.amount || 0);
-                count++;
-                const arrivalTag = i.arrivalDate ? `<br><span class="text-[9px] text-green-500 font-bold">🚚 到貨: ${i.arrivalDate}</span>` : "";
-                return `
-                    <tr class="border-b text-[12px] hover:bg-gray-50">
-                        <td class="p-3 opacity-60 font-bold">${i.orderDate}</td>
-                        <td class="p-3 font-black text-gray-800">${i.name}${arrivalTag}</td>
-                        <td class="p-3 text-gray-500">${i.product}</td>
-                        <td class="p-3 text-right font-black text-blue-600">$${i.amount}</td>
-                    </tr>`;
-            }).join('');
-
-            document.getElementById('totalProfit').innerText = `$${total.toLocaleString()}`;
-            document.getElementById('totalOrders').innerText = count;
-            if(rate > 0) {
-                const income = (total/3.6) - (total/rate);
-                document.getElementById('totalIncomeHKD').innerText = `$${income.toFixed(2)}`;
-            } else {
-                document.getElementById('totalIncomeHKD').innerText = "未設匯率";
-            }
-        }
-
-        async function updateBatchRate() {
-            const month = document.getElementById('profitMonthFilter').value;
-            const rate = document.getElementById('monthlyRateInput').value;
-            if(!rate) return alert("請輸入匯率");
-            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateMonthlyRate", month: month, rate: rate }), mode: 'no-cors' });
-            alert("匯率更新成功");
-            loadOrders();
-        }
-
-        // 切換分頁
         function switchView(mode) {
             currentMode = mode;
             document.getElementById('add-section').style.display = (mode === 'active') ? "block" : "none";
-            document.getElementById('profitContainer').style.display = (mode === 'profit') ? "block" : "none";
-            document.getElementById('cardContainer').style.display = (mode === 'profit') ? "none" : "grid";
-            
-            // UI 按鈕切換
-            document.querySelectorAll('nav button').forEach(btn => {
-                btn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600');
-                btn.classList.add('text-gray-500');
-            });
-            const activeBtn = document.getElementById(`nav-${mode}`);
-            activeBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600');
-            activeBtn.classList.remove('text-gray-500');
-            
+            document.getElementById('nav-active').className = (mode === 'active') ? "px-4 py-2 rounded-lg text-xs font-bold bg-white shadow-sm text-blue-600" : "px-4 py-2 rounded-lg text-xs font-bold text-gray-500";
+            document.getElementById('nav-history').className = (mode === 'history') ? "px-4 py-2 rounded-lg text-xs font-bold bg-white shadow-sm text-blue-600" : "px-4 py-2 rounded-lg text-xs font-bold text-gray-500";
             loadOrders();
         }
-
-        function copyAndClose() {
-            document.getElementById('copyModal').style.display = 'none';
-            loadOrders();
-        }
-
-        function addItemRow() {
-            const container = document.getElementById('itemsContainer');
-            const newRow = document.querySelector('.item-row').cloneNode(true);
-            newRow.querySelectorAll('input').forEach(i => i.value = '');
-            newRow.querySelector('.pre-dates').classList.add('hidden');
-            newRow.querySelector('.cmx-area').classList.add('hidden');
-            container.appendChild(newRow);
-        }
-
-        function removeRow(btn) {
-            const rows = document.querySelectorAll('.item-row');
-            if (rows.length > 1) btn.closest('.item-row').remove();
-        }
-
-        function copyData(t) {
-            navigator.clipboard.writeText(t).then(() => alert("✅ 已複製客戶聯絡資料"));
-        }
+        function copyAndClose() { document.getElementById('copyModal').style.display = 'none'; loadOrders(); }
+        function addItemRow() { const row = document.querySelector('.item-row').cloneNode(true); row.querySelectorAll('input').forEach(i => i.value = ''); document.getElementById('itemsContainer').appendChild(row); }
     </script>
 </body>
 </html>
