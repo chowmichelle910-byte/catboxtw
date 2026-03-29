@@ -11,6 +11,9 @@
         .badge-待取貨 { background: #F59E0B; }
         .badge-已取貨 { background: #10B981; }
         .badge-已寄出 { background: #9CA3AF; }
+        .source-IG { background-color: #E1306C; }
+        .source-WhatsApp { background-color: #22C55E; }
+        .source-Threads { background-color: #000000; }
         .stat-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: all 0.2s; }
         .card-ready-to-ship { border: 3px solid #EF4444 !important; background-color: #FFF1F2 !important; }
         #copyModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; }
@@ -42,7 +45,10 @@
         <section id="stat-section" class="bg-slate-900 p-6 rounded-3xl shadow-xl text-white">
             <div id="summary-container" class="grid grid-cols-3 md:grid-cols-6 gap-3"></div>
             <div id="filter-details" class="hidden mt-6 pt-6 border-t border-white/10">
-                <h3 id="filter-title" class="text-sm font-bold text-blue-400 mb-4 italic"></h3>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="filter-title" class="text-sm font-bold text-blue-400 italic"></h3>
+                    <button onclick="document.getElementById('filter-details').classList.add('hidden')" class="text-[10px] bg-white/10 px-3 py-1 rounded-lg">關閉清單 ✕</button>
+                </div>
                 <div id="filter-items-list" class="space-y-2 max-h-80 overflow-y-auto pr-2"></div>
             </div>
         </section>
@@ -64,12 +70,15 @@
                     <textarea id="fullAddress" placeholder="輸入地址..." class="w-full border p-3 rounded-2xl h-20 text-xs bg-gray-50 outline-none"></textarea>
                 </div>
                 <div class="space-y-4">
-                    <div class="flex justify-between items-center"><p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">商品明細</p><button onclick="addItemRow()" class="text-blue-600 text-[10px] font-black underline">+ 增加品項</button></div>
+                    <div class="flex justify-between items-center">
+                        <p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">商品明細</p>
+                        <button onclick="addItemRow()" class="text-blue-600 text-[10px] font-black underline">+ 增加品項</button>
+                    </div>
                     <div id="itemsContainer" class="space-y-3">
                         <div class="item-row bg-gray-50 p-4 rounded-2xl border border-gray-100 relative">
                             <input type="text" placeholder="商品名稱" class="prodName w-full mb-2 p-2 rounded-lg border text-sm">
                             <div class="grid grid-cols-3 gap-2">
-                                <select onchange="handleLocChange(this)" class="prodLoc border p-2 rounded-lg text-[10px]">
+                                <select class="prodLoc border p-2 rounded-lg text-[10px]">
                                     <option value="蝦皮">蝦皮</option><option value="7-11">7-11</option><option value="全家">全家</option><option value="宅配">宅配</option><option value="7仔預購">7仔預購</option><option value="賣貨便">賣貨便</option>
                                 </select>
                                 <input type="number" placeholder="金額" class="prodAmt border p-2 rounded-lg text-[10px]">
@@ -79,7 +88,7 @@
                             </div>
                         </div>
                     </div>
-                    <button id="submitBtn" onclick="submitOrder()" class="w-full mt-4 bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg">確認儲存並提交</button>
+                    <button id="submitBtn" onclick="submitOrder()" class="w-full mt-4 bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg hover:bg-blue-700">確認儲存並提交</button>
                 </div>
             </div>
         </section>
@@ -87,19 +96,10 @@
         <div id="cardContainer" class="grid gap-6"></div>
 
         <div id="profitContainer" class="hidden bg-slate-900 p-8 rounded-[40px] shadow-2xl text-white">
-            <h2 class="text-2xl font-black mb-8 flex items-center gap-3">
-                <span class="bg-blue-600 p-2 rounded-xl text-xl">💰</span> 每月利潤分析
-            </h2>
+            <h2 class="text-2xl font-black mb-8 flex items-center gap-3"><span class="bg-blue-600 p-2 rounded-xl text-xl">💰</span> 利潤分析</h2>
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-separate border-spacing-y-3">
-                    <thead>
-                        <tr class="text-gray-400 text-[10px] uppercase tracking-widest">
-                            <th class="px-4 pb-2">月份</th>
-                            <th class="px-4 pb-2">台幣總額 (TWD)</th>
-                            <th class="px-4 pb-2 w-32">設定匯率</th>
-                            <th class="px-4 pb-2 text-right">計算港幣 (HKD)</th>
-                        </tr>
-                    </thead>
+                <table class="w-full text-left border-separate border-spacing-y-3 text-sm">
+                    <thead><tr class="text-gray-400 text-[10px] uppercase tracking-widest"><th class="px-4 pb-2">月份</th><th class="px-4 pb-2">台幣總額</th><th class="px-4 pb-2 w-32">匯率</th><th class="px-4 pb-2 text-right">港幣利潤</th></tr></thead>
                     <tbody id="profitTableBody"></tbody>
                 </table>
             </div>
@@ -125,18 +125,14 @@
         function updateSummaryUI() {
             const box = document.getElementById('summary-container');
             if (currentMode !== 'active') return; 
-            
             const locs = ["蝦皮", "7-11", "全家", "宅配", "7仔預購", "賣貨便"];
             const stats = {};
             locs.forEach(l => stats[l] = 0);
-            
             allData.forEach(i => {
-                // 只計算「待取貨」且地址沒填單號的
                 if (!i.fullAddress.includes("運單:") && i.status === '待取貨') {
                     if(stats[i.location] !== undefined) stats[i.location]++;
                 }
             });
-
             box.innerHTML = locs.map(l => `
                 <div onclick="showFilterDetail('${l}')" class="stat-card p-4 rounded-2xl text-center">
                     <p class="text-[9px] opacity-50 font-black">${l}</p>
@@ -149,26 +145,15 @@
             const detailBox = document.getElementById('filter-details');
             const listContainer = document.getElementById('filter-items-list');
             const title = document.getElementById('filter-title');
-            
             detailBox.classList.remove('hidden');
             title.innerText = `📍 ${loc} - 待取貨清單`;
-            
-            // 僅篩選「待取貨」商品
             const filtered = allData.filter(i => i.location === loc && i.status === '待取貨' && !i.fullAddress.includes("運單:"));
-
             listContainer.innerHTML = filtered.map(i => `
                 <div class="bg-white/10 p-3 rounded-xl flex justify-between items-center text-[11px]">
-                    <div class="flex-1">
-                        <p class="font-bold text-white">${i.product}</p>
-                        <p class="text-gray-400 text-[10px]">${i.name} | $${i.amount} (${i.payment})</p>
-                    </div>
-                    <div class="flex gap-2 items-center">
-                        <span class="text-[10px] text-blue-400">${i.orderStatus || ""}</span>
-                        <select onchange="updateQuickStatus(${i.rowNum}, this.value)" class="bg-slate-800 text-white border-none rounded p-1 text-[10px]">
-                            <option value="待取貨" selected>待取貨</option>
-                            <option value="已取貨">已取貨</option>
-                        </select>
-                    </div>
+                    <div class="flex-1"><p class="font-bold text-white">${i.product}</p><p class="text-gray-400 text-[10px]">${i.name} | $${i.amount}</p></div>
+                    <select onchange="updateQuickStatus(${i.rowNum}, this.value)" class="bg-slate-800 text-white border-none rounded p-1 text-[10px]">
+                        <option value="待取貨" selected>待取貨</option><option value="已取貨">已取貨</option>
+                    </select>
                 </div>
             `).join('') || "<p class='text-gray-500 text-xs'>暫無待取貨項目</p>";
         }
@@ -181,7 +166,6 @@
         function renderOrders() {
             const container = document.getElementById('cardContainer');
             container.innerHTML = "";
-            
             const groups = allData.reduce((acc, obj) => {
                 if (!acc[obj.orderID]) acc[obj.orderID] = [];
                 acc[obj.orderID].push(obj);
@@ -190,7 +174,6 @@
 
             let activeOrders = [];
             let historyOrders = [];
-
             Object.keys(groups).forEach(oid => {
                 const items = groups[oid];
                 const isFinished = items.every(i => i.fullAddress.includes("運單:"));
@@ -198,22 +181,17 @@
             });
 
             if (currentMode === 'active') {
-                // 進行中排序：已到齊(紅框)置頂，其餘按 rowNum (時間)
+                // 進行中：已到齊(紅框)置頂，其餘按 rowNum
                 activeOrders.sort((a, b) => {
                     const aReady = a.every(i => i.status === '已取貨' || i.status === '已寄出');
                     const bReady = b.every(i => i.status === '已取貨' || i.status === '已寄出');
-                    if (aReady && !bReady) return -1;
-                    if (!aReady && bReady) return 1;
+                    if (aReady !== bReady) return aReady ? -1 : 1;
                     return b[0].rowNum - a[0].rowNum;
                 });
                 renderCardList(activeOrders);
             } else {
-                // 歷史單：按「寄出日期 (O 欄)」由新到舊
-                historyOrders.sort((a, b) => {
-                    const dateA = new Date(a[0].shipDate || 0);
-                    const dateB = new Date(b[0].shipDate || 0);
-                    return dateB - dateA;
-                });
+                // 歷史單：按寄出日期排序
+                historyOrders.sort((a, b) => new Date(b[0].shipDate || 0) - new Date(a[0].shipDate || 0));
                 renderCardList(historyOrders);
             }
         }
@@ -230,19 +208,20 @@
                 
                 card.innerHTML = `
                     <div class="p-4 bg-gray-50 flex justify-between items-center border-b">
-                        <div>
-                            <span class="text-[10px] font-black bg-blue-100 text-blue-700 px-2 py-0.5 rounded mr-2">${first.orderID}</span>
+                        <div class="flex items-center">
+                            <span class="badge source-${first.source} mr-2">${first.source}</span>
                             <b class="text-sm">${first.name}</b>
                         </div>
                         <div class="flex gap-1">
-                            <button onclick="copyAddr('${first.receiver}','${first.phone}','${first.fullAddress}')" class="bg-blue-600 text-white text-[10px] px-2 py-1 rounded-lg font-bold">📋 複製地址</button>
+                            <button onclick="reuseCustomer('${first.name}')" class="bg-green-600 text-white text-[10px] px-2 py-1 rounded-lg font-bold">+ 加單</button>
+                            <button onclick="copyAddr('${first.receiver}','${first.phone}','${first.fullAddress}')" class="bg-blue-600 text-white text-[10px] px-2 py-1 rounded-lg font-bold">📋 地址</button>
                             <button onclick="enableEdit('${first.orderID}')" class="bg-gray-800 text-white text-[10px] px-2 py-1 rounded-lg font-bold">📝 修改</button>
                         </div>
                     </div>
                     <div class="p-4">
                         <div id="info-${first.orderID}" class="text-[11px] text-gray-500 mb-3 font-bold">
                             <p>收件人: ${first.receiver} | 電話: ${first.phone}</p>
-                            <p class="truncate">地址: ${first.fullAddress}</p>
+                            <p class="truncate text-[10px]">地址: ${first.fullAddress}</p>
                         </div>
                         <div id="edit-area-${first.orderID}" class="hidden space-y-2 bg-blue-50 p-3 rounded-xl mb-3">
                             <input type="text" id="edit-rcv-${first.orderID}" value="${first.receiver}" class="w-full p-2 text-xs rounded border">
@@ -274,20 +253,17 @@
             const cleanAdr = adr.split(' (運單:')[0];
             const text = `${rcv}\n${phn}\n${cleanAdr}`;
             await navigator.clipboard.writeText(text);
-            alert("地址已複製：\n" + text);
+            alert("已複製地址資料");
         }
 
         function renderProfit() {
-            const container = document.getElementById('profitContainer');
             const table = document.getElementById('profitTableBody');
-            
             const monthlyData = allData.reduce((acc, obj) => {
                 const m = obj.orderDate.substring(0, 7);
                 if (!acc[m]) acc[m] = { total: 0, rate: obj.monthlyRate || 4.1 };
                 acc[m].total += parseFloat(obj.amount || 0);
                 return acc;
             }, {});
-
             table.innerHTML = Object.keys(monthlyData).sort().reverse().map(m => {
                 const d = monthlyData[m];
                 const hkd = (d.total / d.rate) - (d.total / 3.6);
@@ -295,14 +271,8 @@
                     <tr class="bg-white/5 border-b border-white/5 text-sm">
                         <td class="p-4 font-bold text-blue-400">${m}</td>
                         <td class="p-4">$${d.total.toLocaleString()}</td>
-                        <td class="p-4">
-                            <input type="number" step="0.01" value="${d.rate}" 
-                                onchange="updateMonthlyRate('${m}', this.value)"
-                                class="bg-slate-800 text-white border border-white/10 rounded px-2 py-1 w-20 text-center">
-                        </td>
-                        <td class="p-4 text-right font-black ${hkd >= 0 ? 'text-green-400' : 'text-red-400'}">
-                            HKD ${Math.round(hkd).toLocaleString()}
-                        </td>
+                        <td class="p-4"><input type="number" step="0.01" value="${d.rate}" onchange="updateMonthlyRate('${m}', this.value)" class="bg-slate-800 text-white border border-white/10 rounded px-2 py-1 w-20 text-center"></td>
+                        <td class="p-4 text-right font-black ${hkd >= 0 ? 'text-green-400' : 'text-red-400'}">HKD ${Math.round(hkd).toLocaleString()}</td>
                     </tr>
                 `;
             }).join('');
@@ -319,15 +289,12 @@
             document.getElementById('add-section').style.display = (mode === 'active') ? "block" : "none";
             document.getElementById('profitContainer').classList.toggle('hidden', mode !== 'profit');
             document.getElementById('cardContainer').classList.toggle('hidden', mode === 'profit');
-            
             document.getElementById('nav-active').className = (mode === 'active') ? "px-4 py-2 rounded-lg text-xs font-bold bg-white shadow-sm text-blue-600" : "px-4 py-2 rounded-lg text-xs font-bold text-gray-500";
             document.getElementById('nav-history').className = (mode === 'history') ? "px-4 py-2 rounded-lg text-xs font-bold bg-white shadow-sm text-blue-600" : "px-4 py-2 rounded-lg text-xs font-bold text-gray-500";
             document.getElementById('nav-profit').className = (mode === 'profit') ? "px-4 py-2 rounded-lg text-xs font-bold bg-white shadow-sm text-blue-600" : "px-4 py-2 rounded-lg text-xs font-bold text-gray-500";
-            
             loadData();
         }
 
-        // --- 其餘輔助函數 (維持不變) ---
         function enableEdit(oid) {
             document.getElementById(`info-${oid}`).classList.toggle('hidden');
             document.getElementById(`edit-area-${oid}`).classList.toggle('hidden');
@@ -357,6 +324,18 @@
             document.getElementById('copyModal').style.display = 'flex';
         }
 
+        function reuseCustomer(name) {
+            const data = allData.find(i => i.name === name);
+            if(data) {
+                document.getElementById('custName').value = data.name;
+                document.getElementById('source').value = data.source;
+                document.getElementById('receiver').value = data.receiver;
+                document.getElementById('phone').value = data.phone;
+                document.getElementById('fullAddress').value = data.fullAddress.split(' (運單:')[0];
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
         function addItemRow() {
             const container = document.getElementById('itemsContainer');
             const row = container.children[0].cloneNode(true);
@@ -374,16 +353,13 @@
                 phone: document.getElementById('phone').value,
                 fullAddress: document.getElementById('fullAddress').value,
                 orderDate: `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`,
-                items: Array.from(document.querySelectorAll('.item-row')).map(row => {
-                    const loc = row.querySelector('.prodLoc').value;
-                    return {
-                        productName: row.querySelector('.prodName').value,
-                        pickupLocation: loc,
-                        amount: row.querySelector('.prodAmt').value,
-                        paymentStatus: row.querySelector('.prodPayment').value,
-                        status: '待取貨'
-                    };
-                })
+                items: Array.from(document.querySelectorAll('.item-row')).map(row => ({
+                    productName: row.querySelector('.prodName').value,
+                    pickupLocation: row.querySelector('.prodLoc').value,
+                    amount: row.querySelector('.prodAmt').value,
+                    paymentStatus: row.querySelector('.prodPayment').value,
+                    status: '待取貨'
+                }))
             };
             await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
             location.reload();
