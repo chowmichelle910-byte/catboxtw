@@ -157,7 +157,7 @@
 
         // 只有匯率存在且大於 0 才能計算利潤
         if (data.rate && data.rate > 0) {
-            const hkdProfit = (data.twdTotal / data.rate) - (data.twdTotal / 3.6);
+        const hkdProfit = (data.twdTotal / 3.6) - (data.twdTotal / data.rate);
             const colorClass = hkdProfit >= 0 ? 'text-green-400' : 'text-red-400';
             hkdDisplay = `<span class="${colorClass}">HKD ${Math.round(hkdProfit).toLocaleString()}</span>`;
         } else {
