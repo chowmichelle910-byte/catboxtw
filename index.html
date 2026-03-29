@@ -14,9 +14,9 @@
         .source-IG { background-color: #E1306C; }
         .source-WhatsApp { background-color: #22C55E; }
         .source-Threads { background-color: #000000; }
-        .stat-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: all 0.2s; }
-        /* 紅框置頂樣式 */
-        .card-ready-to-ship { border: 3px solid #EF4444 !important; background-color: #FFF1F2 !important; box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.2); }
+        .stat-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
+        /* 紅框置頂樣式：當所有貨品已到齊 */
+        .card-ready-to-ship { border: 4px solid #EF4444 !important; background-color: #FFF1F2 !important; }
         #copyModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; }
     </style>
 </head>
@@ -48,7 +48,7 @@
             <div id="filter-details" class="hidden mt-6 pt-6 border-t border-white/10">
                 <div class="flex justify-between items-center mb-4">
                     <h3 id="filter-title" class="text-sm font-bold text-blue-400 italic"></h3>
-                    <button onclick="document.getElementById('filter-details').classList.add('hidden')" class="text-[10px] bg-white/10 px-3 py-1 rounded-lg">關閉清單 ✕</button>
+                    <button onclick="document.getElementById('filter-details').classList.add('hidden')" class="text-[10px] bg-white/20 px-3 py-1 rounded-lg">關閉清單 ✕</button>
                 </div>
                 <div id="filter-items-list" class="space-y-2 max-h-80 overflow-y-auto pr-2"></div>
             </div>
@@ -71,9 +71,12 @@
                     <textarea id="fullAddress" placeholder="輸入地址..." class="w-full border p-3 rounded-2xl h-20 text-xs bg-gray-50 outline-none"></textarea>
                 </div>
                 <div class="space-y-4">
-                    <div class="flex justify-between items-center"><p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">商品明細</p><button onclick="addItemRow()" class="text-blue-600 text-[10px] font-black underline">+ 增加品項</button></div>
+                    <div class="flex justify-between items-center">
+                        <p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">商品明細</p>
+                        <button onclick="addItemRow()" class="text-blue-600 text-[10px] font-black underline">+ 增加品項</button>
+                    </div>
                     <div id="itemsContainer" class="space-y-3">
-                        <div class="item-row bg-gray-50 p-4 rounded-2xl border border-gray-100 relative">
+                        <div class="item-row bg-gray-50 p-4 rounded-2xl border border-gray-100">
                             <input type="text" placeholder="商品名稱" class="prodName w-full mb-2 p-2 rounded-lg border text-sm">
                             <div class="grid grid-cols-3 gap-2">
                                 <select class="prodLoc border p-2 rounded-lg text-[10px]"><option value="蝦皮">蝦皮</option><option value="7-11">7-11</option><option value="全家">全家</option><option value="宅配">宅配</option><option value="7仔預購">7仔預購</option><option value="賣貨便">賣貨便</option></select>
@@ -111,38 +114,36 @@
             const container = document.getElementById('cardContainer');
             container.innerHTML = "";
             
-            // 重要：按「購買人名稱 (name)」分組
-            const personGroups = allData.reduce((acc, obj) => {
+            // 按人名 (Name) 分組
+            const nameGroups = allData.reduce((acc, obj) => {
                 if (!acc[obj.name]) acc[obj.name] = [];
                 acc[obj.name].push(obj);
                 return acc;
             }, {});
 
-            let activePeople = [];
-            let historyPeople = [];
+            let activeGroups = [];
+            let historyGroups = [];
 
-            Object.keys(personGroups).forEach(name => {
-                const items = personGroups[name];
-                // 只要此人名下有任何一個商品還沒填運單，就屬於「進行中」
-                const isFinished = items.every(i => i.fullAddress.includes("運單:"));
-                if (isFinished) historyPeople.push(items); else activePeople.push(items);
+            Object.keys(nameGroups).forEach(name => {
+                const items = nameGroups[name];
+                // 邏輯修正：只要名下還有任何一個商品「不是已寄出」，整個人都留在進行中
+                const hasActiveItem = items.some(i => i.status !== '已寄出' && !i.fullAddress.includes("運單:"));
+                
+                if (hasActiveItem) activeGroups.push(items); else historyGroups.push(items);
             });
 
             if (currentMode === 'active') {
-                // 排序邏輯：
-                // 1. 所有貨品都已取貨/已寄出 (但未結單) 的置頂 (紅框)
-                // 2. 其餘按最後更新時間排序
-                activePeople.sort((a, b) => {
+                // 排序：全部貨到(紅框)置頂
+                activeGroups.sort((a, b) => {
                     const aReady = a.every(i => i.status === '已取貨' || i.status === '已寄出');
                     const bReady = b.every(i => i.status === '已取貨' || i.status === '已寄出');
                     if (aReady !== bReady) return aReady ? -1 : 1;
                     return b[0].rowNum - a[0].rowNum;
                 });
-                renderCardList(activePeople);
+                renderCardList(activeGroups);
             } else {
-                // 歷史訂單：按寄出日期排序
-                historyPeople.sort((a, b) => new Date(b[0].shipDate || 0) - new Date(a[0].shipDate || 0));
-                renderCardList(historyPeople);
+                historyGroups.sort((a, b) => new Date(b[0].shipDate || 0) - new Date(a[0].shipDate || 0));
+                renderCardList(historyGroups);
             }
         }
 
@@ -156,47 +157,45 @@
                 const card = document.createElement('div');
                 card.className = `bg-white rounded-3xl shadow-sm border overflow-hidden mb-4 ${ (allPicked && !isFinished) ? 'card-ready-to-ship' : 'border-gray-100'}`;
                 
-                // 將同一個人的商品按 OrderID 再次小分組顯示
-                const subOrders = items.reduce((acc, obj) => {
-                    if (!acc[obj.orderID]) acc[obj.orderID] = [];
-                    acc[obj.orderID].push(obj);
-                    return acc;
-                }, {});
-
                 card.innerHTML = `
                     <div class="p-4 bg-gray-50 flex justify-between items-center border-b">
                         <div class="flex items-center">
-                            <span class="badge source-${first.source} mr-2 text-[9px] uppercase">${first.source}</span>
-                            <b class="text-base font-black text-gray-800">${first.name}</b>
+                            <span class="badge source-${first.source} mr-2 uppercase">${first.source}</span>
+                            <b class="text-base font-black">${first.name}</b>
                         </div>
                         <div class="flex gap-1">
                             <button onclick="reuseCustomer('${first.name}')" class="bg-green-600 text-white text-[10px] px-2 py-1 rounded-lg font-bold">+ 加單</button>
                             <button onclick="copyAddr('${first.receiver}','${first.phone}','${first.fullAddress}')" class="bg-blue-600 text-white text-[10px] px-2 py-1 rounded-lg font-bold">📋 地址</button>
-                            <button onclick="enableEdit('${first.name}')" class="bg-gray-800 text-white text-[10px] px-2 py-1 rounded-lg font-bold">📝 修改</button>
                         </div>
                     </div>
                     <div class="p-4">
-                        <div id="info-${first.name}" class="text-[11px] text-gray-500 mb-4 bg-gray-50 p-2 rounded-xl">
+                        <div class="text-[11px] text-gray-500 mb-4 bg-gray-100/50 p-2 rounded-xl">
                             <p>收件: ${first.receiver} | ${first.phone}</p>
                             <p class="truncate">地址: ${first.fullAddress}</p>
                         </div>
-                        <div class="space-y-4">
-                            ${Object.keys(subOrders).map(oid => `
-                                <div class="border-l-2 border-gray-100 pl-3">
-                                    <p class="text-[9px] font-bold text-gray-400 mb-1">單號: ${oid}</p>
-                                    ${subOrders[oid].map(si => `
-                                        <div class="flex justify-between items-center text-xs py-1">
-                                            <span class="font-bold">${si.product} <small class="text-gray-400 font-normal">($${si.amount})</small></span>
-                                            <span class="badge badge-${si.status}">${si.status}</span>
-                                        </div>
-                                    `).join('')}
+                        <div class="space-y-3">
+                            ${items.map(si => `
+                                <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg">
+                                    <div class="flex-1">
+                                        <p class="text-xs font-black">${si.product}</p>
+                                        <p class="text-[9px] text-gray-400">${si.location} | $${si.amount}</p>
+                                    </div>
+                                    <select onchange="updateItemStatus(${si.rowNum}, this.value)" 
+                                            class="badge badge-${si.status} border-none outline-none appearance-none">
+                                        <option value="待預購" ${si.status==='待預購'?'selected':''}>待預購</option>
+                                        <option value="待取貨" ${si.status==='待取貨'?'selected':''}>待取貨</option>
+                                        <option value="已取貨" ${si.status==='已取貨'?'selected':''}>已取貨</option>
+                                        <option value="已寄出" ${si.status==='已寄出'?'selected':''}>已寄出</option>
+                                    </select>
                                 </div>
                             `).join('')}
                         </div>
                         ${(!isFinished && allPicked) ? `
-                            <div class="mt-6 flex gap-2">
-                                <input type="text" id="track-${first.name}" placeholder="輸入順豐單號" class="flex-1 text-xs p-3 rounded-xl border-2 border-red-200 outline-none focus:border-red-500">
-                                <button onclick="shipAll('${first.name}')" class="bg-red-500 text-white text-xs px-6 py-2 rounded-xl font-black">全部寄出</button>
+                            <div class="mt-6 pt-4 border-t-2 border-dashed border-red-200">
+                                <div class="flex gap-2">
+                                    <input type="text" id="track-${first.name}" placeholder="輸入順豐單號結單" class="flex-1 text-xs p-3 rounded-xl border-2 border-red-200 outline-none">
+                                    <button onclick="shipAllByName('${first.name}')" class="bg-red-500 text-white text-xs px-6 py-2 rounded-xl font-black">全部寄出</button>
+                                </div>
                             </div>
                         ` : ''}
                     </div>
@@ -205,202 +204,19 @@
             });
         }
 
-        async function shipAll(name) {
+        async function updateItemStatus(rowNum, newVal) {
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateField", rowNum: rowNum, field: 'status', value: newVal }), mode: 'no-cors' });
+            loadData();
+        }
+
+        async function shipAllByName(name) {
             const track = document.getElementById(`track-${name}`).value;
             if(!track) return alert("請輸入單號");
             const related = allData.filter(i => i.name === name && !i.fullAddress.includes("運單:"));
             for (let item of related) {
                 await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateField", rowNum: item.rowNum, field: 'status', value: '已寄出', tracking: track }), mode: 'no-cors' });
             }
-            alert("已成功更新並寄出！");
-            loadData();
-        }
-
-        // --- 以下函數保持邏輯一致 ---
-        function switchView(mode) {
-            currentMode = mode;
-            document.getElementById('stat-section').style.display = (mode === 'active') ? "block" : "none";
-            document.getElementById('add-section').style.display = (mode === 'active') ? "block" : "none";
-            loadData();
-        }
-        
-        function reuseCustomer(name) {
-            const data = allData.find(i => i.name === name);
-            if(data) {
-                document.getElementById('custName').value = data.name;
-                document.getElementById('source').value = data.source;
-                document.getElementById('receiver').value = data.receiver;
-                document.getElementById('phone').value = data.phone;
-                document.getElementById('fullAddress').value = data.fullAddress.split(' (運單:')[0];
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        }
-        
-        function addItemRow() {
-            const container = document.getElementById('itemsContainer');
-            const row = container.children[0].cloneNode(true);
-            row.querySelectorAll('input').forEach(i => i.value = '');
-            container.appendChild(row);
-        }
-
-        function updateSummaryUI() {
-            const box = document.getElementById('summary-container');
-            if (currentMode !== 'active') return; 
-            const locs = ["蝦皮", "7-11", "全家", "宅配", "7仔預購", "賣貨便"];
-            const stats = {};
-            locs.forEach(l => stats[l] = 0);
-            allData.forEach(i => {
-                if (!i.fullAddress.includes("運單:") && i.status === '待取貨') {
-                    if(stats[i.location] !== undefined) stats[i.location]++;
-                }
-            });
-            box.innerHTML = locs.map(l => `
-                <div onclick="showFilterDetail('${l}')" class="stat-card p-4 rounded-2xl text-center">
-                    <p class="text-[9px] opacity-50 font-black">${l}</p>
-                    <p class="text-xl font-black mt-1">${stats[l]}</p>
-                </div>
-            `).join('');
-        }
-
-        function showFilterDetail(loc) {
-            const detailBox = document.getElementById('filter-details');
-            const listContainer = document.getElementById('filter-items-list');
-            const title = document.getElementById('filter-title');
-            detailBox.classList.remove('hidden');
-            title.innerText = `📍 ${loc} - 待取貨清單`;
-            const filtered = allData.filter(i => i.location === loc && i.status === '待取貨' && !i.fullAddress.includes("運單:"));
-            listContainer.innerHTML = filtered.map(i => `
-                <div class="bg-white/10 p-3 rounded-xl flex justify-between items-center text-[11px]">
-                    <div class="flex-1"><p class="font-bold text-white">${i.product}</p><p class="text-gray-400 text-[10px]">${i.name} | $${i.amount}</p></div>
-                    <select onchange="updateQuickStatus(${i.rowNum}, this.value)" class="bg-slate-800 text-white border-none rounded p-1 text-[10px]">
-                        <option value="待取貨" selected>待取貨</option><option value="已取貨">已取貨</option>
-                    </select>
-                </div>
-            `).join('') || "<p class='text-gray-500 text-xs'>暫無待取貨項目</p>";
-        }
-
-        async function updateQuickStatus(rowNum, newVal) {
-            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateField", rowNum: rowNum, field: 'status', value: newVal }), mode: 'no-cors' });
-            loadData();
-        }
-
-        function renderOrders() {
-            const container = document.getElementById('cardContainer');
-            container.innerHTML = "";
-            const groups = allData.reduce((acc, obj) => {
-                if (!acc[obj.orderID]) acc[obj.orderID] = [];
-                acc[obj.orderID].push(obj);
-                return acc;
-            }, {});
-
-            let activeOrders = [];
-            let historyOrders = [];
-            Object.keys(groups).forEach(oid => {
-                const items = groups[oid];
-                const isFinished = items.every(i => i.fullAddress.includes("運單:"));
-                if (isFinished) historyOrders.push(items); else activeOrders.push(items);
-            });
-
-            if (currentMode === 'active') {
-                // 進行中：已到齊(紅框)置頂，其餘按 rowNum
-                activeOrders.sort((a, b) => {
-                    const aReady = a.every(i => i.status === '已取貨' || i.status === '已寄出');
-                    const bReady = b.every(i => i.status === '已取貨' || i.status === '已寄出');
-                    if (aReady !== bReady) return aReady ? -1 : 1;
-                    return b[0].rowNum - a[0].rowNum;
-                });
-                renderCardList(activeOrders);
-            } else {
-                // 歷史單：按寄出日期排序
-                historyOrders.sort((a, b) => new Date(b[0].shipDate || 0) - new Date(a[0].shipDate || 0));
-                renderCardList(historyOrders);
-            }
-        }
-
-        function renderCardList(list) {
-            const container = document.getElementById('cardContainer');
-            list.forEach(items => {
-                const first = items[0];
-                const allPicked = items.every(i => i.status === '已取貨' || i.status === '已寄出');
-                const isFinished = first.fullAddress.includes("運單:");
-
-                const card = document.createElement('div');
-                card.className = `bg-white rounded-3xl shadow-sm border overflow-hidden mb-4 ${ (allPicked && !isFinished) ? 'card-ready-to-ship' : 'border-gray-100'}`;
-                
-                card.innerHTML = `
-                    <div class="p-4 bg-gray-50 flex justify-between items-center border-b">
-                        <div class="flex items-center">
-                            <span class="badge source-${first.source} mr-2">${first.source}</span>
-                            <b class="text-sm">${first.name}</b>
-                        </div>
-                        <div class="flex gap-1">
-                            <button onclick="reuseCustomer('${first.name}')" class="bg-green-600 text-white text-[10px] px-2 py-1 rounded-lg font-bold">+ 加單</button>
-                            <button onclick="copyAddr('${first.receiver}','${first.phone}','${first.fullAddress}')" class="bg-blue-600 text-white text-[10px] px-2 py-1 rounded-lg font-bold">📋 地址</button>
-                            <button onclick="enableEdit('${first.orderID}')" class="bg-gray-800 text-white text-[10px] px-2 py-1 rounded-lg font-bold">📝 修改</button>
-                        </div>
-                    </div>
-                    <div class="p-4">
-                        <div id="info-${first.orderID}" class="text-[11px] text-gray-500 mb-3 font-bold">
-                            <p>收件人: ${first.receiver} | 電話: ${first.phone}</p>
-                            <p class="truncate text-[10px]">地址: ${first.fullAddress}</p>
-                        </div>
-                        <div id="edit-area-${first.orderID}" class="hidden space-y-2 bg-blue-50 p-3 rounded-xl mb-3">
-                            <input type="text" id="edit-rcv-${first.orderID}" value="${first.receiver}" class="w-full p-2 text-xs rounded border">
-                            <input type="text" id="edit-phn-${first.orderID}" value="${first.phone}" class="w-full p-2 text-xs rounded border">
-                            <textarea id="edit-adr-${first.orderID}" class="w-full p-2 text-xs rounded border h-16">${first.fullAddress}</textarea>
-                            <button onclick="saveCustomerInfo('${first.orderID}')" class="w-full bg-blue-600 text-white py-2 rounded-lg text-xs font-bold">儲存</button>
-                        </div>
-                        <div class="space-y-2 border-t pt-3">
-                            ${items.map(si => `
-                                <div class="flex justify-between items-center text-[11px]">
-                                    <div><p class="font-black">${si.product}</p><p class="text-[9px] text-gray-400">${si.location} | $${si.amount}</p></div>
-                                    <span class="badge badge-${si.status}">${si.status}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                        ${(!isFinished && allPicked) ? `
-                            <div class="mt-4 flex gap-2">
-                                <input type="text" id="track-${first.orderID}" placeholder="順豐單號" class="flex-1 text-xs p-2 rounded-xl border border-red-300">
-                                <button onclick="shipOrder('${first.orderID}', '${first.name}')" class="bg-red-500 text-white text-xs px-4 py-2 rounded-xl font-black">寄出</button>
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        async function copyAddr(rcv, phn, adr) {
-            const cleanAdr = adr.split(' (運單:')[0];
-            const text = `${rcv}\n${phn}\n${cleanAdr}`;
-            await navigator.clipboard.writeText(text);
-            alert("已複製地址資料");
-        }
-
-        function renderProfit() {
-            const table = document.getElementById('profitTableBody');
-            const monthlyData = allData.reduce((acc, obj) => {
-                const m = obj.orderDate.substring(0, 7);
-                if (!acc[m]) acc[m] = { total: 0, rate: obj.monthlyRate || 4.1 };
-                acc[m].total += parseFloat(obj.amount || 0);
-                return acc;
-            }, {});
-            table.innerHTML = Object.keys(monthlyData).sort().reverse().map(m => {
-                const d = monthlyData[m];
-                const hkd = (d.total / d.rate) - (d.total / 3.6);
-                return `
-                    <tr class="bg-white/5 border-b border-white/5 text-sm">
-                        <td class="p-4 font-bold text-blue-400">${m}</td>
-                        <td class="p-4">$${d.total.toLocaleString()}</td>
-                        <td class="p-4"><input type="number" step="0.01" value="${d.rate}" onchange="updateMonthlyRate('${m}', this.value)" class="bg-slate-800 text-white border border-white/10 rounded px-2 py-1 w-20 text-center"></td>
-                        <td class="p-4 text-right font-black ${hkd >= 0 ? 'text-green-400' : 'text-red-400'}">HKD ${Math.round(hkd).toLocaleString()}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        async function updateMonthlyRate(month, newRate) {
-            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateMonthlyRate", month: month, rate: newRate }), mode: 'no-cors' });
+            alert("結單成功，已全部標記為寄出！");
             loadData();
         }
 
@@ -410,39 +226,11 @@
             document.getElementById('add-section').style.display = (mode === 'active') ? "block" : "none";
             document.getElementById('profitContainer').classList.toggle('hidden', mode !== 'profit');
             document.getElementById('cardContainer').classList.toggle('hidden', mode === 'profit');
+            
             document.getElementById('nav-active').className = (mode === 'active') ? "px-4 py-2 rounded-lg text-xs font-bold bg-white shadow-sm text-blue-600" : "px-4 py-2 rounded-lg text-xs font-bold text-gray-500";
             document.getElementById('nav-history').className = (mode === 'history') ? "px-4 py-2 rounded-lg text-xs font-bold bg-white shadow-sm text-blue-600" : "px-4 py-2 rounded-lg text-xs font-bold text-gray-500";
             document.getElementById('nav-profit').className = (mode === 'profit') ? "px-4 py-2 rounded-lg text-xs font-bold bg-white shadow-sm text-blue-600" : "px-4 py-2 rounded-lg text-xs font-bold text-gray-500";
             loadData();
-        }
-
-        function enableEdit(oid) {
-            document.getElementById(`info-${oid}`).classList.toggle('hidden');
-            document.getElementById(`edit-area-${oid}`).classList.toggle('hidden');
-        }
-
-        async function saveCustomerInfo(oid) {
-            const rcv = document.getElementById(`edit-rcv-${oid}`).value;
-            const phn = document.getElementById(`edit-phn-${oid}`).value;
-            const adr = document.getElementById(`edit-adr-${oid}`).value;
-            const related = allData.filter(i => i.orderID === oid);
-            for (let item of related) {
-                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateCustomer", rowNum: item.rowNum, receiver: rcv, phone: phn, fullAddress: adr }), mode: 'no-cors' });
-            }
-            loadData();
-        }
-
-        async function shipOrder(oid, name) {
-            const track = document.getElementById(`track-${oid}`).value;
-            if(!track) return alert("請輸入單號");
-            const related = allData.filter(i => i.orderID === oid);
-            for (let item of related) {
-                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateField", rowNum: item.rowNum, field: 'status', value: '已寄出', tracking: track }), mode: 'no-cors' });
-            }
-            const msg = `你好 ${name}，你購買的訂單已經寄出囉！\n順豐單號：${track}\n謝謝🙏🏻`;
-            await navigator.clipboard.writeText(msg);
-            document.getElementById('modalCopyText').value = msg;
-            document.getElementById('copyModal').style.display = 'flex';
         }
 
         function reuseCustomer(name) {
@@ -457,6 +245,7 @@
             }
         }
 
+        // ... 其餘代碼 (addItemRow, submitOrder, updateSummaryUI, renderProfit) 保持一致 ...
         function addItemRow() {
             const container = document.getElementById('itemsContainer');
             const row = container.children[0].cloneNode(true);
@@ -484,6 +273,45 @@
             };
             await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
             location.reload();
+        }
+
+        function updateSummaryUI() {
+            const box = document.getElementById('summary-container');
+            if (currentMode !== 'active') return; 
+            const locs = ["蝦皮", "7-11", "全家", "宅配", "7仔預購", "賣貨便"];
+            const stats = {};
+            locs.forEach(l => stats[l] = 0);
+            allData.forEach(i => {
+                if (!i.fullAddress.includes("運單:") && i.status === '待取貨') {
+                    if(stats[i.location] !== undefined) stats[i.location]++;
+                }
+            });
+            box.innerHTML = locs.map(l => `
+                <div onclick="showFilterDetail('${l}')" class="stat-card p-4 rounded-2xl text-center">
+                    <p class="text-[9px] opacity-50 font-black">${l}</p>
+                    <p class="text-xl font-black mt-1">${stats[l]}</p>
+                </div>
+            `).join('');
+        }
+
+        function showFilterDetail(loc) {
+            const detailBox = document.getElementById('filter-details');
+            const listContainer = document.getElementById('filter-items-list');
+            detailBox.classList.remove('hidden');
+            document.getElementById('filter-title').innerText = `📍 ${loc} - 待取貨清單`;
+            const filtered = allData.filter(i => i.location === loc && i.status === '待取貨' && !i.fullAddress.includes("運單:"));
+            listContainer.innerHTML = filtered.map(i => `
+                <div class="bg-white/10 p-3 rounded-xl flex justify-between items-center text-[11px]">
+                    <div><p class="font-bold text-white">${i.product}</p><p class="text-gray-400 text-[10px]">${i.name}</p></div>
+                    <button onclick="updateItemStatus(${i.rowNum}, '已取貨')" class="bg-blue-500 px-3 py-1 rounded-lg font-bold">已取貨</button>
+                </div>
+            `).join('') || "暫無項目";
+        }
+
+        function copyAddr(rcv, phn, adr) {
+            const text = `${rcv}\n${phn}\n${adr.split(' (運單:')[0]}`;
+            navigator.clipboard.writeText(text);
+            alert("地址已複製");
         }
     </script>
 </body>
