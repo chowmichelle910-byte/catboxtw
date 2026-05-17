@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <!-- 修正 1：禁止 iPhone 雙擊或雙指手勢放大縮小頁面 -->
+    <!-- 禁止 iPhone 雙擊或雙指手勢放大縮小頁面 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🇹🇼 台灣-訂單管理系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -49,10 +49,12 @@
             <section id="stat-section" class="bg-slate-900 p-6 rounded-3xl shadow-xl text-white mb-6">
                 <div id="summary-container" class="grid grid-cols-3 md:grid-cols-6 gap-3"></div>
                 <div id="filter-details" class="hidden mt-6 pt-6 border-t border-white/10">
-                    <div class="flex justify-between items-center mb-4">
+                    <div class="flex justify-between items-center mb-2">
                         <h3 id="filter-title" class="text-sm font-bold text-blue-400 italic"></h3>
                         <button onclick="document.getElementById('filter-details').classList.add('hidden')" class="text-[10px] bg-white/20 px-3 py-1 rounded-lg">關閉 ✕</button>
                     </div>
+                    <!-- 賣貨便可取貨金額動態顯示區 -->
+                    <div id="sf-ready-amount-box" class="hidden mb-4 p-3 bg-blue-900/50 border border-blue-500/30 rounded-xl text-xs text-blue-300 font-bold"></div>
                     <div id="filter-items-list" class="space-y-2 max-h-80 overflow-y-auto pr-2"></div>
                 </div>
             </section>
@@ -73,7 +75,7 @@
                         </div>
                         <textarea id="fullAddress" placeholder="輸入地址..." class="w-full border p-3 rounded-2xl h-20 text-xs bg-gray-50 outline-none"></textarea>
                         
-                        <!-- 修正 2：找回順豐點碼搜尋功能 -->
+                        <!-- 順豐點碼搜尋功能 -->
                         <div class="bg-gray-50 p-3 rounded-2xl border border-gray-200 mt-2">
                             <p class="font-bold text-gray-500 text-[10px] uppercase tracking-widest mb-2">📦 順豐點碼搜尋</p>
                             <div class="flex gap-2">
@@ -208,7 +210,6 @@
             loadData();
         }
 
-        // 需求 3：即時點擊修改客戶地址資訊
         async function editCustomerDetails(name, currentRcv, currentPhone, currentAddr) {
             const newRcv = prompt("請輸入新的 收件人姓名:", currentRcv);
             if (newRcv === null) return;
@@ -217,7 +218,6 @@
             const newAddr = prompt("請輸入新的 詳細地址:", currentAddr.split(' (運單:')[0]);
             if (newAddr === null) return;
 
-            // 找出此人所有非結單狀態的項目列號進行批量修改
             const targets = allData.filter(i => i.name === name && !i.fullAddress.includes("運單:"));
             if(targets.length === 0) return alert("進行中的訂單方可修改地址欄。");
 
@@ -238,7 +238,6 @@
             loadData();
         }
 
-        // 需求 1：歷史訂單點選加單，自動寫入並跳轉
         function reuseCustomer(name) {
             const data = allData.find(i => i.name === name);
             if(data) {
@@ -248,20 +247,15 @@
                 document.getElementById('phone').value = data.phone;
                 document.getElementById('fullAddress').value = data.fullAddress.split(' (運單:')[0];
                 
-                // 1. 自動切換回進行中 UI 視圖
                 switchView('active');
-                // 2. 絲滑滾動回網頁頂部
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
 
-        // 需求 2 & 5：共通處理複製回覆句子邏輯
         function triggerAutoCopyReply(name, trackCode) {
             const replyMsg = `Hi ${name}～\n您的貨品已經安排順豐寄出囉！\n🚚 順豐單號：${trackCode}\n感謝您的購買 ✨`;
             
-            // 執行系統自動複製到剪貼簿
             navigator.clipboard.writeText(replyMsg).then(() => {
-                // 跳出彈窗供人客觀看或手動再次複製
                 document.getElementById('modalCopyText').value = replyMsg;
                 document.getElementById('copyModal').style.display = 'flex';
             }).catch(err => {
@@ -297,7 +291,6 @@
                 });
                 renderCardList(activeGroups);
             } else {
-                // 需求 4：歷史訂單排序優化，最新完成(shipDate最新)的訂單放最前面
                 historyGroups.sort((a, b) => {
                     const dateA = new Date(a[0].shipDate || "1970/01/01");
                     const dateB = new Date(b[0].shipDate || "1970/01/01");
@@ -330,7 +323,6 @@
                         </div>
                         <div class="flex gap-1">
                             <button onclick="reuseCustomer('${first.name}')" class="bg-green-600 text-white text-[10px] px-2 py-1 rounded-lg font-bold">+ 加單</button>
-                            <!-- 需求 3：增加修改地址快捷鍵 -->
                             ${!isFinished ? `<button onclick="editCustomerDetails('${first.name}','${first.receiver}','${first.phone}','${first.fullAddress}')" class="bg-amber-500 text-white text-[10px] px-2 py-1 rounded-lg font-bold">✍️ 修改</button>` : ''}
                             <button onclick="copyAddr('${first.receiver}','${first.phone}','${first.fullAddress}')" class="bg-blue-600 text-white text-[10px] px-2 py-1 rounded-lg font-bold">📋 地址</button>
                         </div>
@@ -379,7 +371,6 @@
             loadData();
         }
 
-        // 需求 2 & 5：點擊全部寄出，並自動複製回覆句子
         async function shipAllByName(name) {
             const track = document.getElementById(`track-${name}`).value.trim();
             if(!track) return alert("請輸入單號");
@@ -389,7 +380,6 @@
                 await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateField", rowNum: item.rowNum, field: 'status', value: '已寄出', tracking: track }), mode: 'no-cors' });
             }
             
-            // 觸發自動複製與彈窗
             triggerAutoCopyReply(name, track);
             loadData();
         }
@@ -447,6 +437,39 @@
             `).join('');
         }
 
+        // 需求優化：在各訂單商品名稱後顯示金額，並在賣貨便位置顯示可取貨的總計金額
+        function showFilterDetail(loc) {
+            const detailBox = document.getElementById('filter-details');
+            const readyAmtBox = document.getElementById('sf-ready-amount-box');
+            
+            detailBox.classList.remove('hidden');
+            document.getElementById('filter-title').innerText = `📍 ${loc} - 待取貨清單`;
+            
+            const filtered = allData.filter(i => i.location === loc && i.status === '待取貨' && !i.fullAddress.includes("運單:"));
+            
+            // 如果點擊的是賣貨便，統計 Q 欄 (arrivalDate) 已有到貨日期的總金額
+            if (loc === "賣貨便") {
+                const readyToPickItems = filtered.filter(i => i.arrivalDate && i.arrivalDate.trim() !== "");
+                const totalReadyAmount = readyToPickItems.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+                
+                readyAmtBox.innerHTML = `📦 目前已到貨（可取貨）商品總金額：<span class="text-yellow-400 text-sm font-black">NT$ ${totalReadyAmount.toLocaleString()}</span>`;
+                readyAmtBox.classList.remove('hidden');
+            } else {
+                readyAmtBox.classList.add('hidden');
+            }
+
+            // 渲染清單，在商品名稱後面追加顯示金額
+            document.getElementById('filter-items-list').innerHTML = filtered.map(i => `
+                <div class="bg-white/10 p-3 rounded-xl flex justify-between items-center text-[11px]">
+                    <div>
+                        <p class="font-bold text-white">${i.product} <span class="text-yellow-400 ml-1">($${parseFloat(i.amount || 0)})</span></p>
+                        <p class="text-gray-400 text-[10px]">${i.name} ${i.arrivalDate ? `| 🏪 到貨日: ${i.arrivalDate}` : ''}</p>
+                    </div>
+                    <button onclick="updateItemStatus(${i.rowNum}, '已取貨')" class="bg-blue-500 px-3 py-1 rounded-lg font-bold">已取貨</button>
+                </div>
+            `).join('') || "暫無項目";
+        }
+
         function renderProfit() {
             const tableBody = document.getElementById('profitTableBody');
             const monthlyStats = allData.reduce((acc, obj) => {
@@ -484,19 +507,6 @@
         async function updateMonthlyRate(month, newRate) {
             await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateMonthlyRate", month: month, rate: newRate }), mode: 'no-cors' });
             loadData();
-        }
-
-        function showFilterDetail(loc) {
-            const detailBox = document.getElementById('filter-details');
-            detailBox.classList.remove('hidden');
-            document.getElementById('filter-title').innerText = `📍 ${loc} - 待取貨清單`;
-            const filtered = allData.filter(i => i.location === loc && i.status === '待取貨' && !i.fullAddress.includes("運單:"));
-            document.getElementById('filter-items-list').innerHTML = filtered.map(i => `
-                <div class="bg-white/10 p-3 rounded-xl flex justify-between items-center text-[11px]">
-                    <div><p class="font-bold text-white">${i.product}</p><p class="text-gray-400 text-[10px]">${i.name}</p></div>
-                    <button onclick="updateItemStatus(${i.rowNum}, '已取貨')" class="bg-blue-500 px-3 py-1 rounded-lg font-bold">已取貨</button>
-                </div>
-            `).join('') || "暫無項目";
         }
 
         function copyAddr(rcv, phn, adr) {
