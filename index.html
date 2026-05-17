@@ -2,7 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 修正 1：禁止 iPhone 雙擊或雙指手勢放大縮小頁面 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🇹🇼 台灣-訂單管理系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -21,11 +22,13 @@
 </head>
 <body class="bg-gray-100 min-h-screen pb-20 font-sans text-gray-900">
 
+    <!-- 系統通知與自動複製文字的彈窗 -->
     <div id="copyModal">
         <div class="bg-white p-6 rounded-3xl max-w-sm w-full mx-4 shadow-2xl">
-            <h3 class="text-lg font-black mb-4">📢 系統訊息</h3>
+            <h3 class="text-lg font-black mb-2 flex items-center gap-2 text-green-600">✨ 已自動複製回覆句子</h3>
+            <p class="text-xs text-gray-500 mb-4">您可以直接去貼給客人囉！若沒複製成功，可手動點擊下方文字框全選複製：</p>
             <textarea id="modalCopyText" class="w-full h-32 p-4 border rounded-2xl text-[12px] bg-gray-50 mb-4 outline-none" readonly></textarea>
-            <button onclick="document.getElementById('copyModal').style.display='none'" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm">關閉</button>
+            <button onclick="document.getElementById('copyModal').style.display='none'" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm">確認關閉</button>
         </div>
     </div>
 
@@ -69,17 +72,41 @@
                             <input type="text" id="phone" placeholder="電話號碼" class="border-b p-2 outline-none text-sm font-bold">
                         </div>
                         <textarea id="fullAddress" placeholder="輸入地址..." class="w-full border p-3 rounded-2xl h-20 text-xs bg-gray-50 outline-none"></textarea>
+                        
+                        <!-- 修正 2：找回順豐點碼搜尋功能 -->
+                        <div class="bg-gray-50 p-3 rounded-2xl border border-gray-200 mt-2">
+                            <p class="font-bold text-gray-500 text-[10px] uppercase tracking-widest mb-2">📦 順豐點碼搜尋</p>
+                            <div class="flex gap-2">
+                                <input type="text" id="sfCodeInput" placeholder="例如: 852TAM" class="flex-1 text-xs p-2 rounded-xl border outline-none font-mono uppercase">
+                                <button type="button" onclick="searchSFCode()" class="bg-slate-800 text-white text-xs px-4 py-2 rounded-xl font-bold">搜尋</button>
+                            </div>
+                            <p id="sfStatusText" class="text-[10px] text-gray-400 mt-1 hidden"></p>
+                        </div>
                     </div>
+                    
                     <div class="space-y-4">
-                        <div class="flex justify-between items-center"><p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">商品明細</p><button onclick="addItemRow()" class="text-blue-600 text-[10px] font-black underline">+ 增加品項</button></div>
+                        <div class="flex justify-between items-center">
+                            <p class="font-bold text-gray-400 text-[10px] uppercase tracking-widest">商品明細</p>
+                            <button onclick="addItemRow()" class="text-blue-600 text-[10px] font-black underline">+ 增加品項</button>
+                        </div>
                         <div id="itemsContainer" class="space-y-3">
                             <div class="item-row bg-gray-50 p-4 rounded-2xl border border-gray-100">
                                 <input type="text" placeholder="商品名稱" class="prodName w-full mb-2 p-2 rounded-lg border text-sm">
-                                <div class="grid grid-cols-3 gap-2">
-                                    <select class="prodLoc border p-2 rounded-lg text-[10px]"><option value="蝦皮">蝦皮</option><option value="7-11">7-11</option><option value="全家">全家</option><option value="宅配">宅配</option><option value="7仔預購">7仔預購</option><option value="賣貨便">賣貨便</option></select>
+                                <div class="grid grid-cols-3 gap-2 mb-2">
+                                    <select class="prodLoc border p-2 rounded-lg text-[10px]" onchange="toggleDynamicFields(this)">
+                                        <option value="蝦皮">蝦皮</option>
+                                        <option value="7-11">7-11</option>
+                                        <option value="全家">全家</option>
+                                        <option value="宅配">宅配</option>
+                                        <option value="7仔預購">7仔預購</option>
+                                        <option value="賣貨便">賣貨便</option>
+                                    </select>
                                     <input type="number" placeholder="金額" class="prodAmt border p-2 rounded-lg text-[10px]">
-                                    <select class="prodPayment border p-2 rounded-lg text-[10px]"><option value="已付">已付</option><option value="到付">到付</option><option value="待付">待付</option></select>
+                                    <select class="prodPayment border p-2 rounded-lg text-[10px]">
+                                        <option value="已付">已付</option><option value="到付">到付</option><option value="待付">待付</option>
+                                    </select>
                                 </div>
+                                <div class="dynamic-field-container"></div>
                             </div>
                         </div>
                         <button onclick="submitOrder()" class="w-full mt-4 bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg">確認儲存並提交</button>
@@ -104,11 +131,9 @@
                             <th class="px-4 pb-2 text-right">計算港幣 (HKD)</th>
                         </tr>
                     </thead>
-                    <tbody id="profitTableBody">
-                        </tbody>
+                    <tbody id="profitTableBody"></tbody>
                 </table>
             </div>
-            <p class="mt-6 text-[10px] text-gray-500 italic">註：港幣利潤公式 = (台幣總額 / 每月匯率) - (台幣總額 / 3.6)</p>
         </div>
     </div>
 
@@ -130,93 +155,121 @@
             if (currentMode === 'profit') renderProfit(); else renderOrders();
         }
 
-        // --- 核心：利潤統計渲染邏輯 ---
-        function renderProfit() {
-    const tableBody = document.getElementById('profitTableBody');
-    
-    // 按月份彙總台幣總額
-    const monthlyStats = allData.reduce((acc, obj) => {
-        const month = obj.orderDate.substring(0, 7); 
-        if (!acc[month]) {
-            acc[month] = { 
-                twdTotal: 0, 
-                // 這裡改為：如果後端沒給(undefined/null/0)，就保持 null
-                rate: (obj.monthlyRate && obj.monthlyRate > 0) ? obj.monthlyRate : null 
-            };
-        }
-        acc[month].twdTotal += parseFloat(obj.amount || 0);
-        return acc;
-    }, {});
-
-    const sortedMonths = Object.keys(monthlyStats).sort().reverse();
-
-    tableBody.innerHTML = sortedMonths.map(m => {
-        const data = monthlyStats[m];
-        let hkdDisplay = "";
-        let rateDisplay = data.rate || ""; // 匯率為空則顯示空白
-
-        // 只有匯率存在且大於 0 才能計算利潤
-        if (data.rate && data.rate > 0) {
-        const hkdProfit = (data.twdTotal / 3.6) - (data.twdTotal / data.rate);
-            const colorClass = hkdProfit >= 0 ? 'text-green-400' : 'text-red-400';
-            hkdDisplay = `<span class="${colorClass}">HKD ${Math.round(hkdProfit).toLocaleString()}</span>`;
-        } else {
-            // 如果沒匯率，顯示警告提示
-            hkdDisplay = `<span class="text-gray-600 italic text-[10px]">請先輸入匯率</span>`;
-        }
-        
-        return `
-            <tr class="bg-white/5 border-b border-white/5 text-sm">
-                <td class="p-4 font-bold text-blue-400">${m}</td>
-                <td class="p-4 font-mono">$${data.twdTotal.toLocaleString()}</td>
-                <td class="p-4">
-                    <input type="number" step="0.01" value="${rateDisplay}" 
-                        placeholder="輸入匯率"
-                        onchange="updateMonthlyRate('${m}', this.value)"
-                        class="bg-slate-800 text-white border ${data.rate ? 'border-white/10' : 'border-red-500'} rounded px-2 py-1 w-24 text-center outline-none focus:border-blue-500">
-                </td>
-                <td class="p-4 text-right font-black">
-                    ${hkdDisplay}
-                </td>
-            </tr>
-        `;
-    }).join('') || "<tr><td colspan='4' class='text-center py-10 text-gray-500'>暫無財務數據</td></tr>";
-}
-
-        // 修改匯率並同步後端
-        async function updateMonthlyRate(month, newRate) {
-            await fetch(GAS_URL, { 
-                method: 'POST', 
-                body: JSON.stringify({ action: "updateMonthlyRate", month: month, rate: newRate }), 
-                mode: 'no-cors' 
-            });
-            // 重新計算本地顯示
-            loadData();
+        async function searchSFCode() {
+            const codeInput = document.getElementById('sfCodeInput');
+            const statusText = document.getElementById('sfStatusText');
+            const code = codeInput.value.trim();
+            if (!code) return alert("請輸入順豐點碼！");
+            
+            statusText.classList.remove('hidden');
+            statusText.className = "text-[10px] text-blue-500 mt-1";
+            statusText.innerText = "🔍 搜尋中...";
+            
+            try {
+                const response = await fetch(`${GAS_URL}?action=searchSF&code=${encodeURIComponent(code)}`);
+                const result = await response.json();
+                if (result.found) {
+                    document.getElementById('fullAddress').value = result.address;
+                    statusText.className = "text-[10px] text-green-600 mt-1";
+                    statusText.innerText = "✅ 已成功找到並為您填入地址！";
+                } else {
+                    statusText.className = "text-[10px] text-red-500 mt-1";
+                    statusText.innerText = "❌ 找不到該順豐點碼。";
+                }
+            } catch (error) {
+                statusText.className = "text-[10px] text-red-500 mt-1";
+                statusText.innerText = "⚠️ 搜尋失敗。";
+            }
         }
 
-        // --- 視圖切換 ---
+        function toggleDynamicFields(selectEl) {
+            const row = selectEl.closest('.item-row');
+            const container = row.querySelector('.dynamic-field-container');
+            const val = selectEl.value;
+            container.innerHTML = "";
+            
+            if (val === "賣貨便") {
+                container.innerHTML = `<div class="mt-2"><input type="text" placeholder="請輸入賣貨便訂單號碼" class="cmxNumber w-full p-2 rounded-lg border text-xs font-mono bg-blue-50 border-blue-200 outline-none"></div>`;
+            } else if (val === "7仔預購") {
+                container.innerHTML = `<div class="mt-2 flex items-center gap-2"><span class="text-[10px] text-pink-600 font-bold shrink-0">取貨日期:</span><input type="date" class="pickupDate w-full p-2 rounded-lg border text-xs bg-pink-50 border-pink-200 outline-none"></div>`;
+            }
+        }
+
         function switchView(mode) {
             currentMode = mode;
-            // 隱藏/顯示 UI 區塊
             document.getElementById('active-ui-group').style.display = (mode === 'active') ? "block" : "none";
             document.getElementById('profitContainer').classList.toggle('hidden', mode !== 'profit');
             document.getElementById('cardContainer').classList.toggle('hidden', mode === 'profit');
             
-            // 導航樣式切換
-            const btns = ['active', 'history', 'profit'];
-            btns.forEach(b => {
+            ['active', 'history', 'profit'].forEach(b => {
                 const el = document.getElementById(`nav-${b}`);
-                if (b === mode) {
-                    el.className = "px-4 py-2 rounded-lg text-xs font-bold transition-all bg-white shadow-sm text-blue-600";
-                } else {
-                    el.className = "px-4 py-2 rounded-lg text-xs font-bold transition-all text-gray-500 hover:text-gray-700";
-                }
+                el.className = b === mode ? "px-4 py-2 rounded-lg text-xs font-bold transition-all bg-white shadow-sm text-blue-600" : "px-4 py-2 rounded-lg text-xs font-bold transition-all text-gray-500";
             });
-
             loadData();
         }
 
-        // --- 其他訂單管理邏輯 (分組、渲染、修改狀態、加單等與之前版本一致) ---
+        // 需求 3：即時點擊修改客戶地址資訊
+        async function editCustomerDetails(name, currentRcv, currentPhone, currentAddr) {
+            const newRcv = prompt("請輸入新的 收件人姓名:", currentRcv);
+            if (newRcv === null) return;
+            const newPhone = prompt("請輸入新的 電話號碼:", currentPhone);
+            if (newPhone === null) return;
+            const newAddr = prompt("請輸入新的 詳細地址:", currentAddr.split(' (運單:')[0]);
+            if (newAddr === null) return;
+
+            // 找出此人所有非結單狀態的項目列號進行批量修改
+            const targets = allData.filter(i => i.name === name && !i.fullAddress.includes("運單:"));
+            if(targets.length === 0) return alert("進行中的訂單方可修改地址欄。");
+
+            for(let item of targets) {
+                await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "updateCustomer",
+                        rowNum: item.rowNum,
+                        receiver: newRcv,
+                        phone: newPhone,
+                        fullAddress: newAddr
+                    }),
+                    mode: 'no-cors'
+                });
+            }
+            alert("✅ 地址資訊修改成功！");
+            loadData();
+        }
+
+        // 需求 1：歷史訂單點選加單，自動寫入並跳轉
+        function reuseCustomer(name) {
+            const data = allData.find(i => i.name === name);
+            if(data) {
+                document.getElementById('custName').value = data.name;
+                document.getElementById('source').value = data.source;
+                document.getElementById('receiver').value = data.receiver;
+                document.getElementById('phone').value = data.phone;
+                document.getElementById('fullAddress').value = data.fullAddress.split(' (運單:')[0];
+                
+                // 1. 自動切換回進行中 UI 視圖
+                switchView('active');
+                // 2. 絲滑滾動回網頁頂部
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // 需求 2 & 5：共通處理複製回覆句子邏輯
+        function triggerAutoCopyReply(name, trackCode) {
+            const replyMsg = `Hi ${name}～\n您的貨品已經安排順豐寄出囉！\n🚚 順豐單號：${trackCode}\n感謝您的購買 ✨`;
+            
+            // 執行系統自動複製到剪貼簿
+            navigator.clipboard.writeText(replyMsg).then(() => {
+                // 跳出彈窗供人客觀看或手動再次複製
+                document.getElementById('modalCopyText').value = replyMsg;
+                document.getElementById('copyModal').style.display = 'flex';
+            }).catch(err => {
+                document.getElementById('modalCopyText').value = replyMsg;
+                document.getElementById('copyModal').style.display = 'flex';
+            });
+        }
+
         function renderOrders() {
             const container = document.getElementById('cardContainer');
             container.innerHTML = "";
@@ -244,138 +297,135 @@
                 });
                 renderCardList(activeGroups);
             } else {
-                historyGroups.sort((a, b) => new Date(b[0].shipDate || 0) - new Date(a[0].shipDate || 0));
+                // 需求 4：歷史訂單排序優化，最新完成(shipDate最新)的訂單放最前面
+                historyGroups.sort((a, b) => {
+                    const dateA = new Date(a[0].shipDate || "1970/01/01");
+                    const dateB = new Date(b[0].shipDate || "1970/01/01");
+                    return dateB - dateA;
+                });
                 renderCardList(historyGroups);
             }
         }
 
         function renderCardList(list) {
-    const container = document.getElementById('cardContainer');
-    container.innerHTML = ""; // 清空容器
+            const container = document.getElementById('cardContainer');
+            container.innerHTML = "";
 
-    list.forEach(items => {
-        const first = items[0];
-        
-        // 1. 判斷是否所有貨品都已經「準備好寄出」(已取貨 或 已寄出)
-        const allPicked = items.every(i => i.status === '已取貨' || i.status === '已寄出');
-        
-        // 2. 判斷是否已經填寫運單結單
-        const isFinished = first.fullAddress.includes("運單:");
+            list.forEach(items => {
+                const first = items[0];
+                const allPicked = items.every(i => i.status === '已取貨' || i.status === '已寄出');
+                const isFinished = first.fullAddress.includes("運單:");
+                const displayItems = (currentMode === 'active') ? items.filter(si => si.status !== '已寄出') : items;
 
-        // 3. 過濾：在「進行中」模式下，大框內不顯示單獨「已寄出」的小項
-        // 如果是「歷史訂單」模式，則全部顯示
-        const displayItems = (currentMode === 'active') 
-            ? items.filter(si => si.status !== '已寄出') 
-            : items;
+                if (displayItems.length === 0 && currentMode === 'active') return;
 
-        // 如果在進行中模式，且過濾後沒有東西顯示（理論上不應發生），則跳過
-        if (displayItems.length === 0 && currentMode === 'active') return;
-
-        const card = document.createElement('div');
-        // 紅框邏輯：如果所有項目都 OK 了但還沒結單，就變紅框置頂
-        card.className = `bg-white rounded-3xl shadow-sm border overflow-hidden mb-4 ${ (allPicked && !isFinished) ? 'card-ready-to-ship' : 'border-gray-100'}`;
-        
-        card.innerHTML = `
-            <div class="p-4 bg-gray-50 flex justify-between items-center border-b">
-                <div class="flex items-center">
-                    <span class="badge source-${first.source} mr-2 uppercase">${first.source}</span>
-                    <b class="text-base font-black">${first.name}</b>
-                </div>
-                <div class="flex gap-1">
-                    <button onclick="reuseCustomer('${first.name}')" class="bg-green-600 text-white text-[10px] px-2 py-1 rounded-lg font-bold">+ 加單</button>
-                    <button onclick="copyAddr('${first.receiver}','${first.phone}','${first.fullAddress}')" class="bg-blue-600 text-white text-[10px] px-2 py-1 rounded-lg font-bold">📋 地址</button>
-                </div>
-            </div>
-            <div class="p-4">
-                <div class="text-[11px] text-gray-500 mb-4 bg-gray-100/50 p-2 rounded-xl">
-                    <p>收件: ${first.receiver} | ${first.phone}</p>
-                    <p class="truncate">地址: ${first.fullAddress}</p>
-                </div>
-                <div class="space-y-3">
-                    ${displayItems.map(si => `
-                        <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg">
-                            <div class="flex-1">
-                                <p class="text-xs font-black">${si.product}</p>
-                                <p class="text-[9px] text-gray-400">${si.location} | $${si.amount}</p>
-                            </div>
-                            <select onchange="updateItemStatus(${si.rowNum}, this.value)" class="badge badge-${si.status} border-none outline-none appearance-none cursor-pointer">
-                                <option value="待預購" ${si.status==='待預購'?'selected':''}>待預購</option>
-                                <option value="待取貨" ${si.status==='待取貨'?'selected':''}>待取貨</option>
-                                <option value="已取貨" ${si.status==='已取貨'?'selected':''}>已取貨</option>
-                                <option value="已寄出" ${si.status==='已寄出'?'selected':''}>已寄出</option>
-                            </select>
-                        </div>
-                    `).join('')}
-                </div>
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-3xl shadow-sm border overflow-hidden mb-4 ${ (allPicked && !isFinished) ? 'card-ready-to-ship' : 'border-gray-100'}`;
                 
-                ${/* 如果貨到齊了，顯示輸入單號結單的區域 */ 
-                  (!isFinished && allPicked) ? `
-                    <div class="mt-6 pt-4 border-t-2 border-dashed border-red-200">
-                        <div class="flex gap-2">
-                            <input type="text" id="track-${first.name}" placeholder="輸入順豐單號結單" class="flex-1 text-xs p-3 rounded-xl border-2 border-red-200 outline-none focus:border-red-500">
-                            <button onclick="shipAllByName('${first.name}')" class="bg-red-500 text-white text-xs px-6 py-2 rounded-xl font-black shadow-md hover:bg-red-600 transition-colors">全部寄出</button>
+                card.innerHTML = `
+                    <div class="p-4 bg-gray-50 flex justify-between items-center border-b">
+                        <div class="flex items-center">
+                            <span class="badge source-${first.source} mr-2 uppercase">${first.source}</span>
+                            <b class="text-base font-black">${first.name}</b>
                         </div>
-                        <p class="text-[9px] text-red-400 mt-2 font-bold text-center">⚠️ 點擊「全部寄出」後，此人所有貨品將移至歷史訂單</p>
+                        <div class="flex gap-1">
+                            <button onclick="reuseCustomer('${first.name}')" class="bg-green-600 text-white text-[10px] px-2 py-1 rounded-lg font-bold">+ 加單</button>
+                            <!-- 需求 3：增加修改地址快捷鍵 -->
+                            ${!isFinished ? `<button onclick="editCustomerDetails('${first.name}','${first.receiver}','${first.phone}','${first.fullAddress}')" class="bg-amber-500 text-white text-[10px] px-2 py-1 rounded-lg font-bold">✍️ 修改</button>` : ''}
+                            <button onclick="copyAddr('${first.receiver}','${first.phone}','${first.fullAddress}')" class="bg-blue-600 text-white text-[10px] px-2 py-1 rounded-lg font-bold">📋 地址</button>
+                        </div>
                     </div>
-                ` : ''}
-            </div>
-        `;
-        container.appendChild(card);
-    });
-}
+                    <div class="p-4">
+                        <div class="text-[11px] text-gray-500 mb-4 bg-gray-100/50 p-2 rounded-xl">
+                            <p>收件: ${first.receiver} | ${first.phone}</p>
+                            <p class="truncate">地址: ${first.fullAddress}</p>
+                            ${first.shipDate ? `<p class="text-gray-400 text-[10px] mt-1">📦 完成日期: ${first.shipDate}</p>` : ''}
+                        </div>
+                        <div class="space-y-3">
+                            ${displayItems.map(si => {
+                                let extraInfo = "";
+                                if (si.location === "賣貨便" && si.date) extraInfo = ` | 編號: ${si.date}`;
+                                return `
+                                <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg">
+                                    <div class="flex-1">
+                                        <p class="text-xs font-black">${si.product}</p>
+                                        <p class="text-[9px] text-gray-400">${si.location} ${extraInfo} | $${si.amount}</p>
+                                    </div>
+                                    <select onchange="updateItemStatus(${si.rowNum}, this.value)" class="badge badge-${si.status} border-none outline-none appearance-none cursor-pointer">
+                                        <option value="待預購" ${si.status==='待預購'?'selected':''}>待預購</option>
+                                        <option value="待取貨" ${si.status==='待取貨'?'selected':''}>待取貨</option>
+                                        <option value="已取貨" ${si.status==='已取貨'?'selected':''}>已取貨</option>
+                                        <option value="已寄出" ${si.status==='已寄出'?'selected':''}>已寄出</option>
+                                    </select>
+                                </div>
+                            `}).join('')}
+                        </div>
+                        ${(!isFinished && allPicked) ? `
+                            <div class="mt-6 pt-4 border-t-2 border-dashed border-red-200">
+                                <div class="flex gap-2">
+                                    <input type="text" id="track-${first.name}" placeholder="輸入順豐單號結單" class="flex-1 text-xs p-3 rounded-xl border-2 border-red-200 outline-none focus:border-red-500">
+                                    <button onclick="shipAllByName('${first.name}')" class="bg-red-500 text-white text-xs px-6 py-2 rounded-xl font-black shadow-md">全部寄出</button>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
 
         async function updateItemStatus(rowNum, newVal) {
             await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateField", rowNum: rowNum, field: 'status', value: newVal }), mode: 'no-cors' });
             loadData();
         }
 
+        // 需求 2 & 5：點擊全部寄出，並自動複製回覆句子
         async function shipAllByName(name) {
-            const track = document.getElementById(`track-${name}`).value;
+            const track = document.getElementById(`track-${name}`).value.trim();
             if(!track) return alert("請輸入單號");
+            
             const related = allData.filter(i => i.name === name && !i.fullAddress.includes("運單:"));
             for (let item of related) {
                 await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateField", rowNum: item.rowNum, field: 'status', value: '已寄出', tracking: track }), mode: 'no-cors' });
             }
+            
+            // 觸發自動複製與彈窗
+            triggerAutoCopyReply(name, track);
             loadData();
-        }
-
-        function reuseCustomer(name) {
-            const data = allData.find(i => i.name === name);
-            if(data) {
-                document.getElementById('custName').value = data.name;
-                document.getElementById('source').value = data.source;
-                document.getElementById('receiver').value = data.receiver;
-                document.getElementById('phone').value = data.phone;
-                document.getElementById('fullAddress').value = data.fullAddress.split(' (運單:')[0];
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
         }
 
         function addItemRow() {
             const container = document.getElementById('itemsContainer');
             const row = container.children[0].cloneNode(true);
             row.querySelectorAll('input').forEach(i => i.value = '');
+            row.querySelector('.dynamic-field-container').innerHTML = '';
             container.appendChild(row);
         }
 
         async function submitOrder() {
             const d = new Date();
+            const itemsData = Array.from(document.querySelectorAll('.item-row')).map(row => {
+                const loc = row.querySelector('.prodLoc').value;
+                let cmxNum = ""; let pickDate = "";
+                if (loc === "賣貨便") {
+                    const cmxInput = row.querySelector('.cmxNumber'); if (cmxInput) cmxNum = cmxInput.value.trim();
+                } else if (loc === "7仔預購") {
+                    const dateInput = row.querySelector('.pickupDate'); if (dateInput) pickDate = dateInput.value.replace(/-/g, '/');
+                }
+                return {
+                    productName: row.querySelector('.prodName').value, pickupLocation: loc,
+                    amount: row.querySelector('.prodAmt').value, paymentStatus: row.querySelector('.prodPayment').value,
+                    status: '待取貨', cmxNumber: cmxNum, date: pickDate 
+                };
+            });
+
             const payload = {
-                orderID: "TW"+d.getTime().toString().slice(-4),
-                customerName: document.getElementById('custName').value,
-                source: document.getElementById('source').value,
-                receiver: document.getElementById('receiver').value,
-                phone: document.getElementById('phone').value,
-                fullAddress: document.getElementById('fullAddress').value,
-                orderDate: `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`,
-                items: Array.from(document.querySelectorAll('.item-row')).map(row => ({
-                    productName: row.querySelector('.prodName').value,
-                    pickupLocation: row.querySelector('.prodLoc').value,
-                    amount: row.querySelector('.prodAmt').value,
-                    paymentStatus: row.querySelector('.prodPayment').value,
-                    status: '待取貨'
-                }))
+                orderID: "TW"+d.getTime().toString().slice(-4), customerName: document.getElementById('custName').value,
+                source: document.getElementById('source').value, receiver: document.getElementById('receiver').value,
+                phone: document.getElementById('phone').value, fullAddress: document.getElementById('fullAddress').value,
+                orderDate: `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`, items: itemsData
             };
+            
             await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
             location.reload();
         }
@@ -384,8 +434,7 @@
             const box = document.getElementById('summary-container');
             if (currentMode !== 'active') return; 
             const locs = ["蝦皮", "7-11", "全家", "宅配", "7仔預購", "賣貨便"];
-            const stats = {};
-            locs.forEach(l => stats[l] = 0);
+            const stats = {}; locs.forEach(l => stats[l] = 0);
             allData.forEach(i => {
                 if (!i.fullAddress.includes("運單:") && i.status === '待取貨') {
                     if(stats[i.location] !== undefined) stats[i.location]++;
@@ -396,6 +445,45 @@
                     <p class="text-[9px] opacity-50 font-black">${l}</p><p class="text-xl font-black mt-1">${stats[l]}</p>
                 </div>
             `).join('');
+        }
+
+        function renderProfit() {
+            const tableBody = document.getElementById('profitTableBody');
+            const monthlyStats = allData.reduce((acc, obj) => {
+                const month = obj.orderDate.substring(0, 7); 
+                if (month && month.length === 7) {
+                    if (!acc[month]) acc[month] = { twdTotal: 0, rate: (obj.monthlyRate && obj.monthlyRate > 0) ? obj.monthlyRate : null };
+                    acc[month].twdTotal += parseFloat(obj.amount || 0);
+                }
+                return acc;
+            }, {});
+
+            const sortedMonths = Object.keys(monthlyStats).sort().reverse();
+            tableBody.innerHTML = sortedMonths.map(m => {
+                const data = monthlyStats[m];
+                let hkdDisplay = "";
+                if (data.rate && data.rate > 0) {
+                    const hkdProfit = (data.twdTotal / 3.6) - (data.twdTotal / data.rate);
+                    hkdDisplay = `<span class="${hkdProfit >= 0 ? 'text-green-400' : 'text-red-400'}">HKD ${Math.round(hkdProfit).toLocaleString()}</span>`;
+                } else {
+                    hkdDisplay = `<span class="text-gray-600 italic text-[10px]">請先輸入匯率</span>`;
+                }
+                return `
+                    <tr class="bg-white/5 border-b border-white/5 text-sm">
+                        <td class="p-4 font-bold text-blue-400">${m}</td>
+                        <td class="p-4 font-mono">$${data.twdTotal.toLocaleString()}</td>
+                        <td class="p-4">
+                            <input type="number" step="0.01" value="${data.rate || ''}" placeholder="輸入匯率" onchange="updateMonthlyRate('${m}', this.value)" class="bg-slate-800 text-white border border-white/10 rounded px-2 py-1 w-24 text-center outline-none">
+                        </td>
+                        <td class="p-4 text-right font-black">${hkdDisplay}</td>
+                    </tr>
+                `;
+            }).join('') || "<tr><td colspan='4' class='text-center py-10 text-gray-500'>暫無財務數據</td></tr>";
+        }
+
+        async function updateMonthlyRate(month, newRate) {
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateMonthlyRate", month: month, rate: newRate }), mode: 'no-cors' });
+            loadData();
         }
 
         function showFilterDetail(loc) {
