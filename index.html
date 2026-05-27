@@ -8,580 +8,167 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #F4F3EF;
+            --bg: #F2F1ED;
             --surface: #FFFFFF;
-            --border: #E5E3DC;
+            --border: #E4E2DA;
             --text: #1A1A18;
-            --text-muted: #8A8880;
+            --muted: #8C8A82;
             --accent: #2563EB;
             --accent-dim: #EEF3FF;
             --green: #16A34A;
-            --green-dim: #F0FDF4;
-            --amber: #D97706;
-            --amber-dim: #FFFBEB;
             --red: #DC2626;
-            --red-dim: #FFF1F2;
-            --pink: #DB2777;
             --ink: #0F172A;
-            --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
-            --card-shadow-hover: 0 4px 12px rgba(0,0,0,0.1), 0 16px 40px rgba(0,0,0,0.08);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06);
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            padding-bottom: 80px;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 60px; }
 
-        /* ── TOP NAV ── */
-        .topbar {
-            background: var(--ink);
-            padding: 0 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 56px;
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-        .topbar-logo {
-            font-size: 13px;
-            font-weight: 900;
-            color: white;
-            letter-spacing: 0.04em;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .topbar-logo span { opacity: 0.5; font-weight: 400; }
-        .nav-pills {
-            display: flex;
-            background: rgba(255,255,255,0.08);
-            border-radius: 10px;
-            padding: 3px;
-            gap: 2px;
-        }
-        .nav-pill {
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 700;
-            color: rgba(255,255,255,0.5);
-            cursor: pointer;
-            border: none;
-            background: transparent;
-            transition: all 0.15s;
-            letter-spacing: 0.02em;
-        }
-        .nav-pill.active {
-            background: white;
-            color: var(--ink);
-        }
+        .topbar { background: var(--ink); padding: 0 16px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 13px; font-weight: 900; color: white; letter-spacing: 0.04em; display: flex; align-items: center; gap: 8px; }
+        .logo span { opacity: 0.4; font-weight: 400; }
+        .nav-pills { display: flex; background: rgba(255,255,255,0.08); border-radius: 9px; padding: 3px; gap: 2px; }
+        .nav-pill { padding: 5px 13px; border-radius: 7px; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.45); cursor: pointer; border: none; background: transparent; font-family: 'Noto Sans TC', sans-serif; transition: all 0.15s; }
+        .nav-pill.active { background: white; color: var(--ink); }
 
-        /* ── LAYOUT ── */
-        .page { max-width: 720px; margin: 0 auto; padding: 20px 16px; }
+        .page { max-width: 680px; margin: 0 auto; padding: 16px 14px; }
 
-        /* ── STAT STRIP ── */
-        .stat-strip {
-            background: var(--ink);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .stat-strip-title {
-            font-size: 10px;
-            font-weight: 700;
-            color: rgba(255,255,255,0.35);
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            margin-bottom: 14px;
-        }
-        .stat-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-        @media(min-width: 480px) { .stat-grid { grid-template-columns: repeat(6, 1fr); } }
-        .stat-item {
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 12px;
-            padding: 12px 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .stat-item:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
-        .stat-item.active-filter { background: var(--accent); border-color: var(--accent); }
-        .stat-label { font-size: 9px; color: rgba(255,255,255,0.4); font-weight: 700; letter-spacing: 0.05em; margin-bottom: 4px; }
-        .stat-count { font-size: 22px; font-weight: 900; color: white; line-height: 1; }
+        /* STAT */
+        .stat-strip { background: var(--ink); border-radius: 18px; padding: 18px; margin-bottom: 16px; }
+        .stat-strip-title { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px; }
+        .stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; }
+        @media(min-width:440px){ .stat-grid { grid-template-columns: repeat(6,1fr); } }
+        .stat-item { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 11px; padding: 11px 6px; text-align: center; cursor: pointer; transition: all 0.15s; }
+        .stat-item:hover { background: rgba(255,255,255,0.11); }
+        .stat-item.sel { background: var(--accent); border-color: var(--accent); }
+        .stat-label { font-size: 8px; color: rgba(255,255,255,0.38); font-weight: 700; letter-spacing: 0.04em; margin-bottom: 3px; }
+        .stat-count { font-size: 20px; font-weight: 900; color: white; line-height: 1; }
 
-        /* 待取貨展開區 */
-        .filter-panel {
-            display: none;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
+        .filter-panel { display: none; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.09); }
         .filter-panel.open { display: block; }
-        .filter-panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        .filter-panel-title { font-size: 11px; font-weight: 700; color: #60A5FA; }
-        .close-btn {
-            font-size: 10px;
-            background: rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.7);
-            border: none;
-            padding: 4px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
+        .fp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .fp-title { font-size: 11px; font-weight: 700; color: #60A5FA; }
+        .fp-close { font-size: 10px; background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.6); border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: 'Noto Sans TC',sans-serif; }
+        .arrival-summary { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.22); border-radius: 9px; padding: 9px 13px; margin-bottom: 9px; font-size: 11px; color: #86EFAC; font-weight: 700; }
+        .arrival-summary .amt { color: #4ADE80; font-size: 15px; font-family: 'DM Mono',monospace; }
+        .fp-item { background: rgba(255,255,255,0.06); border-radius: 9px; padding: 9px 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .fp-item-name { font-size: 12px; font-weight: 700; color: white; }
+        .fp-item-meta { font-size: 10px; color: rgba(255,255,255,0.38); margin-top: 2px; }
+        .fp-item-amt { font-size: 11px; font-family: 'DM Mono',monospace; color: #FCD34D; margin-left: 5px; }
+        .arrived-badge { background: rgba(34,197,94,0.2); color: #4ADE80; border: 1px solid rgba(34,197,94,0.28); font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 4px; margin-left: 5px; }
+        .pending-badge { background: rgba(251,191,36,0.14); color: #FCD34D; border: 1px solid rgba(251,191,36,0.24); font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 4px; margin-left: 5px; }
+        .pickup-btn { background: #2563EB; color: white; border: none; padding: 5px 11px; border-radius: 7px; font-size: 10px; font-weight: 700; cursor: pointer; white-space: nowrap; font-family: 'Noto Sans TC',sans-serif; }
 
-        /* 賣貨便到貨金額 */
-        .arrival-summary {
-            background: rgba(34,197,94,0.12);
-            border: 1px solid rgba(34,197,94,0.25);
-            border-radius: 10px;
-            padding: 10px 14px;
-            margin-bottom: 10px;
-            font-size: 11px;
-            color: #86EFAC;
-            font-weight: 700;
-        }
-        .arrival-summary .amount { color: #4ADE80; font-size: 15px; font-family: 'DM Mono', monospace; }
+        /* FORM */
+        .form-card { background: var(--surface); border-radius: 18px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); padding: 20px; margin-bottom: 16px; }
+        .section-label { font-size: 9px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+        .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .finput { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 9px; font-size: 13px; font-family: 'Noto Sans TC',sans-serif; background: #FAFAF8; color: var(--text); outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+        .finput:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.08); background: white; }
+        textarea.finput { height: 72px; resize: none; font-size: 12px; }
 
-        /* 待取貨清單 item */
-        .filter-list-item {
-            background: rgba(255,255,255,0.06);
-            border-radius: 10px;
-            padding: 10px 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-        }
-        .filter-list-item .item-name { font-size: 12px; font-weight: 700; color: white; }
-        .filter-list-item .item-meta { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; }
-        .filter-list-item .item-amount { font-size: 11px; font-family: 'DM Mono', monospace; color: #FCD34D; margin-left: 6px; }
+        .customer-search-wrap { position: relative; margin-bottom: 10px; }
+        .customer-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: white; border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow-md); z-index: 50; max-height: 180px; overflow-y: auto; display: none; }
+        .customer-dropdown.open { display: block; }
+        .cust-option { padding: 9px 12px; font-size: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .cust-option:hover { background: var(--accent-dim); }
+        .cust-option-name { font-weight: 700; }
+        .cust-option-sub { font-size: 10px; color: var(--muted); }
 
-        /* 到貨標籤 */
-        .arrived-badge {
-            background: rgba(34,197,94,0.2);
-            color: #4ADE80;
-            border: 1px solid rgba(34,197,94,0.3);
-            font-size: 9px;
-            font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 4px;
-            margin-left: 6px;
-        }
-        .pending-badge {
-            background: rgba(251,191,36,0.15);
-            color: #FCD34D;
-            border: 1px solid rgba(251,191,36,0.25);
-            font-size: 9px;
-            font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 4px;
-            margin-left: 6px;
-        }
+        .sf-box { background: #F8F9FB; border: 1px solid var(--border); border-radius: 11px; padding: 12px; margin-top: 10px; }
+        .sf-box-label { font-size: 9px; font-weight: 900; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; margin-bottom: 7px; }
+        .sf-row { display: flex; gap: 7px; }
+        .sf-status { font-size: 10px; margin-top: 5px; }
 
-        .pickup-btn {
-            background: #2563EB;
-            color: white;
-            border: none;
-            padding: 5px 12px;
-            border-radius: 7px;
-            font-size: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            white-space: nowrap;
+        @media(min-width:580px){
+            .form-two-col { display: grid; grid-template-columns: 1fr 1px 1fr; }
+            .form-divider { background: var(--border); margin: 0 16px; }
         }
+        .form-col { margin-bottom: 14px; }
+        @media(min-width:580px){ .form-col { margin-bottom: 0; } }
 
-        /* ── ADD FORM ── */
-        .form-card {
-            background: var(--surface);
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            box-shadow: var(--card-shadow);
-            padding: 24px;
-            margin-bottom: 20px;
-        }
-        .form-section-label {
-            font-size: 9px;
-            font-weight: 900;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            margin-bottom: 14px;
-        }
-        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-        .form-input {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            font-size: 13px;
-            font-family: 'Noto Sans TC', sans-serif;
-            background: #FAFAF8;
-            color: var(--text);
-            outline: none;
-            transition: border-color 0.15s, box-shadow 0.15s;
-        }
-        .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.08); background: white; }
-        textarea.form-input { height: 80px; resize: none; font-size: 12px; }
-        select.form-input { cursor: pointer; }
+        .item-row-card { background: #FAFAF8; border: 1px solid var(--border); border-radius: 11px; padding: 12px; margin-bottom: 7px; position: relative; }
+        .item-remove-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 0 2px; }
+        .item-remove-btn:hover { color: var(--red); }
 
-        .sf-search-box {
-            background: #F8F9FB;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 14px;
-            margin-top: 12px;
-        }
-        .sf-search-box .box-label {
-            font-size: 9px;
-            font-weight: 900;
-            letter-spacing: 0.1em;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-        .sf-search-row { display: flex; gap: 8px; }
-        .sf-status-text { font-size: 10px; margin-top: 6px; }
+        .quick-items { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+        .quick-item-btn { background: var(--accent-dim); color: var(--accent); border: none; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; cursor: pointer; font-family: 'Noto Sans TC',sans-serif; }
 
-        .form-divider { width: 1px; background: var(--border); margin: 0 8px; display: none; }
-        @media(min-width: 600px) {
-            .form-two-col { display: grid; grid-template-columns: 1fr 1px 1fr; gap: 0; }
-            .form-divider { display: block; }
-            .form-col { padding: 0 20px; }
-            .form-col:first-child { padding-left: 0; }
-            .form-col:last-child { padding-right: 0; }
-        }
-        .form-col { margin-bottom: 16px; }
-        @media(min-width: 600px) { .form-col { margin-bottom: 0; } }
+        .btn-primary { width: 100%; background: var(--ink); color: white; border: none; padding: 13px; border-radius: 11px; font-size: 14px; font-weight: 900; font-family: 'Noto Sans TC',sans-serif; cursor: pointer; margin-top: 14px; transition: opacity 0.15s; }
+        .btn-primary:active { opacity: 0.8; }
+        .btn-ghost { background: none; border: none; font-size: 11px; font-weight: 700; color: var(--accent); cursor: pointer; font-family: 'Noto Sans TC',sans-serif; padding: 0; }
 
-        .item-row-card {
-            background: #FAFAF8;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 8px;
-        }
-        .item-row-card input, .item-row-card select { margin-bottom: 0; }
-
-        .btn-primary {
-            width: 100%;
-            background: var(--ink);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 900;
-            font-family: 'Noto Sans TC', sans-serif;
-            cursor: pointer;
-            margin-top: 16px;
-            letter-spacing: 0.03em;
-            transition: opacity 0.15s, transform 0.1s;
-        }
-        .btn-primary:active { opacity: 0.8; transform: scale(0.99); }
-        .btn-ghost {
-            background: none;
-            border: none;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--accent);
-            cursor: pointer;
-            font-family: 'Noto Sans TC', sans-serif;
-        }
-
-        /* ── ORDER CARDS ── */
-        .order-card {
-            background: var(--surface);
-            border-radius: 20px;
-            border: 1.5px solid var(--border);
-            box-shadow: var(--card-shadow);
-            margin-bottom: 14px;
-            overflow: hidden;
-            transition: box-shadow 0.2s, border-color 0.2s;
-        }
-        .order-card:hover { box-shadow: var(--card-shadow-hover); }
-        .order-card.ready-to-ship {
-            border-color: var(--red);
-            box-shadow: 0 0 0 1px var(--red), 0 4px 20px rgba(220,38,38,0.12);
-        }
-
-        .card-header {
-            padding: 14px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            background: #FAFAF8;
-        }
-        .card-header-left { display: flex; align-items: center; gap: 8px; }
-        .card-name { font-size: 15px; font-weight: 900; color: var(--text); }
-        .card-header-right { display: flex; gap: 6px; }
-
-        .source-tag {
-            font-size: 9px;
-            font-weight: 900;
-            padding: 3px 8px;
-            border-radius: 5px;
-            color: white;
-            letter-spacing: 0.05em;
-        }
-        .source-IG { background: #E1306C; }
-        .source-WhatsApp { background: #22C55E; }
-        .source-Threads { background: #000; }
-
-        .card-body { padding: 14px 16px; }
-        .addr-block {
-            background: #F8F8F6;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 10px 12px;
-            margin-bottom: 12px;
-            font-size: 11px;
-            color: var(--text-muted);
-            line-height: 1.6;
-        }
+        /* ORDER CARDS */
+        .order-card { background: var(--surface); border-radius: 18px; border: 1.5px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 12px; overflow: hidden; }
+        .order-card.ready { border-color: var(--red); box-shadow: 0 0 0 1px var(--red), 0 4px 20px rgba(220,38,38,0.1); }
+        .card-head { padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: #FAFAF8; }
+        .card-head-left { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+        .card-name { font-size: 15px; font-weight: 900; }
+        .card-head-right { display: flex; gap: 5px; flex-shrink: 0; }
+        .src-tag { font-size: 9px; font-weight: 900; padding: 3px 7px; border-radius: 4px; color: white; }
+        .src-IG { background: #E1306C; }
+        .src-WhatsApp { background: #22C55E; }
+        .src-Threads { background: #111; }
+        .card-body { padding: 12px 14px; }
+        .addr-block { background: #F8F8F6; border: 1px solid var(--border); border-radius: 9px; padding: 9px 11px; margin-bottom: 10px; font-size: 11px; color: var(--muted); line-height: 1.65; }
         .addr-block strong { color: var(--text); font-weight: 700; }
-
-        /* 商品行 */
-        .item-line {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 10px;
-            border-radius: 8px;
-            margin-bottom: 5px;
-            background: #F8F8F6;
-            border: 1px solid var(--border);
-        }
+        .note-row { display: flex; align-items: center; gap: 6px; margin-top: 5px; }
+        .note-text { font-size: 11px; color: #D97706; font-weight: 700; flex: 1; }
+        .note-edit-btn { font-size: 10px; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0; }
+        .copy-list-btn { font-size: 10px; font-weight: 700; color: var(--muted); background: none; border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: 'Noto Sans TC',sans-serif; margin-top: 8px; }
+        .copy-list-btn.copied { border-color: var(--green); color: var(--green); }
+        .item-line { display: flex; justify-content: space-between; align-items: center; padding: 7px 9px; border-radius: 7px; margin-bottom: 4px; background: #F8F8F6; border: 1px solid var(--border); }
         .item-line-left { flex: 1; min-width: 0; }
-        .item-product { font-size: 12px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .item-meta-row { display: flex; align-items: center; gap: 6px; margin-top: 2px; flex-wrap: wrap; }
-        .item-loc { font-size: 10px; color: var(--text-muted); }
-        .item-price { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--text-muted); }
-
-        /* 賣貨便到貨顯示 */
-        .arrival-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            font-size: 9px;
-            font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 4px;
-            white-space: nowrap;
-        }
-        .arrival-tag.arrived {
-            background: #DCFCE7;
-            color: #15803D;
-            border: 1px solid #BBF7D0;
-        }
-        .arrival-tag.pending {
-            background: #FEF9C3;
-            color: #A16207;
-            border: 1px solid #FEF08A;
-        }
-
-        /* 狀態下拉 */
-        .status-select {
-            font-size: 9px;
-            font-weight: 900;
-            padding: 4px 8px;
-            border-radius: 5px;
-            color: white;
-            border: none;
-            outline: none;
-            cursor: pointer;
-            appearance: none;
-            -webkit-appearance: none;
-        }
-        .status-待預購 { background: #EC4899; }
-        .status-待取貨 { background: #F59E0B; }
-        .status-已取貨 { background: #10B981; }
-        .status-已寄出 { background: #9CA3AF; }
-
-        /* 結單區 */
-        .ship-zone {
-            margin-top: 14px;
-            padding-top: 14px;
-            border-top: 2px dashed #FCA5A5;
-        }
-        .ship-zone-label {
-            font-size: 9px;
-            font-weight: 900;
-            letter-spacing: 0.08em;
-            color: var(--red);
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-        .ship-row { display: flex; gap: 8px; }
-        .ship-input {
-            flex: 1;
-            padding: 10px 12px;
-            border: 1.5px solid #FCA5A5;
-            border-radius: 10px;
-            font-size: 12px;
-            font-family: 'DM Mono', monospace;
-            outline: none;
-            transition: border-color 0.15s;
-        }
+        .item-product { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-metas { display: flex; align-items: center; gap: 5px; margin-top: 2px; flex-wrap: wrap; }
+        .item-loc { font-size: 10px; color: var(--muted); }
+        .item-price { font-size: 10px; font-family: 'DM Mono',monospace; color: var(--muted); }
+        .arr-tag { display: inline-flex; align-items: center; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+        .arr-tag.arrived { background: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0; }
+        .arr-tag.pending { background: #FEF9C3; color: #A16207; border: 1px solid #FEF08A; }
+        .status-sel { font-size: 9px; font-weight: 900; padding: 4px 8px; border-radius: 5px; color: white; border: none; outline: none; cursor: pointer; -webkit-appearance: none; font-family: 'Noto Sans TC',sans-serif; }
+        .s-待預購 { background: #EC4899; }
+        .s-待取貨 { background: #F59E0B; }
+        .s-已取貨 { background: #10B981; }
+        .s-已寄出 { background: #9CA3AF; }
+        .ship-zone { margin-top: 12px; padding-top: 12px; border-top: 2px dashed #FCA5A5; }
+        .ship-zone-label { font-size: 9px; font-weight: 900; letter-spacing: 0.08em; color: var(--red); text-transform: uppercase; margin-bottom: 7px; }
+        .ship-row { display: flex; gap: 7px; }
+        .ship-input { flex: 1; padding: 9px 11px; border: 1.5px solid #FCA5A5; border-radius: 9px; font-size: 12px; font-family: 'DM Mono',monospace; outline: none; }
         .ship-input:focus { border-color: var(--red); }
-        .ship-btn {
-            background: var(--red);
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 900;
-            font-family: 'Noto Sans TC', sans-serif;
-            cursor: pointer;
-            white-space: nowrap;
-        }
+        .ship-btn { background: var(--red); color: white; border: none; padding: 9px 16px; border-radius: 9px; font-size: 12px; font-weight: 900; font-family: 'Noto Sans TC',sans-serif; cursor: pointer; white-space: nowrap; }
+        .mbtn { font-size: 10px; font-weight: 700; padding: 5px 9px; border-radius: 6px; border: none; cursor: pointer; font-family: 'Noto Sans TC',sans-serif; white-space: nowrap; }
+        .mbtn-g { background: #DCFCE7; color: #15803D; }
+        .mbtn-a { background: #FEF3C7; color: #92400E; }
+        .mbtn-b { background: var(--accent-dim); color: var(--accent); }
 
-        /* 小按鈕 */
-        .mini-btn {
-            font-size: 10px;
-            font-weight: 700;
-            padding: 5px 10px;
-            border-radius: 7px;
-            border: none;
-            cursor: pointer;
-            font-family: 'Noto Sans TC', sans-serif;
-            transition: opacity 0.15s;
-        }
-        .mini-btn:active { opacity: 0.7; }
-        .mini-btn-green { background: #DCFCE7; color: #15803D; }
-        .mini-btn-amber { background: #FEF3C7; color: #92400E; }
-        .mini-btn-blue { background: var(--accent-dim); color: var(--accent); }
+        /* PROFIT */
+        .profit-wrap { background: var(--ink); border-radius: 18px; padding: 22px; color: white; }
+        .profit-title { font-size: 16px; font-weight: 900; margin-bottom: 18px; }
+        .profit-table { width: 100%; border-collapse: separate; border-spacing: 0 5px; }
+        .profit-table th { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.28); padding: 3px 11px; text-align: left; }
+        .profit-table td { padding: 11px; background: rgba(255,255,255,0.05); font-size: 12px; }
+        .profit-table td:first-child { border-radius: 9px 0 0 9px; font-weight: 700; color: #60A5FA; }
+        .profit-table td:last-child { border-radius: 0 9px 9px 0; text-align: right; font-weight: 900; }
+        .profit-input { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); color: white; border-radius: 7px; padding: 5px 9px; width: 88px; text-align: center; font-size: 12px; font-family: 'DM Mono',monospace; outline: none; }
 
-        /* ── HISTORY SHIPPED BADGE ── */
-        .shipped-info {
-            font-size: 10px;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
+        /* MODAL */
+        .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.72); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
+        .modal-bg.open { display: flex; }
+        .modal-box { background: white; border-radius: 22px; padding: 24px; max-width: 360px; width: 100%; }
+        .modal-title { font-size: 16px; font-weight: 900; margin-bottom: 5px; }
+        .modal-sub { font-size: 11px; color: var(--muted); margin-bottom: 13px; }
+        .modal-textarea { width: 100%; height: 110px; border: 1px solid var(--border); border-radius: 11px; padding: 11px; font-size: 12px; background: #FAFAF8; resize: none; outline: none; font-family: 'Noto Sans TC',sans-serif; margin-bottom: 13px; }
 
-        /* ── PROFIT TABLE ── */
-        .profit-wrap {
-            background: var(--ink);
-            border-radius: 20px;
-            padding: 24px;
-            color: white;
-        }
-        .profit-title {
-            font-size: 16px;
-            font-weight: 900;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .profit-icon {
-            background: rgba(255,255,255,0.1);
-            padding: 8px;
-            border-radius: 10px;
-            font-size: 18px;
-        }
-        .profit-table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
-        .profit-table th {
-            font-size: 9px;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.3);
-            padding: 4px 12px;
-            text-align: left;
-        }
-        .profit-table td { padding: 12px; background: rgba(255,255,255,0.05); font-size: 13px; }
-        .profit-table td:first-child { border-radius: 10px 0 0 10px; font-weight: 700; color: #60A5FA; }
-        .profit-table td:last-child { border-radius: 0 10px 10px 0; text-align: right; font-weight: 900; }
-        .profit-input {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.15);
-            color: white;
-            border-radius: 7px;
-            padding: 5px 10px;
-            width: 90px;
-            text-align: center;
-            font-size: 12px;
-            font-family: 'DM Mono', monospace;
-            outline: none;
-        }
-
-        /* ── COPY MODAL ── */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.75);
-            z-index: 200;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-        }
-        .modal-overlay.open { display: flex; }
-        .modal-box {
-            background: white;
-            border-radius: 24px;
-            padding: 28px;
-            max-width: 380px;
-            width: 100%;
-            box-shadow: 0 24px 80px rgba(0,0,0,0.25);
-        }
-        .modal-title { font-size: 16px; font-weight: 900; color: var(--green); margin-bottom: 6px; }
-        .modal-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 14px; }
-        .modal-textarea {
-            width: 100%;
-            height: 120px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 12px;
-            background: #FAFAF8;
-            resize: none;
-            outline: none;
-            margin-bottom: 14px;
-            font-family: 'Noto Sans TC', sans-serif;
-        }
-
-        /* ── LOADING ── */
-        .loading { text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 13px; font-weight: 700; }
-        .loading-dot { animation: blink 1.4s infinite; }
-        .loading-dot:nth-child(2) { animation-delay: 0.2s; }
-        .loading-dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes blink { 0%,80%,100%{opacity:0} 40%{opacity:1} }
-
-        /* ── EMPTY ── */
-        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
-        .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
-        .empty-state p { font-size: 13px; font-weight: 700; }
-
-        /* ── 超小螢幕 ── */
-        @media(max-width: 380px) {
-            .card-header { flex-wrap: wrap; gap: 8px; }
-            .card-header-right { flex-wrap: wrap; }
-        }
+        .loading { text-align: center; padding: 50px 20px; color: var(--muted); font-size: 13px; font-weight: 700; }
+        .empty-state { text-align: center; padding: 50px 20px; color: var(--muted); }
+        .empty-icon { font-size: 36px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-<!-- TOP NAV -->
 <header class="topbar">
-    <div class="topbar-logo">🇹🇼 <span>台灣代購</span> 訂單管理</div>
+    <div class="logo">🇹🇼 <span>台灣代購</span> 訂單管理</div>
     <nav class="nav-pills">
         <button class="nav-pill active" onclick="switchView('active')" id="nav-active">進行中</button>
         <button class="nav-pill" onclick="switchView('history')" id="nav-history">歷史</button>
@@ -589,555 +176,380 @@
     </nav>
 </header>
 
-<!-- COPY MODAL -->
-<div class="modal-overlay" id="copyModal">
+<div class="modal-bg" id="copyModal">
     <div class="modal-box">
-        <div class="modal-title">✨ 已複製回覆句子</div>
-        <p class="modal-sub">可直接貼給客人，或手動複製下方文字：</p>
+        <div class="modal-title" style="color:#16A34A;">✨ 已複製通知訊息</div>
+        <p class="modal-sub">直接貼給客人，或手動複製下方文字：</p>
         <textarea class="modal-textarea" id="modalCopyText" readonly></textarea>
         <button class="btn-primary" style="margin-top:0" onclick="document.getElementById('copyModal').classList.remove('open')">確認關閉</button>
     </div>
 </div>
 
-<!-- MAIN -->
 <main class="page">
-
-    <!-- === 進行中 / 表單 === -->
     <div id="view-active">
-
-        <!-- 統計卡 -->
         <div class="stat-strip">
             <div class="stat-strip-title">待取貨商品 — 點擊查看清單</div>
             <div class="stat-grid" id="stat-grid"></div>
             <div class="filter-panel" id="filter-panel">
-                <div class="filter-panel-header">
-                    <div class="filter-panel-title" id="filter-panel-title"></div>
-                    <button class="close-btn" onclick="closeFilter()">關閉 ✕</button>
+                <div class="fp-header">
+                    <div class="fp-title" id="fp-title"></div>
+                    <button class="fp-close" onclick="closeFilter()">關閉 ✕</button>
                 </div>
-                <div id="arrival-summary-box"></div>
-                <div id="filter-list" style="max-height:280px;overflow-y:auto;"></div>
+                <div id="arrival-box"></div>
+                <div id="fp-list" style="max-height:260px;overflow-y:auto;"></div>
             </div>
         </div>
 
-        <!-- 新增訂單表單 -->
         <div class="form-card">
-            <div style="margin-bottom:18px;">
-                <div class="form-section-label" style="margin-bottom:16px;">新增訂單</div>
-                <div class="form-two-col">
-                    <div class="form-col">
-                        <div class="form-section-label">客戶資訊</div>
-                        <div class="form-grid-2">
-                            <input type="text" class="form-input" id="custName" placeholder="客戶名稱">
-                            <select class="form-input" id="source">
-                                <option>IG</option><option>WhatsApp</option><option>Threads</option>
-                            </select>
-                        </div>
-                        <div class="form-grid-2">
-                            <input type="text" class="form-input" id="receiver" placeholder="收件人">
-                            <input type="text" class="form-input" id="phone" placeholder="電話">
-                        </div>
-                        <textarea class="form-input" id="fullAddress" placeholder="詳細地址…"></textarea>
-
-                        <div class="sf-search-box">
-                            <div class="box-label">📦 順豐點碼查詢</div>
-                            <div class="sf-search-row">
-                                <input type="text" class="form-input" id="sfCodeInput" placeholder="例：852TAM" style="font-family:'DM Mono',monospace;text-transform:uppercase;">
-                                <button class="mini-btn mini-btn-blue" onclick="searchSFCode()" style="white-space:nowrap;">搜尋</button>
-                            </div>
-                            <div id="sfStatusText" style="display:none;" class="sf-status-text"></div>
-                        </div>
+            <div class="section-label" style="margin-bottom:16px;">＋ 新增訂單</div>
+            <div class="form-two-col">
+                <div class="form-col">
+                    <div class="section-label">客戶資訊</div>
+                    <div class="customer-search-wrap">
+                        <input type="text" class="finput" id="custName" placeholder="客戶名稱（輸入可搜尋舊客戶）" oninput="onCustInput()" onblur="closeCustDropdown()" autocomplete="off">
+                        <div class="customer-dropdown" id="custDropdown"></div>
                     </div>
-                    <div class="form-divider"></div>
-                    <div class="form-col">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-                            <div class="form-section-label" style="margin-bottom:0;">商品明細</div>
-                            <button class="btn-ghost" onclick="addItemRow()">+ 增加品項</button>
-                        </div>
-                        <div id="itemsContainer"></div>
+                    <div class="g2">
+                        <select class="finput" id="source"><option>IG</option><option>WhatsApp</option><option>Threads</option></select>
+                        <input type="text" class="finput" id="receiver" placeholder="收件人">
                     </div>
+                    <div style="margin-bottom:10px;">
+                        <input type="text" class="finput" id="phone" placeholder="電話">
+                    </div>
+                    <textarea class="finput" id="fullAddress" placeholder="詳細地址…"></textarea>
+                    <div class="sf-box">
+                        <div class="sf-box-label">📦 順豐點碼查詢</div>
+                        <div class="sf-row">
+                            <input type="text" class="finput" id="sfCodeInput" placeholder="例：852TAM" style="font-family:'DM Mono',monospace;text-transform:uppercase;">
+                            <button class="mbtn mbtn-b" onclick="searchSFCode()" style="padding:8px 14px;">搜尋</button>
+                        </div>
+                        <div id="sfStatus" class="sf-status" style="display:none;"></div>
+                    </div>
+                </div>
+                <div class="form-divider"></div>
+                <div class="form-col">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <div class="section-label" style="margin-bottom:0;">商品明細</div>
+                        <button class="btn-ghost" onclick="addItemRow()">+ 增加品項</button>
+                    </div>
+                    <div class="quick-items" id="quickItems">
+                        <span style="font-size:9px;color:var(--muted);font-weight:700;line-height:24px;white-space:nowrap;">常用：</span>
+                    </div>
+                    <div id="itemsContainer"></div>
                 </div>
             </div>
             <button class="btn-primary" onclick="submitOrder()">確認儲存並提交 →</button>
         </div>
 
-        <!-- 訂單卡片 -->
-        <div id="cardContainer">
-            <div class="loading">資料讀取中<span class="loading-dot">.</span><span class="loading-dot">.</span><span class="loading-dot">.</span></div>
-        </div>
+        <div id="cardContainer"><div class="loading">資料讀取中…</div></div>
     </div>
 
-    <!-- === 歷史 === -->
     <div id="view-history" style="display:none;">
-        <div id="historyContainer">
-            <div class="loading">資料讀取中<span class="loading-dot">.</span><span class="loading-dot">.</span><span class="loading-dot">.</span></div>
-        </div>
+        <div id="historyContainer"><div class="loading">資料讀取中…</div></div>
     </div>
 
-    <!-- === 利潤 === -->
     <div id="view-profit" style="display:none;">
         <div class="profit-wrap">
-            <div class="profit-title"><span class="profit-icon">💰</span> 每月利潤分析</div>
+            <div class="profit-title">💰 每月利潤分析</div>
             <div style="overflow-x:auto;">
                 <table class="profit-table">
-                    <thead>
-                        <tr>
-                            <th>月份</th>
-                            <th>台幣總額 (TWD)</th>
-                            <th>設定匯率</th>
-                            <th style="text-align:right;">港幣利潤 (HKD)</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>月份</th><th>台幣總額</th><th>設定匯率</th><th style="text-align:right;">港幣利潤</th></tr></thead>
                     <tbody id="profitTableBody"></tbody>
                 </table>
             </div>
         </div>
     </div>
-
 </main>
 
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycby5vPRE71thYhYY-4XDMZ2oByLBsaZmy_FQPHzjHvAthhCTFmUCC29SycppE4d7pJ4mWA/exec";
-let allData = [];
-let currentMode = 'active';
-let activeFilter = null;
+const QUICK_ITEMS = ["Lativ上衣","Lativ褲子","無印良品","GU外套","寶雅保養品","711零食"];
 
-window.onload = () => {
-    buildDefaultItemRow();
-    loadData();
-};
+let allData = [], currentMode = 'active', activeFilter = null;
 
-// ── DATA ──
+window.onload = () => { buildQuickItems(); addItemRow(); loadData(); };
+
 async function loadData() {
-    try {
-        const res = await fetch(GAS_URL + "?t=" + Date.now());
-        allData = await res.json();
-    } catch(e) {
-        console.error("載入失敗", e);
-    }
+    try { const r = await fetch(GAS_URL+"?t="+Date.now()); allData = await r.json(); } catch(e) { console.error(e); }
     render();
 }
 
 function render() {
-    if (currentMode === 'active') {
-        renderStats();
-        renderOrders('active', 'cardContainer');
-    } else if (currentMode === 'history') {
-        renderOrders('history', 'historyContainer');
-    } else {
-        renderProfit();
-    }
+    if (currentMode==='active') { renderStats(); renderOrders('active','cardContainer'); }
+    else if (currentMode==='history') { renderOrders('history','historyContainer'); }
+    else renderProfit();
 }
 
-// ── SWITCH VIEW ──
 function switchView(mode) {
     currentMode = mode;
     ['active','history','profit'].forEach(v => {
-        document.getElementById(`view-${v}`).style.display = v === mode ? 'block' : 'none';
-        const btn = document.getElementById(`nav-${v}`);
-        btn.classList.toggle('active', v === mode);
+        document.getElementById('view-'+v).style.display = v===mode?'block':'none';
+        document.getElementById('nav-'+v).classList.toggle('active', v===mode);
     });
     render();
 }
 
-// ── STATS ──
+// QUICK ITEMS
+function buildQuickItems() {
+    const box = document.getElementById('quickItems');
+    QUICK_ITEMS.forEach(name => {
+        const btn = document.createElement('button');
+        btn.className = 'quick-item-btn'; btn.textContent = name;
+        btn.onclick = () => {
+            const inputs = Array.from(document.querySelectorAll('.prodName'));
+            let t = inputs.find(i => !i.value);
+            if (!t) { addItemRow(); t = document.querySelectorAll('.prodName')[document.querySelectorAll('.prodName').length-1]; }
+            t.value = name; t.focus();
+        };
+        box.appendChild(btn);
+    });
+}
+
+// CUSTOMER SEARCH
+function onCustInput() {
+    const val = document.getElementById('custName').value.trim().toLowerCase();
+    const dd = document.getElementById('custDropdown');
+    if (!val) { dd.classList.remove('open'); return; }
+    const seen = new Set();
+    const matches = allData.filter(i => {
+        if (i.name.toLowerCase().includes(val) && !seen.has(i.name)) { seen.add(i.name); return true; }
+        return false;
+    }).slice(0,6);
+    if (!matches.length) { dd.classList.remove('open'); return; }
+    dd.innerHTML = matches.map(i =>
+        '<div class="cust-option" onmousedown="fillCustomer(\''+i.name+'\')"><span class="cust-option-name">'+i.name+'</span><span class="cust-option-sub">'+i.receiver+' · '+i.phone+'</span></div>'
+    ).join('');
+    dd.classList.add('open');
+}
+function fillCustomer(name) {
+    const d = allData.find(i => i.name===name); if (!d) return;
+    document.getElementById('custName').value = d.name;
+    document.getElementById('source').value = d.source;
+    document.getElementById('receiver').value = d.receiver;
+    document.getElementById('phone').value = d.phone;
+    document.getElementById('fullAddress').value = d.fullAddress.split(' (運單:')[0];
+    closeCustDropdown();
+}
+function closeCustDropdown() { setTimeout(()=>document.getElementById('custDropdown').classList.remove('open'),150); }
+
+// STATS
 function renderStats() {
     const locs = ["蝦皮","7-11","全家","宅配","7仔預購","賣貨便"];
-    const stats = {};
-    locs.forEach(l => stats[l] = 0);
-    allData.forEach(i => {
-        if (!i.fullAddress.includes("運單:") && i.status === '待取貨') {
-            if (stats[i.location] !== undefined) stats[i.location]++;
-        }
-    });
-    document.getElementById('stat-grid').innerHTML = locs.map(l => `
-        <div class="stat-item${activeFilter===l?' active-filter':''}" onclick="toggleFilter('${l}')">
-            <div class="stat-label">${l}</div>
-            <div class="stat-count">${stats[l]}</div>
-        </div>
-    `).join('');
+    const stats = {}; locs.forEach(l=>stats[l]=0);
+    allData.forEach(i => { if(!i.fullAddress.includes("運單:")&&i.status==='待取貨'&&stats[i.location]!==undefined) stats[i.location]++; });
+    document.getElementById('stat-grid').innerHTML = locs.map(l=>
+        '<div class="stat-item'+(activeFilter===l?' sel':'')+'" onclick="toggleFilter(\''+l+'\')"><div class="stat-label">'+l+'</div><div class="stat-count">'+stats[l]+'</div></div>'
+    ).join('');
 }
 
-function toggleFilter(loc) {
-    if (activeFilter === loc) {
-        closeFilter();
-        return;
-    }
-    activeFilter = loc;
-    renderStats();
-    showFilter(loc);
-}
+function toggleFilter(loc) { if(activeFilter===loc){closeFilter();return;} activeFilter=loc; renderStats(); openFilter(loc); }
+function closeFilter() { activeFilter=null; renderStats(); document.getElementById('filter-panel').classList.remove('open'); }
 
-function closeFilter() {
-    activeFilter = null;
-    renderStats();
-    document.getElementById('filter-panel').classList.remove('open');
-}
-
-function showFilter(loc) {
-    const panel = document.getElementById('filter-panel');
-    panel.classList.add('open');
-    document.getElementById('filter-panel-title').textContent = `📍 ${loc} · 待取貨清單`;
-
-    const filtered = allData.filter(i =>
-        i.location === loc && i.status === '待取貨' && !i.fullAddress.includes("運單:")
-    );
-
-    // 賣貨便：計算可取貨金額
-    const summaryBox = document.getElementById('arrival-summary-box');
-    if (loc === "賣貨便") {
-        const arrivedItems = filtered.filter(i => i.arrivalDate && i.arrivalDate.trim() !== "");
-        const total = arrivedItems.reduce((s, i) => s + parseFloat(i.amount || 0), 0);
-        summaryBox.innerHTML = arrivedItems.length > 0
-            ? `<div class="arrival-summary">📦 已到貨商品共 <strong style="color:#4ADE80">${arrivedItems.length} 件</strong>，取貨時需付款：<span class="amount">NT$ ${total.toLocaleString()}</span></div>`
-            : `<div class="arrival-summary" style="background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.2);color:#FDE68A;">⏳ 目前尚無賣貨便商品到貨</div>`;
-    } else {
-        summaryBox.innerHTML = '';
-    }
-
-    // 渲染清單
-    document.getElementById('filter-list').innerHTML = filtered.length
-        ? filtered.map(i => {
-            const isArrived = i.arrivalDate && i.arrivalDate.trim() !== "";
-            const arrivalTag = (i.location === "賣貨便")
-                ? (isArrived
-                    ? `<span class="arrived-badge">✓ 已到貨 ${i.arrivalDate}</span>`
-                    : `<span class="pending-badge">⏳ 待到貨</span>`)
-                : '';
-            return `
-            <div class="filter-list-item">
-                <div style="flex:1;min-width:0;">
-                    <div class="item-name">${i.product} <span class="item-amount">$${parseFloat(i.amount||0)}</span>${arrivalTag}</div>
-                    <div class="item-meta">${i.name}${i.arrivalDate && i.location==='賣貨便' ? ` · 到貨日 ${i.arrivalDate}` : ''}</div>
-                </div>
-                <button class="pickup-btn" onclick="updateItemStatus(${i.rowNum},'已取貨')">已取貨</button>
-            </div>`;
+function openFilter(loc) {
+    document.getElementById('filter-panel').classList.add('open');
+    document.getElementById('fp-title').textContent = '📍 '+loc+' · 待取貨清單';
+    const items = allData.filter(i=>i.location===loc&&i.status==='待取貨'&&!i.fullAddress.includes("運單:"));
+    const abox = document.getElementById('arrival-box');
+    if (loc==="賣貨便") {
+        const arrived = items.filter(i=>i.arrivalDate&&i.arrivalDate.trim());
+        const total = arrived.reduce((s,i)=>s+parseFloat(i.amount||0),0);
+        abox.innerHTML = arrived.length
+            ? '<div class="arrival-summary">📦 已到貨 <strong style="color:#4ADE80">'+arrived.length+' 件</strong>，取貨時應付：<span class="amt">NT$ '+total.toLocaleString()+'</span></div>'
+            : '<div class="arrival-summary" style="background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.2);color:#FDE68A;">⏳ 目前尚無賣貨便商品到貨</div>';
+    } else { abox.innerHTML=''; }
+    document.getElementById('fp-list').innerHTML = items.length
+        ? items.map(i => {
+            const isA = i.arrivalDate&&i.arrivalDate.trim();
+            const badge = loc==="賣貨便" ? (isA?'<span class="arrived-badge">✓ 已到貨</span>':'<span class="pending-badge">⏳ 待到貨</span>') : '';
+            return '<div class="fp-item"><div style="flex:1;min-width:0;"><div class="fp-item-name">'+i.product+'<span class="fp-item-amt">$'+parseFloat(i.amount||0)+'</span>'+badge+'</div><div class="fp-item-meta">'+i.name+(isA&&loc==="賣貨便"?' · 到貨日 '+i.arrivalDate:'')+'</div></div><button class="pickup-btn" onclick="quickPickup('+i.rowNum+')">已取貨</button></div>';
         }).join('')
-        : `<div style="color:rgba(255,255,255,0.3);font-size:12px;padding:12px;">暫無項目</div>`;
+        : '<div style="color:rgba(255,255,255,0.28);font-size:12px;padding:10px;">暫無項目</div>';
 }
 
-// ── ORDERS ──
-function groupByName(data) {
-    return data.reduce((acc, obj) => {
-        if (!acc[obj.name]) acc[obj.name] = [];
-        acc[obj.name].push(obj);
-        return acc;
-    }, {});
-}
+async function quickPickup(rowNum) { await postGAS({action:"updateField",rowNum,field:'status',value:'已取貨'}); loadData(); }
 
-function renderOrders(mode, containerId) {
-    const container = document.getElementById(containerId);
-    const groups = groupByName(allData);
-    let list = Object.values(groups);
+// ORDERS
+function groupByName(data) { return data.reduce((acc,obj)=>{(acc[obj.name]=acc[obj.name]||[]).push(obj);return acc;},{}); }
 
-    if (mode === 'active') {
-        // 只顯示「還有進行中商品」的客戶
-        list = list.filter(items => items.some(i => i.status !== '已寄出' && !i.fullAddress.includes("運單:")));
-        // 排序：全部已取貨優先（可寄出）→ 新訂單在前
-        list.sort((a, b) => {
-            const aReady = a.filter(i => !i.fullAddress.includes("運單:")).every(i => i.status === '已取貨' || i.status === '已寄出');
-            const bReady = b.filter(i => !i.fullAddress.includes("運單:")).every(i => i.status === '已取貨' || i.status === '已寄出');
-            if (aReady !== bReady) return aReady ? -1 : 1;
-            return b[0].rowNum - a[0].rowNum;
+function renderOrders(mode, cid) {
+    const container = document.getElementById(cid);
+    const groups = Object.values(groupByName(allData));
+    let list = mode==='active'
+        ? groups.filter(g=>g.some(i=>i.status!=='已寄出'&&!i.fullAddress.includes("運單:")))
+        : groups.filter(g=>g.every(i=>i.status==='已寄出'||i.fullAddress.includes("運單:")));
+    if (mode==='active') {
+        list.sort((a,b)=>{
+            const ai=a.filter(i=>!i.fullAddress.includes("運單:")), bi=b.filter(i=>!i.fullAddress.includes("運單:"));
+            const aR=ai.length>0&&ai.every(i=>i.status==='已取貨'), bR=bi.length>0&&bi.every(i=>i.status==='已取貨');
+            if(aR!==bR) return aR?-1:1;
+            return b[0].rowNum-a[0].rowNum;
         });
-    } else {
-        list = list.filter(items => items.every(i => i.status === '已寄出' || i.fullAddress.includes("運單:")));
-        list.sort((a, b) => new Date(b[0].shipDate || "1970/01/01") - new Date(a[0].shipDate || "1970/01/01"));
-    }
-
-    if (list.length === 0) {
-        container.innerHTML = `<div class="empty-state"><div class="icon">${mode==='active'?'✅':'📭'}</div><p>${mode==='active'?'目前沒有進行中的訂單':'尚無歷史訂單'}</p></div>`;
+    } else { list.sort((a,b)=>new Date(b[0].shipDate||"1970/1/1")-new Date(a[0].shipDate||"1970/1/1")); }
+    if (!list.length) {
+        container.innerHTML='<div class="empty-state"><div class="empty-icon">'+(mode==='active'?'✅':'📭')+'</div><p>'+(mode==='active'?'目前沒有進行中的訂單':'尚無歷史訂單')+'</p></div>';
         return;
     }
-
-    container.innerHTML = list.map(items => buildCard(items, mode)).join('');
+    container.innerHTML = list.map(g=>buildCard(g,mode)).filter(Boolean).join('');
 }
 
 function buildCard(items, mode) {
     const first = items[0];
     const isFinished = first.fullAddress.includes("運單:");
-    const activeItems = items.filter(i => i.status !== '已寄出' && !i.fullAddress.includes("運單:"));
-    const displayItems = mode === 'active' ? activeItems : items;
-    if (displayItems.length === 0) return '';
-
-    const allPicked = activeItems.length > 0 && activeItems.every(i => i.status === '已取貨');
-    const cardClass = (allPicked && !isFinished) ? 'order-card ready-to-ship' : 'order-card';
-
-    const addrDisplay = first.fullAddress.split(' (運單:')[0];
+    const activeItems = items.filter(i=>i.status!=='已寄出'&&!i.fullAddress.includes("運單:"));
+    const displayItems = mode==='active'?activeItems:items;
+    if (!displayItems.length) return '';
+    const allPicked = activeItems.length>0&&activeItems.every(i=>i.status==='已取貨');
+    const addrClean = first.fullAddress.split(' (運單:')[0];
     const trackMatch = first.fullAddress.match(/\(運單:(.+)\)/);
-    const trackCode = trackMatch ? trackMatch[1] : '';
+    const track = trackMatch?trackMatch[1]:'';
+    const noteItem = items.find(i=>i.note&&i.note.trim());
+    const noteText = noteItem?noteItem.note:'';
 
-    const itemLines = displayItems.map(si => {
-        const isArrived = si.arrivalDate && si.arrivalDate.trim() !== "";
-        const arrivalTag = (si.location === "賣貨便")
-            ? (isArrived
-                ? `<span class="arrival-tag arrived">✓ ${si.arrivalDate} 已到貨</span>`
-                : `<span class="arrival-tag pending">⏳ 運送中</span>`)
+    const lines = displayItems.map(si => {
+        const isA = si.arrivalDate&&si.arrivalDate.trim();
+        const arrTag = si.location==="賣貨便"
+            ? (isA?'<span class="arr-tag arrived">✓ '+si.arrivalDate+' 已到貨</span>':'<span class="arr-tag pending">⏳ 待到貨</span>')
             : '';
-        const cmxInfo = si.location === "賣貨便" && si.date ? ` · 編號 ${si.date}` : '';
-
-        return `
-        <div class="item-line">
-            <div class="item-line-left">
-                <div class="item-product">${si.product}</div>
-                <div class="item-meta-row">
-                    <span class="item-loc">${si.location}${cmxInfo}</span>
-                    <span class="item-price">NT$${parseFloat(si.amount||0).toLocaleString()}</span>
-                    ${arrivalTag}
-                </div>
-            </div>
-            <select class="status-select status-${si.status}" onchange="handleStatusChange(${si.rowNum}, this)">
-                <option value="待預購" ${si.status==='待預購'?'selected':''}>待預購</option>
-                <option value="待取貨" ${si.status==='待取貨'?'selected':''}>待取貨</option>
-                <option value="已取貨" ${si.status==='已取貨'?'selected':''}>已取貨</option>
-                <option value="已寄出" ${si.status==='已寄出'?'selected':''}>已寄出</option>
-            </select>
-        </div>`;
+        const cmx = si.location==="賣貨便"&&si.cmxNumber?' · '+si.cmxNumber:'';
+        return '<div class="item-line"><div class="item-line-left"><div class="item-product">'+si.product+'</div><div class="item-metas"><span class="item-loc">'+si.location+cmx+'</span><span class="item-price">NT$'+parseFloat(si.amount||0).toLocaleString()+'</span>'+arrTag+'</div></div><select class="status-sel s-'+si.status+'" onchange="handleStatus('+si.rowNum+',this)"><option value="待預購" '+(si.status==='待預購'?'selected':'')+'>待預購</option><option value="待取貨" '+(si.status==='待取貨'?'selected':'')+'>待取貨</option><option value="已取貨" '+(si.status==='已取貨'?'selected':'')+'>已取貨</option><option value="已寄出" '+(si.status==='已寄出'?'selected':'')+'>已寄出</option></select></div>';
     }).join('');
 
-    const shipZone = (allPicked && !isFinished) ? `
-    <div class="ship-zone">
-        <div class="ship-zone-label">🚚 全部商品已到手 — 輸入順豐單號結單</div>
-        <div class="ship-row">
-            <input type="text" class="ship-input" id="track-${first.name}" placeholder="順豐運單號碼">
-            <button class="ship-btn" onclick="shipAllByName('${first.name}')">寄出</button>
-        </div>
-    </div>` : '';
-
-    const shipInfo = trackCode ? `<div class="shipped-info">🚚 運單：<span style="font-family:'DM Mono',monospace;font-size:11px;">${trackCode}</span>${first.shipDate ? ` · ${first.shipDate}` : ''}</div>` : '';
-
-    const editBtn = !isFinished
-        ? `<button class="mini-btn mini-btn-amber" onclick="editCustomerDetails('${first.name}','${first.receiver}','${first.phone}','${first.fullAddress}')">✍️</button>`
+    const shipZone = (allPicked&&!isFinished)
+        ? '<div class="ship-zone"><div class="ship-zone-label">🚚 全部已到手 — 輸入順豐單號結單</div><div class="ship-row"><input class="ship-input" type="text" id="track-'+first.name+'" placeholder="順豐運單號碼"><button class="ship-btn" onclick="shipAll(\''+first.name+'\')">寄出</button></div></div>'
         : '';
+    const trackInfo = track ? '<div style="font-size:10px;color:var(--muted);margin-top:3px;">🚚 運單：<span style="font-family:\'DM Mono\',monospace;">'+track+'</span>'+(first.shipDate?' · '+first.shipDate:'')+'</div>' : '';
 
-    return `
-    <div class="${cardClass}">
-        <div class="card-header">
-            <div class="card-header-left">
-                <span class="source-tag source-${first.source}">${first.source}</span>
-                <span class="card-name">${first.name}</span>
-            </div>
-            <div class="card-header-right">
-                <button class="mini-btn mini-btn-green" onclick="reuseCustomer('${first.name}')">+ 加單</button>
-                ${editBtn}
-                <button class="mini-btn mini-btn-blue" onclick="copyAddr('${first.receiver}','${first.phone}','${first.fullAddress}')">📋</button>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="addr-block">
-                <strong>${first.receiver}</strong> · ${first.phone}<br>
-                ${addrDisplay}
-                ${shipInfo}
-            </div>
-            <div>${itemLines}</div>
-            ${shipZone}
-        </div>
-    </div>`;
+    const safeNote = noteText.replace(/'/g,"\\'");
+    const safeAddr = addrClean.replace(/'/g,"\\'");
+    const noteRow = '<div class="note-row">'+(noteText?'<span class="note-text">📝 '+noteText+'</span>':'<span style="font-size:10px;color:var(--muted);">加備註…</span>')+'<button class="note-edit-btn" onclick="editNote(\''+first.name+'\',\''+safeNote+'\','+items[0].rowNum+')">✏️</button></div>';
+
+    const listForCopy = displayItems.map(si=>'• '+si.product+'（NT$'+parseFloat(si.amount||0).toLocaleString()+'）').join('\n');
+    const copyPayload = encodeURIComponent('Hi '+first.name+'～\n以下是您的代購商品清單，請確認：\n'+listForCopy+'\n如有疑問請告知，謝謝 ✨');
+    const editBtn = !isFinished?'<button class="mbtn mbtn-a" onclick="editAddr(\''+first.name+'\',\''+first.receiver+'\',\''+first.phone+'\',\''+safeAddr+'\')">✍️</button>':'';
+
+    return '<div class="order-card'+(allPicked&&!isFinished?' ready':'')+'"><div class="card-head"><div class="card-head-left"><span class="src-tag src-'+first.source+'">'+first.source+'</span><span class="card-name">'+first.name+'</span></div><div class="card-head-right"><button class="mbtn mbtn-g" onclick="reuseCustomer(\''+first.name+'\')">+ 加單</button>'+editBtn+'<button class="mbtn mbtn-b" onclick="copyAddr(\''+first.receiver+'\',\''+first.phone+'\',\''+safeAddr+'\',this)">📋</button></div></div><div class="card-body"><div class="addr-block"><strong>'+first.receiver+'</strong> · '+first.phone+'<br>'+addrClean+trackInfo+noteRow+'</div>'+lines+'<button class="copy-list-btn" onclick="copyOrderList(this,\''+copyPayload+'\')">📄 複製商品清單給客人</button>'+shipZone+'</div></div>';
 }
 
-// ── STATUS UPDATE ──
-function handleStatusChange(rowNum, selectEl) {
-    const newVal = selectEl.value;
-    // 更新下拉顏色
-    selectEl.className = `status-select status-${newVal}`;
-    updateItemStatus(rowNum, newVal);
+function copyOrderList(btn, encoded) {
+    navigator.clipboard.writeText(decodeURIComponent(encoded)).catch(()=>{});
+    btn.classList.add('copied'); btn.textContent='✓ 已複製！';
+    setTimeout(()=>{btn.classList.remove('copied');btn.textContent='📄 複製商品清單給客人';},2000);
 }
 
-async function updateItemStatus(rowNum, newVal) {
-    await fetch(GAS_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: "updateField", rowNum, field: 'status', value: newVal }),
-        mode: 'no-cors'
-    });
+// NOTE
+async function editNote(name, current, rowNum) {
+    const n = prompt('備註（'+name+'）：', current); if (n===null) return;
+    const targets = allData.filter(i=>i.name===name);
+    for (const item of targets) await postGAS({action:"updateNote",rowNum:item.rowNum,note:n});
     loadData();
 }
 
-// ── SHIP ALL ──
-async function shipAllByName(name) {
-    const track = document.getElementById(`track-${name}`).value.trim();
+// STATUS
+function handleStatus(rowNum, sel) { sel.className='status-sel s-'+sel.value; postGAS({action:"updateField",rowNum,field:'status',value:sel.value}).then(loadData); }
+
+// SHIP
+async function shipAll(name) {
+    const track = document.getElementById('track-'+name).value.trim();
     if (!track) return alert("請輸入順豐單號！");
-    const related = allData.filter(i => i.name === name && !i.fullAddress.includes("運單:"));
-    for (let item of related) {
-        await fetch(GAS_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: "updateField", rowNum: item.rowNum, field: 'status', value: '已寄出', tracking: track }),
-            mode: 'no-cors'
-        });
-    }
-    triggerAutoCopy(name, track);
-    loadData();
-}
-
-function triggerAutoCopy(name, trackCode) {
-    const msg = `Hi ${name}～\n您的貨品已經安排順豐寄出囉！\n🚚 順豐單號：${trackCode}\n感謝您的購買 ✨`;
-    navigator.clipboard.writeText(msg).catch(() => {});
-    document.getElementById('modalCopyText').value = msg;
+    const related = allData.filter(i=>i.name===name&&!i.fullAddress.includes("運單:"));
+    for (const item of related) await postGAS({action:"updateField",rowNum:item.rowNum,field:'status',value:'已寄出',tracking:track});
+    const msg='Hi '+name+'～\n您的貨品已經安排順豐寄出囉！\n🚚 順豐單號：'+track+'\n感謝您的購買 ✨';
+    navigator.clipboard.writeText(msg).catch(()=>{});
+    document.getElementById('modalCopyText').value=msg;
     document.getElementById('copyModal').classList.add('open');
-}
-
-// ── EDIT CUSTOMER ──
-async function editCustomerDetails(name, rcv, phone, addr) {
-    const newRcv = prompt("收件人姓名：", rcv); if (newRcv === null) return;
-    const newPhone = prompt("電話號碼：", phone); if (newPhone === null) return;
-    const newAddr = prompt("詳細地址：", addr.split(' (運單:')[0]); if (newAddr === null) return;
-    const targets = allData.filter(i => i.name === name && !i.fullAddress.includes("運單:"));
-    for (let item of targets) {
-        await fetch(GAS_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: "updateCustomer", rowNum: item.rowNum, receiver: newRcv, phone: newPhone, fullAddress: newAddr }),
-            mode: 'no-cors'
-        });
-    }
     loadData();
 }
 
-// ── REUSE CUSTOMER ──
+// EDIT ADDR
+async function editAddr(name,rcv,phone,addr) {
+    const nR=prompt("收件人：",rcv); if(nR===null)return;
+    const nP=prompt("電話：",phone); if(nP===null)return;
+    const nA=prompt("地址：",addr); if(nA===null)return;
+    const targets=allData.filter(i=>i.name===name&&!i.fullAddress.includes("運單:"));
+    for(const item of targets) await postGAS({action:"updateCustomer",rowNum:item.rowNum,receiver:nR,phone:nP,fullAddress:nA});
+    loadData();
+}
+
+// REUSE
 function reuseCustomer(name) {
-    const data = allData.find(i => i.name === name);
-    if (!data) return;
-    document.getElementById('custName').value = data.name;
-    document.getElementById('source').value = data.source;
-    document.getElementById('receiver').value = data.receiver;
-    document.getElementById('phone').value = data.phone;
-    document.getElementById('fullAddress').value = data.fullAddress.split(' (運單:')[0];
-    switchView('active');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const d=allData.find(i=>i.name===name); if(!d)return;
+    document.getElementById('custName').value=d.name;
+    document.getElementById('source').value=d.source;
+    document.getElementById('receiver').value=d.receiver;
+    document.getElementById('phone').value=d.phone;
+    document.getElementById('fullAddress').value=d.fullAddress.split(' (運單:')[0];
+    switchView('active'); window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ── COPY ADDR ──
-function copyAddr(rcv, phn, adr) {
-    const text = `${rcv}\n${phn}\n${adr.split(' (運單:')[0]}`;
-    navigator.clipboard.writeText(text);
-    // 小提示
-    const btn = event.target;
-    const orig = btn.textContent;
-    btn.textContent = '✓ 已複製';
-    setTimeout(() => btn.textContent = orig, 1500);
+// COPY ADDR
+function copyAddr(rcv,ph,addr,btn) {
+    navigator.clipboard.writeText(rcv+'\n'+ph+'\n'+addr).catch(()=>{});
+    const orig=btn.textContent; btn.textContent='✓';
+    setTimeout(()=>btn.textContent=orig,1500);
 }
 
-// ── SF SEARCH ──
+// SF
 async function searchSFCode() {
-    const code = document.getElementById('sfCodeInput').value.trim();
-    const statusEl = document.getElementById('sfStatusText');
-    if (!code) return;
-    statusEl.style.display = 'block';
-    statusEl.style.color = '#2563EB';
-    statusEl.textContent = '🔍 搜尋中…';
+    const code=document.getElementById('sfCodeInput').value.trim();
+    const el=document.getElementById('sfStatus');
+    if(!code)return; el.style.display='block'; el.style.color='#2563EB'; el.textContent='🔍 搜尋中…';
     try {
-        const res = await fetch(`${GAS_URL}?action=searchSF&code=${encodeURIComponent(code)}`);
-        const result = await res.json();
-        if (result.found) {
-            document.getElementById('fullAddress').value = result.address;
-            statusEl.style.color = '#16A34A';
-            statusEl.textContent = '✅ 已填入地址！';
-        } else {
-            statusEl.style.color = '#DC2626';
-            statusEl.textContent = '❌ 找不到此點碼';
-        }
-    } catch {
-        statusEl.style.color = '#DC2626';
-        statusEl.textContent = '⚠️ 搜尋失敗，請稍後再試';
-    }
+        const r=await fetch(GAS_URL+'?action=searchSF&code='+encodeURIComponent(code));
+        const j=await r.json();
+        if(j.found){document.getElementById('fullAddress').value=j.address;el.style.color='#16A34A';el.textContent='✅ 已填入地址！';}
+        else{el.style.color='#DC2626';el.textContent='❌ 找不到此點碼';}
+    } catch{el.style.color='#DC2626';el.textContent='⚠️ 搜尋失敗';}
 }
 
-// ── ITEM ROWS ──
-function buildDefaultItemRow() {
-    document.getElementById('itemsContainer').innerHTML = '';
-    addItemRow();
-}
-
+// ITEM ROWS
 function addItemRow() {
-    const container = document.getElementById('itemsContainer');
-    const div = document.createElement('div');
-    div.className = 'item-row-card';
-    div.innerHTML = `
-        <input type="text" class="form-input prodName" placeholder="商品名稱" style="margin-bottom:8px;">
-        <div class="form-grid-2" style="margin-bottom:8px;">
-            <select class="form-input prodLoc" onchange="toggleDynamicFields(this)">
-                <option>蝦皮</option><option>7-11</option><option>全家</option>
-                <option>宅配</option><option>7仔預購</option><option>賣貨便</option>
-            </select>
-            <input type="number" class="form-input prodAmt" placeholder="金額">
-        </div>
-        <select class="form-input prodPayment" style="margin-bottom:0;">
-            <option>已付</option><option>到付</option><option>待付</option>
-        </select>
-        <div class="dynamic-field-container" style="margin-top:8px;"></div>
-    `;
-    container.appendChild(div);
+    const c=document.getElementById('itemsContainer');
+    const div=document.createElement('div'); div.className='item-row-card';
+    const hasOthers=c.children.length>0;
+    div.innerHTML=(hasOthers?'<button class="item-remove-btn" onclick="this.closest(\'.item-row-card\').remove()">×</button>':'')
+        +'<input type="text" class="finput prodName" placeholder="商品名稱" style="margin-bottom:8px;">'
+        +'<div class="g2" style="margin-bottom:8px;"><select class="finput prodLoc" onchange="toggleDynamic(this)"><option>蝦皮</option><option>7-11</option><option>全家</option><option>宅配</option><option>7仔預購</option><option>賣貨便</option></select><input type="number" class="finput prodAmt" placeholder="金額"></div>'
+        +'<select class="finput prodPayment"><option>已付</option><option>到付</option><option>待付</option></select>'
+        +'<div class="dyn-fields" style="margin-top:8px;"></div>';
+    c.appendChild(div);
 }
 
-function toggleDynamicFields(sel) {
-    const container = sel.closest('.item-row-card').querySelector('.dynamic-field-container');
-    container.innerHTML = '';
-    if (sel.value === "賣貨便") {
-        container.innerHTML = `<input type="text" class="form-input cmxNumber" placeholder="賣貨便訂單號碼" style="font-family:'DM Mono',monospace;">`;
-    } else if (sel.value === "7仔預購") {
-        container.innerHTML = `<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;color:var(--pink);font-weight:700;white-space:nowrap;">取貨日期</span><input type="date" class="form-input pickupDate"></div>`;
-    }
+function toggleDynamic(sel) {
+    const box=sel.closest('.item-row-card').querySelector('.dyn-fields'); box.innerHTML='';
+    if(sel.value==="賣貨便") box.innerHTML='<input type="text" class="finput cmxNumber" placeholder="賣貨便訂單號碼" style="font-family:\'DM Mono\',monospace;">';
+    else if(sel.value==="7仔預購") box.innerHTML='<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;color:#DB2777;font-weight:700;white-space:nowrap;">取貨日期</span><input type="date" class="finput pickupDate"></div>';
 }
 
-// ── SUBMIT ──
+// SUBMIT
 async function submitOrder() {
-    const d = new Date();
-    const items = Array.from(document.querySelectorAll('.item-row-card')).map(row => {
-        const loc = row.querySelector('.prodLoc').value;
-        let cmxNum = '', pickDate = '';
-        if (loc === "賣貨便") { const el = row.querySelector('.cmxNumber'); if (el) cmxNum = el.value.trim(); }
-        if (loc === "7仔預購") { const el = row.querySelector('.pickupDate'); if (el) pickDate = el.value.replace(/-/g,'/'); }
-        return {
-            productName: row.querySelector('.prodName').value,
-            pickupLocation: loc,
-            amount: row.querySelector('.prodAmt').value,
-            paymentStatus: row.querySelector('.prodPayment').value,
-            status: '待取貨', cmxNumber: cmxNum, date: pickDate
-        };
+    const d=new Date();
+    const items=Array.from(document.querySelectorAll('.item-row-card')).map(row=>{
+        const loc=row.querySelector('.prodLoc').value; let cmx='',dt='';
+        if(loc==="賣貨便"){const e=row.querySelector('.cmxNumber');if(e)cmx=e.value.trim();}
+        if(loc==="7仔預購"){const e=row.querySelector('.pickupDate');if(e)dt=e.value.replace(/-/g,'/');}
+        return{productName:row.querySelector('.prodName').value,pickupLocation:loc,amount:row.querySelector('.prodAmt').value,paymentStatus:row.querySelector('.prodPayment').value,status:'待取貨',cmxNumber:cmx,date:dt};
     });
-    const payload = {
-        orderID: "TW" + d.getTime().toString().slice(-4),
-        customerName: document.getElementById('custName').value,
-        source: document.getElementById('source').value,
-        receiver: document.getElementById('receiver').value,
-        phone: document.getElementById('phone').value,
-        fullAddress: document.getElementById('fullAddress').value,
-        orderDate: `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`,
-        items
-    };
-    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
+    await postGAS({orderID:"TW"+d.getTime().toString().slice(-4),customerName:document.getElementById('custName').value,source:document.getElementById('source').value,receiver:document.getElementById('receiver').value,phone:document.getElementById('phone').value,fullAddress:document.getElementById('fullAddress').value,orderDate:d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate(),items});
     location.reload();
 }
 
-// ── PROFIT ──
+// PROFIT
 function renderProfit() {
-    const monthly = allData.reduce((acc, obj) => {
-        const m = (obj.orderDate || '').substring(0, 7);
-        if (m && m.length === 7) {
-            if (!acc[m]) acc[m] = { twdTotal: 0, rate: obj.monthlyRate > 0 ? obj.monthlyRate : null };
-            acc[m].twdTotal += parseFloat(obj.amount || 0);
-        }
+    const m=allData.reduce((acc,obj)=>{
+        const mn=(obj.orderDate||'').substring(0,7);
+        if(mn&&mn.length===7){if(!acc[mn])acc[mn]={total:0,rate:obj.monthlyRate>0?obj.monthlyRate:null};acc[mn].total+=parseFloat(obj.amount||0);}
         return acc;
-    }, {});
-
-    const rows = Object.keys(monthly).sort().reverse().map(m => {
-        const d = monthly[m];
-        let hkd = d.rate
-            ? (() => { const p = (d.twdTotal / 3.6) - (d.twdTotal / d.rate); return `<span style="color:${p>=0?'#4ADE80':'#F87171'}">${p>=0?'+':''}HKD ${Math.round(p).toLocaleString()}</span>`; })()
-            : `<span style="color:rgba(255,255,255,0.2);font-size:10px;">請輸入匯率</span>`;
-        return `
-        <tr>
-            <td>${m}</td>
-            <td style="font-family:'DM Mono',monospace;">NT$${d.twdTotal.toLocaleString()}</td>
-            <td><input class="profit-input" type="number" step="0.01" value="${d.rate||''}" placeholder="匯率" onchange="updateMonthlyRate('${m}',this.value)"></td>
-            <td>${hkd}</td>
-        </tr>`;
-    }).join('') || `<tr><td colspan="4" style="text-align:center;padding:40px;color:rgba(255,255,255,0.2);">暫無資料</td></tr>`;
-
-    document.getElementById('profitTableBody').innerHTML = rows;
+    },{});
+    document.getElementById('profitTableBody').innerHTML=Object.keys(m).sort().reverse().map(mn=>{
+        const d=m[mn];
+        const hkd=d.rate?(()=>{const p=(d.total/3.6)-(d.total/d.rate);return'<span style="color:'+(p>=0?'#4ADE80':'#F87171')+'">'+(p>=0?'+':'')+'HKD '+Math.round(p).toLocaleString()+'</span>';})():'<span style="color:rgba(255,255,255,0.2);font-size:10px;">請輸入匯率</span>';
+        return'<tr><td>'+mn+'</td><td style="font-family:\'DM Mono\',monospace;">NT$'+d.total.toLocaleString()+'</td><td><input class="profit-input" type="number" step="0.01" value="'+(d.rate||'')+'" placeholder="匯率" onchange="updateRate(\''+mn+'\',this.value)"></td><td>'+hkd+'</td></tr>';
+    }).join('')||'<tr><td colspan="4" style="text-align:center;padding:30px;color:rgba(255,255,255,0.2);">暫無資料</td></tr>';
 }
 
-async function updateMonthlyRate(month, rate) {
-    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "updateMonthlyRate", month, rate }), mode: 'no-cors' });
-    loadData();
-}
+async function updateRate(month,rate){await postGAS({action:"updateMonthlyRate",month,rate});loadData();}
+
+async function postGAS(payload){return fetch(GAS_URL,{method:'POST',body:JSON.stringify(payload),mode:'no-cors'});}
 </script>
 </body>
 </html>
