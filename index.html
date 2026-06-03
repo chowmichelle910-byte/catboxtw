@@ -14,7 +14,7 @@
             --shadow-md:0 4px 16px rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.06);
         }
         *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-        body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:60px}
+        body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
 
         /* TOPBAR */
         .topbar{background:var(--ink);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:100}
@@ -25,6 +25,14 @@
         .nav-pill.active{background:#fff;color:var(--ink)}
 
         .page{max-width:680px;margin:0 auto;padding:16px 14px}
+
+        /* LOADING SPINNER */
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:5px}
+        .spinner-dark{border-color:rgba(0,0,0,.15);border-top-color:var(--ink)}
+
+        /* Button loading state */
+        button.loading-state{opacity:.7;cursor:not-allowed;pointer-events:none}
 
         /* STAT */
         .stat-strip{background:var(--ink);border-radius:18px;padding:18px;margin-bottom:16px}
@@ -49,7 +57,7 @@
         .fp-item-amt{font-size:11px;font-family:'DM Mono',monospace;color:#FCD34D;margin-left:5px}
         .arrived-badge{background:rgba(34,197,94,.2);color:#4ADE80;border:1px solid rgba(34,197,94,.28);font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;margin-left:5px}
         .pending-badge{background:rgba(251,191,36,.14);color:#FCD34D;border:1px solid rgba(251,191,36,.24);font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;margin-left:5px}
-        .pickup-btn{background:#2563EB;color:#fff;border:none;padding:5px 11px;border-radius:7px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Noto Sans TC',sans-serif}
+        .pickup-btn{background:#2563EB;color:#fff;border:none;padding:5px 11px;border-radius:7px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Noto Sans TC',sans-serif;transition:all .15s;min-width:56px;text-align:center}
 
         /* FORM */
         .form-card{background:var(--surface);border-radius:18px;border:1px solid var(--border);box-shadow:var(--shadow-sm);padding:20px;margin-bottom:16px}
@@ -77,7 +85,7 @@
         .item-remove-btn:hover{color:var(--red)}
         .quick-items{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
         .quick-item-btn{background:var(--accent-dim);color:var(--accent);border:none;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif}
-        .btn-primary{width:100%;background:var(--ink);color:#fff;border:none;padding:13px;border-radius:11px;font-size:14px;font-weight:900;font-family:'Noto Sans TC',sans-serif;cursor:pointer;margin-top:14px;transition:opacity .15s}
+        .btn-primary{width:100%;background:var(--ink);color:#fff;border:none;padding:13px;border-radius:11px;font-size:14px;font-weight:900;font-family:'Noto Sans TC',sans-serif;cursor:pointer;margin-top:14px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
         .btn-primary:active{opacity:.8}
         .btn-ghost{background:none;border:none;font-size:11px;font-weight:700;color:var(--accent);cursor:pointer;font-family:'Noto Sans TC',sans-serif;padding:0}
 
@@ -96,9 +104,11 @@
         .note-row{display:flex;align-items:center;gap:6px;margin-top:5px}
         .note-text{font-size:11px;color:#D97706;font-weight:700;flex:1}
         .note-edit-btn{font-size:10px;color:var(--muted);background:none;border:none;cursor:pointer;padding:0}
-        .copy-list-btn{font-size:10px;font-weight:700;color:var(--muted);background:none;border:1px solid var(--border);padding:4px 10px;border-radius:6px;cursor:pointer;font-family:'Noto Sans TC',sans-serif;margin-top:8px}
+        .copy-list-btn{font-size:10px;font-weight:700;color:var(--muted);background:none;border:1px solid var(--border);padding:4px 10px;border-radius:6px;cursor:pointer;font-family:'Noto Sans TC',sans-serif;margin-top:8px;transition:all .15s}
         .copy-list-btn.copied{border-color:var(--green);color:var(--green)}
-        .item-line{display:flex;justify-content:space-between;align-items:center;padding:7px 9px;border-radius:7px;margin-bottom:4px;background:#F8F8F6;border:1px solid var(--border)}
+
+        /* ITEM LINE — with delete btn */
+        .item-line{display:flex;justify-content:space-between;align-items:center;padding:7px 9px;border-radius:7px;margin-bottom:4px;background:#F8F8F6;border:1px solid var(--border);gap:6px}
         .item-line-left{flex:1;min-width:0}
         .item-product{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .item-metas{display:flex;align-items:center;gap:5px;margin-top:2px;flex-wrap:wrap}
@@ -109,8 +119,11 @@
         .arr-tag.pending{background:#FEF9C3;color:#A16207;border:1px solid #FEF08A}
         .status-sel{font-size:9px;font-weight:900;padding:4px 8px;border-radius:5px;color:#fff;border:none;outline:none;cursor:pointer;-webkit-appearance:none;font-family:'Noto Sans TC',sans-serif}
         .s-待預購{background:#EC4899}.s-待到貨{background:#F59E0B}.s-已取貨{background:#10B981}.s-已寄出{background:#9CA3AF}
+        /* delete item btn */
+        .del-item-btn{background:none;border:none;color:#D1D5DB;cursor:pointer;font-size:15px;line-height:1;padding:2px 4px;border-radius:4px;flex-shrink:0;transition:color .15s}
+        .del-item-btn:hover{color:var(--red)}
 
-        /* SHIP ZONE — 勾選寄出 */
+        /* SHIP ZONE */
         .ship-zone{margin-top:12px;padding-top:12px;border-top:2px dashed #FCA5A5}
         .ship-zone-label{font-size:9px;font-weight:900;letter-spacing:.08em;color:var(--red);text-transform:uppercase;margin-bottom:9px}
         .ship-checklist{margin-bottom:10px;display:flex;flex-direction:column;gap:5px}
@@ -122,13 +135,13 @@
         .ship-row{display:flex;gap:7px}
         .ship-input{flex:1;padding:9px 11px;border:1.5px solid #FCA5A5;border-radius:9px;font-size:12px;font-family:'DM Mono',monospace;outline:none}
         .ship-input:focus{border-color:var(--red)}
-        .ship-btn{background:var(--red);color:#fff;border:none;padding:9px 16px;border-radius:9px;font-size:12px;font-weight:900;font-family:'Noto Sans TC',sans-serif;cursor:pointer;white-space:nowrap}
+        .ship-btn{background:var(--red);color:#fff;border:none;padding:9px 16px;border-radius:9px;font-size:12px;font-weight:900;font-family:'Noto Sans TC',sans-serif;cursor:pointer;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:5px}
         .ship-select-all{font-size:10px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'Noto Sans TC',sans-serif;text-decoration:underline;margin-bottom:6px;display:block}
 
-        /* tracking shown in addr */
+        /* tracking pill */
         .tracking-pill{display:inline-flex;align-items:center;gap:5px;background:#EEF3FF;border:1px solid #BFDBFE;border-radius:6px;padding:3px 8px;font-size:10px;color:#1D4ED8;font-family:'DM Mono',monospace;margin-top:4px}
 
-        .mbtn{font-size:10px;font-weight:700;padding:5px 9px;border-radius:6px;border:none;cursor:pointer;font-family:'Noto Sans TC',sans-serif;white-space:nowrap}
+        .mbtn{font-size:10px;font-weight:700;padding:5px 9px;border-radius:6px;border:none;cursor:pointer;font-family:'Noto Sans TC',sans-serif;white-space:nowrap;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
         .mbtn-g{background:#DCFCE7;color:#15803D}.mbtn-a{background:#FEF3C7;color:#92400E}.mbtn-b{background:var(--accent-dim);color:var(--accent)}
 
         /* PROFIT */
@@ -147,7 +160,7 @@
         .modal-box{background:#fff;border-radius:22px;padding:24px;max-width:360px;width:100%}
         .modal-title{font-size:16px;font-weight:900;margin-bottom:5px}
         .modal-sub{font-size:11px;color:var(--muted);margin-bottom:13px}
-        .modal-textarea{width:100%;height:130px;border:1px solid var(--border);border-radius:11px;padding:11px;font-size:12px;background:#FAFAF8;resize:none;outline:none;font-family:'Noto Sans TC',sans-serif;margin-bottom:13px}
+        .modal-textarea{width:100%;height:160px;border:1px solid var(--border);border-radius:11px;padding:11px;font-size:12px;background:#FAFAF8;resize:none;outline:none;font-family:'Noto Sans TC',sans-serif;margin-bottom:13px}
 
         .loading{text-align:center;padding:50px 20px;color:var(--muted);font-size:13px;font-weight:700}
         .empty-state{text-align:center;padding:50px 20px;color:var(--muted)}
@@ -208,7 +221,7 @@
                         <div class="sf-box-label">📦 順豐點碼查詢</div>
                         <div class="sf-row">
                             <input type="text" class="finput" id="sfCodeInput" placeholder="例：852TAM" style="font-family:'DM Mono',monospace;text-transform:uppercase;">
-                            <button class="mbtn mbtn-b" onclick="searchSFCode()" style="padding:8px 14px;">搜尋</button>
+                            <button class="mbtn mbtn-b" id="sfSearchBtn" onclick="searchSFCode()" style="padding:8px 14px;">搜尋</button>
                         </div>
                         <div id="sfStatus" class="sf-status" style="display:none;"></div>
                     </div>
@@ -225,7 +238,7 @@
                     <div id="itemsContainer"></div>
                 </div>
             </div>
-            <button class="btn-primary" onclick="submitOrder()">確認儲存並提交 →</button>
+            <button class="btn-primary" id="submitBtn" onclick="submitOrder()">確認儲存並提交 →</button>
         </div>
 
         <div id="cardContainer"><div class="loading">資料讀取中…</div></div>
@@ -251,9 +264,31 @@
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycby5vPRE71thYhYY-4XDMZ2oByLBsaZmy_FQPHzjHvAthhCTFmUCC29SycppE4d7pJ4mWA/exec";
 const QUICK_ITEMS = ["Lativ上衣","Lativ褲子","無印良品","GU外套","寶雅保養品","711零食"];
+const GAS_DELAY = 1200; // ms to wait after no-cors POST before reloading
 
 let allData=[], currentMode='active', activeFilter=null;
+const pendingChanges={};
 
+// ── SPINNER HELPERS ──
+function btnLoading(btn, text){
+    btn.disabled=true;
+    btn.classList.add('loading-state');
+    btn._origHTML=btn.innerHTML;
+    btn.innerHTML='<span class="spinner"></span>'+(text||'儲存中…');
+}
+function btnReset(btn){
+    btn.disabled=false;
+    btn.classList.remove('loading-state');
+    if(btn._origHTML) btn.innerHTML=btn._origHTML;
+}
+function btnDone(btn, text, delay){
+    btn.disabled=false;
+    btn.classList.remove('loading-state');
+    btn.innerHTML='✓ '+(text||'完成');
+    setTimeout(()=>{ if(btn._origHTML) btn.innerHTML=btn._origHTML; },delay||1500);
+}
+
+// ── INIT ──
 window.onload=()=>{ buildQuickItems(); addItemRow(); loadData(); };
 
 async function loadData(){
@@ -274,11 +309,10 @@ function switchView(mode){
     render();
 }
 
-// 判斷訂單是否已完成（改用 shipDate 或 trackingNumber，不再依賴地址）
-function isItemShipped(item){ return item.status==='已寄出' || item.trackingNumber; }
+function isItemShipped(item){ return item.status==='已寄出'||!!item.trackingNumber; }
 function isCustomerDone(items){ return items.every(i=>isItemShipped(i)); }
 
-// QUICK ITEMS
+// ── QUICK ITEMS ──
 function buildQuickItems(){
     const box=document.getElementById('quickItems');
     QUICK_ITEMS.forEach(name=>{
@@ -293,7 +327,7 @@ function buildQuickItems(){
     });
 }
 
-// CUSTOMER SEARCH
+// ── CUSTOMER SEARCH ──
 function onCustInput(){
     const val=document.getElementById('custName').value.trim().toLowerCase();
     const dd=document.getElementById('custDropdown');
@@ -315,7 +349,7 @@ function fillCustomer(name){
 }
 function closeCustDropdown(){ setTimeout(()=>document.getElementById('custDropdown').classList.remove('open'),150); }
 
-// STATS
+// ── STATS ──
 function renderStats(){
     const locs=["蝦皮","7-11","全家","宅配","7仔預購","賣貨便"];
     const stats={}; locs.forEach(l=>stats[l]=0);
@@ -326,6 +360,7 @@ function renderStats(){
 }
 function toggleFilter(loc){ if(activeFilter===loc){closeFilter();return;} activeFilter=loc; renderStats(); openFilter(loc); }
 function closeFilter(){ activeFilter=null; renderStats(); document.getElementById('filter-panel').classList.remove('open'); }
+
 function openFilter(loc){
     document.getElementById('filter-panel').classList.add('open');
     document.getElementById('fp-title').textContent='📍 '+loc+' · 待到貨清單';
@@ -342,34 +377,32 @@ function openFilter(loc){
         ?items.map(i=>{
             const isA=i.arrivalDate&&i.arrivalDate.trim();
             const badge=loc==="賣貨便"?(isA?'<span class="arrived-badge">✓ 已到貨</span>':'<span class="pending-badge">⏳ 待到貨</span>'):'';
-            return '<div class="fp-item"><div style="flex:1;min-width:0;"><div class="fp-item-name">'+i.product+'<span class="fp-item-amt">$'+parseFloat(i.amount||0)+'</span>'+badge+'</div><div class="fp-item-meta">'+i.name+(isA&&loc==="賣貨便"?' · 到貨日 '+i.arrivalDate:'')+'</div></div><button class="pickup-btn" onclick="quickPickup('+i.rowNum+')">已取貨</button></div>';
+            return '<div class="fp-item"><div style="flex:1;min-width:0;"><div class="fp-item-name">'+i.product+'<span class="fp-item-amt">$'+parseFloat(i.amount||0)+'</span>'+badge+'</div><div class="fp-item-meta">'+i.name+(isA&&loc==="賣貨便"?' · 到貨日 '+i.arrivalDate:'')+'</div></div>'
+                +'<button class="pickup-btn" id="pbtn-'+i.rowNum+'" onclick="quickPickup('+i.rowNum+',this)">已取貨</button></div>';
         }).join('')
         :'<div style="color:rgba(255,255,255,.28);font-size:12px;padding:10px;">暫無項目</div>';
 }
-// ── 待儲存變更暫存 ──
-const pendingChanges = {}; // { rowNum: newStatus }
 
-function quickPickup(rowNum){
-    pendingChanges[rowNum] = '已取貨';
-    // 更新黑色區按鈕外觀
-    const btn = document.querySelector('.pickup-btn[onclick="quickPickup('+rowNum+')"]');
-    if(btn){ btn.textContent='✓ 待儲存'; btn.style.background='#16A34A'; }
+// 黑色區「已取貨」— 加入 pending，按鈕立即給反饋
+function quickPickup(rowNum, btn){
+    pendingChanges[rowNum]='已取貨';
+    btn.innerHTML='<span class="spinner"></span>';
+    btn.disabled=true;
     showSaveBanner();
 }
 
-
-// ORDERS
+// ── ORDERS ──
 function groupByName(data){ return data.reduce((acc,obj)=>{ (acc[obj.name]=acc[obj.name]||[]).push(obj); return acc; },{}); }
 
 function renderOrders(mode,cid){
     const container=document.getElementById(cid);
     const groups=Object.values(groupByName(allData));
     let list=mode==='active'
-        ? groups.filter(g=>g.some(i=>!isItemShipped(i)))
-        : groups.filter(g=>isCustomerDone(g));
+        ?groups.filter(g=>g.some(i=>!isItemShipped(i)))
+        :groups.filter(g=>isCustomerDone(g));
     if(mode==='active'){
         list.sort((a,b)=>{
-            const ai=a.filter(i=>!isItemShipped(i)), bi=b.filter(i=>!isItemShipped(i));
+            const ai=a.filter(i=>!isItemShipped(i)),bi=b.filter(i=>!isItemShipped(i));
             const aR=ai.length>0&&ai.every(i=>i.status==='已取貨');
             const bR=bi.length>0&&bi.every(i=>i.status==='已取貨');
             if(aR!==bR) return aR?-1:1;
@@ -390,62 +423,67 @@ function buildCard(items,mode){
     if(!displayItems.length) return '';
 
     const allPicked=activeItems.length>0&&activeItems.every(i=>i.status==='已取貨');
-    const someShipped=items.some(i=>isItemShipped(i));
-
-    // 蒐集所有已用運單號（可能多次寄出）
     const trackSet=new Set(items.map(i=>i.trackingNumber).filter(Boolean));
-
     const noteItem=items.find(i=>i.note&&i.note.trim());
     const noteText=noteItem?noteItem.note:'';
     const safeNote=noteText.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     const safeAddr=first.fullAddress.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 
+    // 商品行（含刪除按鈕）
     const lines=displayItems.map(si=>{
         const isA=si.arrivalDate&&si.arrivalDate.trim();
         const arrTag=si.location==="賣貨便"?(isA?'<span class="arr-tag arrived">✓ '+si.arrivalDate+' 已到貨</span>':'<span class="arr-tag pending">⏳ 待到貨</span>'):'';
         const cmx=si.location==="賣貨便"&&si.cmxNumber?' · '+si.cmxNumber:'';
         const shippedTag=isItemShipped(si)?'<span style="font-size:9px;color:#9CA3AF;margin-left:4px;">已寄出</span>':'';
-        return '<div class="item-line"><div class="item-line-left"><div class="item-product">'+si.product+shippedTag+'</div><div class="item-metas"><span class="item-loc">'+si.location+cmx+'</span><span class="item-price">NT$'+parseFloat(si.amount||0).toLocaleString()+'</span>'+arrTag+'</div></div><select class="status-sel s-'+si.status+'" onchange="handleStatus('+si.rowNum+',this)"><option value="待預購" '+(si.status==='待預購'?'selected':'')+'>待預購</option><option value="待到貨" '+(si.status==='待到貨'?'selected':'')+'>待到貨</option><option value="已取貨" '+(si.status==='已取貨'?'selected':'')+'>已取貨</option><option value="已寄出" '+(si.status==='已寄出'?'selected':'')+'>已寄出</option></select></div>';
+        return '<div class="item-line">'
+            +'<div class="item-line-left"><div class="item-product">'+si.product+shippedTag+'</div>'
+            +'<div class="item-metas"><span class="item-loc">'+si.location+cmx+'</span><span class="item-price">NT$'+parseFloat(si.amount||0).toLocaleString()+'</span>'+arrTag+'</div></div>'
+            +'<select class="status-sel s-'+si.status+'" onchange="handleStatus('+si.rowNum+',this)">'
+            +'<option value="待預購" '+(si.status==='待預購'?'selected':'')+'>待預購</option>'
+            +'<option value="待到貨" '+(si.status==='待到貨'?'selected':'')+'>待到貨</option>'
+            +'<option value="已取貨" '+(si.status==='已取貨'?'selected':'')+'>已取貨</option>'
+            +'<option value="已寄出" '+(si.status==='已寄出'?'selected':'')+'>已寄出</option>'
+            +'</select>'
+            +'<button class="del-item-btn" onclick="deleteItem('+si.rowNum+',this)" title="刪除此商品">✕</button>'
+            +'</div>';
     }).join('');
 
-    // 運單號顯示（可能多筆）
+    // 運單號
     const trackPills=trackSet.size>0
         ?Array.from(trackSet).map(t=>'<span class="tracking-pill">🚚 '+t+(items.find(i=>i.trackingNumber===t&&i.shipDate)?' · '+items.find(i=>i.trackingNumber===t&&i.shipDate).shipDate:'')+'</span>').join(' ')
         :'';
 
     const noteRow='<div class="note-row">'+(noteText?'<span class="note-text">📝 '+noteText+'</span>':'<span style="font-size:10px;color:var(--muted);">加備註…</span>')+'<button class="note-edit-btn" onclick="editNote(\''+first.name+'\',\''+safeNote+'\','+items[0].rowNum+')">✏️</button></div>';
 
-    // 勾選寄出區（只在有已取貨商品時顯示）
+    // 勾選寄出
     let shipZone='';
-    if(allPicked || (activeItems.some(i=>i.status==='已取貨'))){
-        const checkableItems=activeItems.filter(i=>i.status==='已取貨');
-        if(checkableItems.length>0){
-            const checkboxes=checkableItems.map(si=>
-                '<label class="ship-check-item" onclick="updateShipCheckStyle(this)">'
-                +'<input type="checkbox" checked data-rownum="'+si.rowNum+'" onchange="updateShipCheckStyle(this.closest(\'label\'))">'
-                +'<span class="ship-check-label">'+si.product+'</span>'
-                +'<span class="ship-check-price">NT$'+parseFloat(si.amount||0).toLocaleString()+'</span>'
-                +'</label>'
-            ).join('');
-            shipZone='<div class="ship-zone">'
-                +'<div class="ship-zone-label">🚚 選擇要寄出的商品</div>'
-                +'<button class="ship-select-all" onclick="toggleSelectAll(this)">取消全選</button>'
-                +'<div class="ship-checklist" id="checklist-'+first.name+'">'+checkboxes+'</div>'
-                +'<div class="ship-row"><input class="ship-input" type="text" id="track-'+first.name+'" placeholder="順豐運單號碼"><button class="ship-btn" onclick="shipSelected(\''+first.name+'\')">確認寄出</button></div>'
-                +'</div>';
-        }
+    const checkableItems=activeItems.filter(i=>i.status==='已取貨');
+    if(checkableItems.length>0){
+        const checkboxes=checkableItems.map(si=>
+            '<label class="ship-check-item" onclick="updateShipCheckStyle(this)">'
+            +'<input type="checkbox" checked data-rownum="'+si.rowNum+'" onchange="updateShipCheckStyle(this.closest(\'label\'))">'
+            +'<span class="ship-check-label">'+si.product+'</span>'
+            +'<span class="ship-check-price">NT$'+parseFloat(si.amount||0).toLocaleString()+'</span>'
+            +'</label>'
+        ).join('');
+        shipZone='<div class="ship-zone">'
+            +'<div class="ship-zone-label">🚚 選擇要寄出的商品</div>'
+            +'<button class="ship-select-all" onclick="toggleSelectAll(this)">取消全選</button>'
+            +'<div class="ship-checklist" id="checklist-'+first.name+'">'+checkboxes+'</div>'
+            +'<div class="ship-row"><input class="ship-input" type="text" id="track-'+first.name+'" placeholder="順豐運單號碼">'
+            +'<button class="ship-btn" id="shipbtn-'+first.name+'" onclick="shipSelected(\''+first.name+'\')">確認寄出</button></div>'
+            +'</div>';
     }
 
-    const listForCopy=displayItems.map(si=>{
-        let statusTag='';
-        if(isItemShipped(si)) statusTag='【已寄出】';
-        else if(si.location==='賣貨便') statusTag=si.arrivalDate&&si.arrivalDate.trim()?'【已到貨】':'【待到貨】';
-        else if(si.status==='待預購') statusTag='【待預購】';
-        else if(si.status==='待到貨') statusTag='【待到貨】';
-        else if(si.status==='已取貨') statusTag='【已取貨】';
-        return statusTag+si.product+'（NT$'+parseFloat(si.amount||0).toLocaleString()+'）';
-    }).join('\n');
-    const copyPayload=encodeURIComponent('你好～以下是您的代購商品清單，請確認：\n'+listForCopy+'\n如有疑問請告知，謝謝 ✨');
+    // 複製商品清單（分組：已到貨=已取貨 / 待到貨=其他）
+    const arrivedItems=displayItems.filter(si=>si.status==='已取貨');
+    const pendingItems=displayItems.filter(si=>si.status!=='已取貨');
+    let copyLines='';
+    if(arrivedItems.length) copyLines+=arrivedItems.map(si=>'【已到貨】'+si.product+'（NT$'+parseFloat(si.amount||0).toLocaleString()+'）').join('\n');
+    if(arrivedItems.length&&pendingItems.length) copyLines+='\n\n';
+    if(pendingItems.length) copyLines+=pendingItems.map(si=>'【待到貨】'+si.product+'（NT$'+parseFloat(si.amount||0).toLocaleString()+'）').join('\n');
+    const copyPayload=encodeURIComponent('以下係客人購買嘅商品到貨清單：\n\n'+copyLines+'\n\n謝謝✨');
+
     const editBtn=activeItems.length>0?'<button class="mbtn mbtn-a" onclick="editAddr(\''+first.name+'\',\''+first.receiver+'\',\''+first.phone+'\',\''+safeAddr+'\')">✍️</button>':'';
 
     return '<div class="order-card'+(allPicked&&activeItems.length>0?' ready':'')+'">'
@@ -459,7 +497,15 @@ function buildCard(items,mode){
         +shipZone+'</div></div>';
 }
 
-// 勾選狀態樣式
+// ── DELETE ITEM ──
+async function deleteItem(rowNum, btn){
+    if(!confirm('確定要刪除這項商品嗎？')) return;
+    btnLoading(btn,'');
+    await postGAS({action:"deleteItem", rowNum});
+    setTimeout(loadData, GAS_DELAY);
+}
+
+// ── SHIP CHECK ──
 function updateShipCheckStyle(label){
     const cb=label.querySelector('input[type=checkbox]');
     label.classList.toggle('unchecked',!cb.checked);
@@ -471,83 +517,89 @@ function toggleSelectAll(btn){
     boxes.forEach(b=>{ b.checked=!allChecked; updateShipCheckStyle(b.closest('label')); });
     btn.textContent=allChecked?'全選':'取消全選';
 }
-
-// 寄出選中的商品
 async function shipSelected(name){
     const zone=document.getElementById('checklist-'+name);
+    const shipBtn=document.getElementById('shipbtn-'+name);
     const track=document.getElementById('track-'+name).value.trim();
     if(!track) return alert("請輸入順豐單號！");
     const checked=Array.from(zone.querySelectorAll('input[type=checkbox]:checked'));
     if(!checked.length) return alert("請至少勾選一件商品！");
+    btnLoading(shipBtn,'寄出中…');
     const rows=checked.map(cb=>parseInt(cb.dataset.rownum));
-    await postGAS({action:"shipItems", rows, tracking:track});
-
-    const names=checked.map(cb=>cb.closest('label').querySelector('.ship-check-label').textContent);
-    showCopyModal(name,track,names);
-    loadData();
-}
-
-function showCopyModal(name,track,productNames){
-    const itemList=productNames.map(n=>'• '+n).join('\n');
+    await postGAS({action:"shipItems",rows,tracking:track});
     const msg='你好～貨品已經安排用順豐寄出\n客人可於稍後時間利用以下單號於順豐app查閱\n\n🚚 順豐單號：'+track+'\n感謝你嘅購買 ✨';
     navigator.clipboard.writeText(msg).catch(()=>{});
     document.getElementById('modalCopyText').value=msg;
     document.getElementById('copyModal').classList.add('open');
+    setTimeout(loadData, GAS_DELAY);
 }
 
+// ── PENDING CHANGES (status selects + black area pickup) ──
 function handleStatus(rowNum,sel){
     sel.className='status-sel s-'+sel.value;
-    pendingChanges[rowNum] = sel.value;
+    pendingChanges[rowNum]=sel.value;
     showSaveBanner();
 }
 
 function showSaveBanner(){
-    let banner = document.getElementById('save-banner');
+    let banner=document.getElementById('save-banner');
     if(!banner){
-        banner = document.createElement('div');
-        banner.id = 'save-banner';
-        banner.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:14px;padding:12px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,0.25);z-index:150;font-family:"Noto Sans TC",sans-serif;font-size:13px;font-weight:700;white-space:nowrap;';
-        banner.innerHTML='<span id="save-banner-count"></span><button onclick="saveAllChanges()" style="background:#2563EB;color:#fff;border:none;padding:7px 16px;border-radius:9px;font-size:12px;font-weight:900;cursor:pointer;font-family:\'Noto Sans TC\',sans-serif;">確認儲存</button><button onclick="discardChanges()" style="background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border:none;padding:7px 12px;border-radius:9px;font-size:12px;cursor:pointer;font-family:\'Noto Sans TC\',sans-serif;">捨棄</button>';
+        banner=document.createElement('div');
+        banner.id='save-banner';
+        banner.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:14px;padding:11px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.28);z-index:150;font-family:"Noto Sans TC",sans-serif;font-size:13px;font-weight:700;white-space:nowrap;';
+        banner.innerHTML='<span id="save-banner-count"></span>'
+            +'<button id="save-confirm-btn" onclick="saveAllChanges()" style="background:#2563EB;color:#fff;border:none;padding:7px 15px;border-radius:9px;font-size:12px;font-weight:900;cursor:pointer;font-family:\'Noto Sans TC\',sans-serif;display:flex;align-items:center;gap:5px;">確認儲存</button>'
+            +'<button onclick="discardChanges()" style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.7);border:none;padding:7px 11px;border-radius:9px;font-size:12px;cursor:pointer;font-family:\'Noto Sans TC\',sans-serif;">捨棄</button>';
         document.body.appendChild(banner);
     }
-    const count = Object.keys(pendingChanges).length;
-    document.getElementById('save-banner-count').textContent = '📝 有 '+count+' 項變更未儲存';
+    const count=Object.keys(pendingChanges).length;
+    document.getElementById('save-banner-count').textContent='📝 '+count+' 項未儲存';
 }
 
 async function saveAllChanges(){
-    const entries = Object.entries(pendingChanges);
+    const entries=Object.entries(pendingChanges);
     if(!entries.length) return;
-    for(const [rowNum, status] of entries){
-        await postGAS({action:"updateField", rowNum:parseInt(rowNum), field:'status', value:status});
+    const btn=document.getElementById('save-confirm-btn');
+    btn.innerHTML='<span class="spinner"></span>儲存中…';
+    btn.disabled=true;
+    for(const [rowNum,status] of entries){
+        await postGAS({action:"updateField",rowNum:parseInt(rowNum),field:'status',value:status});
     }
-    for(const key of Object.keys(pendingChanges)) delete pendingChanges[key];
-    const banner = document.getElementById('save-banner');
-    if(banner) banner.remove();
-    // 等 GAS 寫入後再 reload
-    setTimeout(loadData, 800);
+    for(const k of Object.keys(pendingChanges)) delete pendingChanges[k];
+    btn.innerHTML='✓ 已儲存';
+    setTimeout(()=>{
+        const banner=document.getElementById('save-banner');
+        if(banner) banner.remove();
+        loadData();
+    }, GAS_DELAY);
 }
 
 function discardChanges(){
-    for(const key of Object.keys(pendingChanges)) delete pendingChanges[key];
-    const banner = document.getElementById('save-banner');
+    for(const k of Object.keys(pendingChanges)) delete pendingChanges[k];
+    const banner=document.getElementById('save-banner');
     if(banner) banner.remove();
-    loadData(); // 重新渲染恢復原狀
+    loadData();
 }
 
+// ── EDIT NOTE ──
 async function editNote(name,current,rowNum){
     const n=prompt('備註（'+name+'）：',current); if(n===null)return;
     const targets=allData.filter(i=>i.name===name);
     for(const item of targets) await postGAS({action:"updateNote",rowNum:item.rowNum,note:n});
-    loadData();
+    setTimeout(loadData, GAS_DELAY);
 }
+
+// ── EDIT ADDR ──
 async function editAddr(name,rcv,phone,addr){
     const nR=prompt("收件人：",rcv); if(nR===null)return;
     const nP=prompt("電話：",phone); if(nP===null)return;
     const nA=prompt("地址：",addr); if(nA===null)return;
     const targets=allData.filter(i=>i.name===name&&!isItemShipped(i));
     for(const item of targets) await postGAS({action:"updateCustomer",rowNum:item.rowNum,receiver:nR,phone:nP,fullAddress:nA});
-    loadData();
+    setTimeout(loadData, GAS_DELAY);
 }
+
+// ── REUSE ──
 function reuseCustomer(name){
     const d=allData.find(i=>i.name===name); if(!d)return;
     document.getElementById('custName').value=d.name;
@@ -557,29 +609,38 @@ function reuseCustomer(name){
     document.getElementById('fullAddress').value=d.fullAddress;
     switchView('active'); window.scrollTo({top:0,behavior:'smooth'});
 }
+
+// ── COPY ADDR ──
 function copyAddr(rcv,ph,addr,btn){
     navigator.clipboard.writeText(rcv+'\n'+ph+'\n'+addr).catch(()=>{});
-    const orig=btn.textContent; btn.textContent='✓';
-    setTimeout(()=>btn.textContent=orig,1500);
+    const orig=btn.innerHTML; btn.innerHTML='✓';
+    setTimeout(()=>btn.innerHTML=orig,1500);
 }
+
+// ── COPY ORDER LIST ──
 function copyOrderList(btn,encoded){
     navigator.clipboard.writeText(decodeURIComponent(encoded)).catch(()=>{});
     btn.classList.add('copied'); btn.textContent='✓ 已複製！';
     setTimeout(()=>{ btn.classList.remove('copied'); btn.textContent='📄 複製商品清單給客人'; },2000);
 }
 
+// ── SF SEARCH ──
 async function searchSFCode(){
     const code=document.getElementById('sfCodeInput').value.trim();
     const el=document.getElementById('sfStatus');
-    if(!code)return; el.style.display='block'; el.style.color='#2563EB'; el.textContent='🔍 搜尋中…';
+    const btn=document.getElementById('sfSearchBtn');
+    if(!code)return;
+    el.style.display='block'; el.style.color='#2563EB'; el.textContent='🔍 搜尋中…';
+    btnLoading(btn,'搜尋中');
     try{
         const r=await fetch(GAS_URL+'?action=searchSF&code='+encodeURIComponent(code));
         const j=await r.json();
-        if(j.found){ document.getElementById('fullAddress').value=j.address; el.style.color='#16A34A'; el.textContent='✅ 已填入地址！'; }
-        else{ el.style.color='#DC2626'; el.textContent='❌ 找不到此點碼'; }
-    }catch{ el.style.color='#DC2626'; el.textContent='⚠️ 搜尋失敗'; }
+        if(j.found){ document.getElementById('fullAddress').value=j.address; el.style.color='#16A34A'; el.textContent='✅ 已填入地址！'; btnDone(btn,'搜尋'); }
+        else{ el.style.color='#DC2626'; el.textContent='❌ 找不到此點碼'; btnReset(btn); }
+    }catch{ el.style.color='#DC2626'; el.textContent='⚠️ 搜尋失敗'; btnReset(btn); }
 }
 
+// ── ITEM ROWS ──
 function addItemRow(){
     const c=document.getElementById('itemsContainer');
     const div=document.createElement('div'); div.className='item-row-card';
@@ -597,7 +658,9 @@ function toggleDynamic(sel){
     else if(sel.value==="7仔預購") box.innerHTML='<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;color:#DB2777;font-weight:700;white-space:nowrap;">取貨日期</span><input type="date" class="finput pickupDate"></div>';
 }
 
+// ── SUBMIT ──
 async function submitOrder(){
+    const btn=document.getElementById('submitBtn');
     const d=new Date();
     const items=Array.from(document.querySelectorAll('.item-row-card')).map(row=>{
         const loc=row.querySelector('.prodLoc').value; let cmx='',dt='';
@@ -605,23 +668,37 @@ async function submitOrder(){
         if(loc==="7仔預購"){ const e=row.querySelector('.pickupDate'); if(e)dt=e.value.replace(/-/g,'/'); }
         return{productName:row.querySelector('.prodName').value,pickupLocation:loc,amount:row.querySelector('.prodAmt').value,paymentStatus:row.querySelector('.prodPayment').value,status:'待到貨',cmxNumber:cmx,date:dt};
     });
+    btnLoading(btn,'提交中…');
     await postGAS({orderID:"TW"+d.getTime().toString().slice(-4),customerName:document.getElementById('custName').value,source:document.getElementById('source').value,receiver:document.getElementById('receiver').value,phone:document.getElementById('phone').value,fullAddress:document.getElementById('fullAddress').value,orderDate:d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate(),items});
-    location.reload();
+    setTimeout(()=>location.reload(), GAS_DELAY);
 }
 
+// ── PROFIT ──
 function renderProfit(){
     const m=allData.reduce((acc,obj)=>{
         const mn=(obj.orderDate||'').substring(0,7);
-        if(mn&&mn.length===7){ if(!acc[mn])acc[mn]={total:0,rate:obj.monthlyRate>0?obj.monthlyRate:null}; acc[mn].total+=parseFloat(obj.amount||0); }
+        if(mn&&mn.length===7){ if(!acc[mn])acc[mn]={total:0,rate:parseFloat(obj.monthlyRate)||0}; acc[mn].total+=parseFloat(obj.amount||0); if(!acc[mn].rate&&parseFloat(obj.monthlyRate)>0) acc[mn].rate=parseFloat(obj.monthlyRate); }
         return acc;
     },{});
     document.getElementById('profitTableBody').innerHTML=Object.keys(m).sort().reverse().map(mn=>{
         const d=m[mn];
-        const hkd=d.rate?(()=>{ const p=(d.total/3.6)-(d.total/d.rate); return'<span style="color:'+(p>=0?'#4ADE80':'#F87171')+'">'+(p>=0?'+':'')+'HKD '+Math.round(p).toLocaleString()+'</span>'; })():'<span style="color:rgba(255,255,255,.2);font-size:10px;">請輸入匯率</span>';
-        return'<tr><td>'+mn+'</td><td style="font-family:\'DM Mono\',monospace;">NT$'+d.total.toLocaleString()+'</td><td><input class="profit-input" type="number" step="0.01" value="'+(d.rate||'')+'" placeholder="匯率" onchange="updateRate(\''+mn+'\',this.value)"></td><td>'+hkd+'</td></tr>';
+        const hkd=d.rate>0?(()=>{ const p=(d.total/3.6)-(d.total/d.rate); return'<span style="color:'+(p>=0?'#4ADE80':'#F87171')+'">'+(p>=0?'+':'')+'HKD '+Math.round(p).toLocaleString()+'</span>'; })():'<span style="color:rgba(255,255,255,.2);font-size:10px;">請輸入匯率</span>';
+        return'<tr><td>'+mn+'</td><td style="font-family:\'DM Mono\',monospace;">NT$'+d.total.toLocaleString()+'</td>'
+            +'<td><input class="profit-input" type="number" step="0.01" value="'+(d.rate||'')+'" placeholder="匯率" onchange="updateRate(\''+mn+'\',this)"></td>'
+            +'<td>'+hkd+'</td></tr>';
     }).join('')||'<tr><td colspan="4" style="text-align:center;padding:30px;color:rgba(255,255,255,.2);">暫無資料</td></tr>';
 }
-async function updateRate(month,rate){ await postGAS({action:"updateMonthlyRate",month,rate}); loadData(); }
+
+// 匯率更新：input 加 spinner，延遲後 reload
+async function updateRate(month, input){
+    const val=parseFloat(input.value);
+    if(!val||val<=0) return;
+    input.style.opacity='.5';
+    input.disabled=true;
+    await postGAS({action:"updateMonthlyRate",month,rate:val});
+    setTimeout(()=>{ loadData(); },GAS_DELAY);
+}
+
 async function postGAS(payload){ return fetch(GAS_URL,{method:'POST',body:JSON.stringify(payload),mode:'no-cors'}); }
 </script>
 </body>
