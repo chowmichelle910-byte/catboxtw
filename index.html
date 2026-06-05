@@ -675,27 +675,44 @@ async function submitOrder(){
 
 // ── PROFIT ──
 function renderProfit(){
+    // 統一把 orderDate 轉成 YYYY-MM 格式（與 GAS 一致）
     const m=allData.reduce((acc,obj)=>{
-        const mn=(obj.orderDate||'').substring(0,7);
-        if(mn&&mn.length===7){ if(!acc[mn])acc[mn]={total:0,rate:parseFloat(obj.monthlyRate)||0}; acc[mn].total+=parseFloat(obj.amount||0); if(!acc[mn].rate&&parseFloat(obj.monthlyRate)>0) acc[mn].rate=parseFloat(obj.monthlyRate); }
+        const raw=(obj.orderDate||'').trim();
+        if(!raw) return acc;
+        const parts=raw.split('/');
+        if(parts.length<2) return acc;
+        const mn=parts[0]+'-'+parts[1].padStart(2,'0'); // e.g. "2025-06"
+        if(!acc[mn])acc[mn]={total:0,rate:parseFloat(obj.monthlyRate)||0};
+        acc[mn].total+=parseFloat(obj.amount||0);
+        if(!acc[mn].rate&&parseFloat(obj.monthlyRate)>0) acc[mn].rate=parseFloat(obj.monthlyRate);
         return acc;
     },{});
+
     document.getElementById('profitTableBody').innerHTML=Object.keys(m).sort().reverse().map(mn=>{
         const d=m[mn];
         const hkd=d.rate>0?(()=>{ const p=(d.total/3.6)-(d.total/d.rate); return'<span style="color:'+(p>=0?'#4ADE80':'#F87171')+'">'+(p>=0?'+':'')+'HKD '+Math.round(p).toLocaleString()+'</span>'; })():'<span style="color:rgba(255,255,255,.2);font-size:10px;">請輸入匯率</span>';
-        return'<tr><td>'+mn+'</td><td style="font-family:\'DM Mono\',monospace;">NT$'+d.total.toLocaleString()+'</td>'
-            +'<td><input class="profit-input" type="number" step="0.01" value="'+(d.rate||'')+'" placeholder="匯率" onchange="updateRate(\''+mn+'\',this)"></td>'
-            +'<td>'+hkd+'</td></tr>';
+        // 用 data attribute 傳月份，避免 inline string escape 問題
+        return'<tr>'
+            +'<td>'+mn+'</td>'
+            +'<td style="font-family:\'DM Mono\',monospace;">NT$'+d.total.toLocaleString()+'</td>'
+            +'<td style="display:flex;align-items:center;gap:6px;">'
+                +'<input class="profit-input" id="rate-input-'+mn+'" type="number" step="0.01" value="'+(d.rate||'')+'" placeholder="輸入匯率" data-month="'+mn+'">'
+                +'<button onclick="updateRate(this)" data-month="'+mn+'" style="background:#2563EB;color:#fff;border:none;padding:5px 10px;border-radius:7px;font-size:10px;font-weight:700;cursor:pointer;font-family:\'Noto Sans TC\',sans-serif;white-space:nowrap;">儲存</button>'
+            +'</td>'
+            +'<td>'+hkd+'</td>'
+            +'</tr>';
     }).join('')||'<tr><td colspan="4" style="text-align:center;padding:30px;color:rgba(255,255,255,.2);">暫無資料</td></tr>';
 }
 
-// 匯率更新：input 加 spinner，延遲後 reload
-async function updateRate(month, input){
+async function updateRate(btn){
+    const month=btn.dataset.month;
+    const input=document.getElementById('rate-input-'+month);
     const val=parseFloat(input.value);
-    if(!val||val<=0) return;
-    input.style.opacity='.5';
-    input.disabled=true;
+    if(!val||val<=0){ input.focus(); return; }
+    const origText=btn.textContent;
+    btn.textContent='…'; btn.disabled=true; input.disabled=true;
     await postGAS({action:"updateMonthlyRate",month,rate:val});
+    btn.textContent='✓'; 
     setTimeout(()=>{ loadData(); },GAS_DELAY);
 }
 
