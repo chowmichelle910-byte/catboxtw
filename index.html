@@ -175,7 +175,7 @@
         .pending-assign-form{display:flex;flex-direction:column;gap:8px}
         .pending-row{display:flex;gap:8px}
         .assign-btn{background:var(--green);color:#fff;border:none;padding:10px;border-radius:10px;font-size:12px;font-weight:900;font-family:'Noto Sans TC',sans-serif;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px}
-        .dismiss-btn{background:#F3F4F6;color:var(--muted);border:none;padding:10px 14px;border-radius:10px;font-size:11px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer}
+        .dismiss-btn{background:#FEE2E2;color:var(--red);border:none;padding:10px 14px;border-radius:10px;font-size:11px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer}
         .pending-date-tag{font-size:9px;background:rgba(37,99,235,.1);color:var(--accent);border-radius:4px;padding:2px 7px;font-weight:700;white-space:nowrap}
     </style>
 </head>
@@ -185,8 +185,8 @@
     <div class="logo">🇹🇼 <span>台灣代購</span> 訂單管理</div>
     <nav class="nav-pills">
         <button class="nav-pill active" onclick="switchView('active')" id="nav-active">進行中</button>
-        <button class="nav-pill" onclick="switchView('history')" id="nav-history">歷史</button>
         <button class="nav-pill" onclick="switchView('pending')" id="nav-pending">📬</button>
+        <button class="nav-pill" onclick="switchView('history')" id="nav-history">歷史</button>
         <button class="nav-pill" onclick="switchView('profit')" id="nav-profit">💰</button>
     </nav>
 </header>
@@ -798,7 +798,7 @@ function renderPending(){
                     +'</select>'
                     +'<div class="pending-row">'
                         +'<button class="assign-btn" style="flex:1;" id="assign-btn-'+item.rowNum+'" onclick="assignOrder('+item.rowNum+')">✅ 指派並加入訂單</button>'
-                        +'<button class="dismiss-btn" id="dismiss-btn-'+item.rowNum+'" onclick="dismissPending('+item.rowNum+')">略過</button>'
+                        +'<button class="dismiss-btn" id="dismiss-btn-'+item.rowNum+'" onclick="dismissPending('+item.rowNum+')">🗑 刪除</button>'
                     +'</div>'
                 +'</div>'
             +'</div>'
@@ -830,9 +830,10 @@ async function assignOrder(pendingRowNum){
 }
 
 async function dismissPending(pendingRowNum){
+    if(!confirm('確定要刪除這筆待指派訂單嗎？')) return;
     const btn=document.getElementById('dismiss-btn-'+pendingRowNum);
     btnLoading(btn,'');
-    await postGAS({action:"dismissPending", pendingRowNum});
+    await postGAS({action:"deletePending", pendingRowNum});
     setTimeout(loadPending, GAS_DELAY);
 }
 
