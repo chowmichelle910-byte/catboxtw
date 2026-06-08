@@ -165,6 +165,18 @@
         .loading{text-align:center;padding:50px 20px;color:var(--muted);font-size:13px;font-weight:700}
         .empty-state{text-align:center;padding:50px 20px;color:var(--muted)}
         .empty-icon{font-size:36px;margin-bottom:10px}
+        /* PENDING CARDS */
+        .pending-card{background:var(--surface);border-radius:14px;border:1.5px solid var(--border);box-shadow:var(--shadow-sm);margin-bottom:10px;overflow:hidden}
+        .pending-card-head{padding:11px 14px;background:#FAFAF8;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px}
+        .pending-shop{font-size:14px;font-weight:900;color:var(--text)}
+        .pending-cm{font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);margin-top:1px}
+        .pending-amt{font-size:16px;font-weight:900;color:var(--ink);font-family:'DM Mono',monospace;white-space:nowrap}
+        .pending-body{padding:12px 14px}
+        .pending-assign-form{display:flex;flex-direction:column;gap:8px}
+        .pending-row{display:flex;gap:8px}
+        .assign-btn{background:var(--green);color:#fff;border:none;padding:10px;border-radius:10px;font-size:12px;font-weight:900;font-family:'Noto Sans TC',sans-serif;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px}
+        .dismiss-btn{background:#F3F4F6;color:var(--muted);border:none;padding:10px 14px;border-radius:10px;font-size:11px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer}
+        .pending-date-tag{font-size:9px;background:rgba(37,99,235,.1);color:var(--accent);border-radius:4px;padding:2px 7px;font-weight:700;white-space:nowrap}
     </style>
 </head>
 <body>
@@ -174,6 +186,7 @@
     <nav class="nav-pills">
         <button class="nav-pill active" onclick="switchView('active')" id="nav-active">進行中</button>
         <button class="nav-pill" onclick="switchView('history')" id="nav-history">歷史</button>
+        <button class="nav-pill" onclick="switchView('pending')" id="nav-pending">📬</button>
         <button class="nav-pill" onclick="switchView('profit')" id="nav-profit">💰</button>
     </nav>
 </header>
@@ -248,6 +261,16 @@
         <div id="historyContainer"><div class="loading">資料讀取中…</div></div>
     </div>
 
+    <!-- ══ 待指派 ══ -->
+    <div id="view-pending" style="display:none;">
+        <div style="background:var(--ink);border-radius:18px;padding:18px;margin-bottom:16px;">
+            <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px;">自動偵測</div>
+            <div style="font-size:13px;font-weight:900;color:#fff;margin-bottom:2px;">📬 賣貨便新訂單</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.4);">從 Gmail 自動讀取，指派給對應客人後會自動加入訂單</div>
+        </div>
+        <div id="pendingContainer"><div class="loading">載入中…</div></div>
+    </div>
+
     <div id="view-profit" style="display:none;">
         <div class="profit-wrap">
             <div class="profit-title">💰 每月利潤分析</div>
@@ -266,7 +289,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycby5vPRE71thYhYY-4XDMZ2o
 const QUICK_ITEMS = ["Lativ上衣","Lativ褲子","無印良品","GU外套","寶雅保養品","711零食"];
 const GAS_DELAY = 1200; // ms to wait after no-cors POST before reloading
 
-let allData=[], currentMode='active', activeFilter=null;
+let allData=[], pendingData=[], currentMode='active', activeFilter=null;
 const pendingChanges={};
 
 // ── SPINNER HELPERS ──
@@ -295,14 +318,19 @@ async function loadData(){
     try{ const r=await fetch(GAS_URL+"?t="+Date.now()); allData=await r.json(); }catch(e){ console.error(e); }
     render();
 }
+async function loadPending(){
+    try{ const r=await fetch(GAS_URL+"?action=getPending&t="+Date.now()); pendingData=await r.json(); }catch(e){ console.error(e); pendingData=[]; }
+    renderPending();
+}
 function render(){
     if(currentMode==='active'){ renderStats(); renderOrders('active','cardContainer'); }
     else if(currentMode==='history'){ renderOrders('history','historyContainer'); }
+    else if(currentMode==='pending'){ loadPending(); }
     else renderProfit();
 }
 function switchView(mode){
     currentMode=mode;
-    ['active','history','profit'].forEach(v=>{
+    ['active','history','pending','profit'].forEach(v=>{
         document.getElementById('view-'+v).style.display=v===mode?'block':'none';
         document.getElementById('nav-'+v).classList.toggle('active',v===mode);
     });
@@ -714,6 +742,83 @@ async function updateRate(btn){
     await postGAS({action:"updateMonthlyRate",month,rate:val});
     btn.textContent='✓'; 
     setTimeout(()=>{ loadData(); },GAS_DELAY);
+}
+
+// ── PENDING ORDERS ──
+function renderPending(){
+    const container=document.getElementById('pendingContainer');
+    if(!pendingData.length){
+        container.innerHTML='<div class="empty-state"><div class="empty-icon">📭</div><p>目前沒有待指派的新訂單</p><p style="font-size:11px;margin-top:6px;">GAS 會每小時自動掃描 Gmail</p></div>';
+        return;
+    }
+    container.innerHTML=pendingData.map(item=>{
+        const safeShop=item.shopName.replace(/'/g,"\\'");
+        // 取得所有已知客人名稱供快選
+        const seen=new Set(); const custNames=[];
+        allData.forEach(i=>{ if(!seen.has(i.name)){seen.add(i.name);custNames.push(i.name);} });
+        const custOptions=custNames.slice(0,30).map(n=>'<option value="'+n+'">'+n+'</option>').join('');
+
+        return '<div class="pending-card" id="pcard-'+item.rowNum+'">'
+            +'<div class="pending-card-head">'
+                +'<div><div class="pending-shop">'+item.shopName+'</div>'
+                +'<div class="pending-cm">'+item.cmNumber+'</div></div>'
+                +'<div style="display:flex;align-items:center;gap:8px;">'
+                    +'<span class="pending-date-tag">'+item.emailDate+'</span>'
+                    +'<span class="pending-amt">NT$'+parseFloat(item.amount||0).toLocaleString()+'</span>'
+                +'</div>'
+            +'</div>'
+            +'<div class="pending-body">'
+                +'<div class="pending-assign-form">'
+                    +'<div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:2px;">指派給哪位客人？</div>'
+                    // 客人名稱（可輸入或選擇）
+                    +'<div style="position:relative;">'
+                        +'<input type="text" class="finput pCustName-'+item.rowNum+'" list="custlist-'+item.rowNum+'" placeholder="輸入或選擇客人名稱" style="font-size:12px;">'
+                        +'<datalist id="custlist-'+item.rowNum+'">'+custOptions+'</datalist>'
+                    +'</div>'
+                    // 付款方式
+                    +'<select class="finput pPayment-'+item.rowNum+'" style="font-size:12px;">'
+                        +'<option value="到付">到付</option>'
+                        +'<option value="已付">已付</option>'
+                        +'<option value="待付">待付</option>'
+                    +'</select>'
+                    +'<div class="pending-row">'
+                        +'<button class="assign-btn" style="flex:1;" id="assign-btn-'+item.rowNum+'" onclick="assignOrder('+item.rowNum+')">✅ 指派並加入訂單</button>'
+                        +'<button class="dismiss-btn" id="dismiss-btn-'+item.rowNum+'" onclick="dismissPending('+item.rowNum+')">略過</button>'
+                    +'</div>'
+                +'</div>'
+            +'</div>'
+        +'</div>';
+    }).join('');
+}
+
+async function assignOrder(pendingRowNum){
+    const custName=document.querySelector('.pCustName-'+pendingRowNum).value.trim();
+    if(!custName) return alert("請輸入客人名稱！");
+    const payment=document.querySelector('.pPayment-'+pendingRowNum).value;
+    const btn=document.getElementById('assign-btn-'+pendingRowNum);
+
+    // 嘗試從現有訂單找到客人資料自動填入
+    const existing=allData.find(i=>i.name===custName);
+
+    btnLoading(btn,'指派中…');
+    await postGAS({
+        action:        "assignOrder",
+        pendingRowNum: pendingRowNum,
+        customerName:  custName,
+        source:        existing?existing.source:'IG',
+        receiver:      existing?existing.receiver:'',
+        phone:         existing?existing.phone:'',
+        fullAddress:   existing?existing.fullAddress:'',
+        paymentStatus: payment
+    });
+    setTimeout(()=>{ loadPending(); loadData(); }, GAS_DELAY);
+}
+
+async function dismissPending(pendingRowNum){
+    const btn=document.getElementById('dismiss-btn-'+pendingRowNum);
+    btnLoading(btn,'');
+    await postGAS({action:"dismissPending", pendingRowNum});
+    setTimeout(loadPending, GAS_DELAY);
 }
 
 async function postGAS(payload){ return fetch(GAS_URL,{method:'POST',body:JSON.stringify(payload),mode:'no-cors'}); }
